@@ -35,21 +35,9 @@ namespace DAL.UoW.Realization
             }
         }
 
-        public async Task<bool> SaveAsync()
+        public async Task SaveAsync()
         {
-            bool returnValue = true;
-            using var dbContextTransaction = _dbContext.Database.BeginTransaction();
-            try
-            {
-                await _dbContext.SaveChangesAsync();
-                dbContextTransaction.Commit();
-            }
-            catch (Exception)
-            {
-                returnValue = false;
-                dbContextTransaction?.Rollback();
-            }
-            return returnValue;
+            await _dbContext.SaveChangesAsync();
         }
 
         private bool disposed = false;

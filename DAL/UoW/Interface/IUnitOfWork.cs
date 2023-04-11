@@ -7,6 +7,6 @@ namespace DAL.UoW.Interface
         IUserRepository UsersRepository { get; }
         IMessageRepository MessagesRepository { get; }
 
-        Task<bool> SaveAsync();
+        Task SaveAsync();
     }
 }
