@@ -1,7 +1,7 @@
-﻿using BAL.Services.Interfaces;
+﻿using Chat.BLL.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Chat3000Api.Controllers
+namespace ChatApp.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]

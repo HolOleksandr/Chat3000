@@ -1,4 +1,4 @@
-﻿namespace Chat3000Api.Configurations
+﻿namespace ChatApp.API.Configurations
 {
     public class ExceptionMiddleware
     {

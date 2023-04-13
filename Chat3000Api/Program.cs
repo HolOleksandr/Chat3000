@@ -1,6 +1,6 @@
-using Chat3000Api.Configurations;
-using DAL.Data;
+using Chat.DAL.Data;
 using Microsoft.EntityFrameworkCore;
+using ChatApp.API.Configurations;
 
 var builder = WebApplication.CreateBuilder(args);
 
