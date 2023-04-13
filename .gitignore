@@ -21,7 +21,7 @@ mono_crash.*
 [Dd]ebugPublic/
 [Rr]elease/
 [Rr]eleases/
-[Pp]roperties/
+# [Pp]roperties/ -----------------------------
 x64/
 x86/
 [Aa][Rr][Mm]/
@@ -63,7 +63,7 @@ dlldata.c
 BenchmarkDotNet.Artifacts/
 
 # .NET Core
-appsettings.json
+#appsettings.json  --------------------------
 project.lock.json
 project.fragment.lock.json
 artifacts/

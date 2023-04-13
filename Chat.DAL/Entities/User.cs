@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Chat.DAL.Entities
 {
-    public class User
+    public class User  
     {
         public Guid Id { get; set; }
     }
