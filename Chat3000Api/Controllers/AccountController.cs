@@ -28,7 +28,7 @@ namespace ChatApp.API.Controllers
             _changePassValidator = changePassValidator;
         }
 
-        [HttpPost]
+        [HttpPost("register")]
         public async Task<IActionResult> RegisterUser([FromBody] UserRegistrationModel userModel)
         {
             var validation = await _userRegistrationValidator.ValidateAsync(userModel);
@@ -85,7 +85,7 @@ namespace ChatApp.API.Controllers
                 var errors = result.Errors.Select(e => e.Description);
                 return BadRequest(new RegistrationResult { Success = false, Errors = errors });
             }
-            return Ok();
+            return Ok(new RegistrationResult { Success = true});
             
         }
 

@@ -7,10 +7,10 @@ namespace ChatApp.API.Controllers
     public class TestController : Controller
     {
         [Authorize(Policy = "AllUsers")]
-        [HttpGet()]
-        public async Task<IActionResult> DownloadAnyFile()
+        [HttpGet("")]
+        public async Task<IActionResult> TestMethod()
         {
-            return Ok("This is controller for registered users");
+            return Ok("This is a message from API");
         }
     }
 }

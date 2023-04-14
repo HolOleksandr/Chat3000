@@ -1,0 +1,14 @@
+﻿@page "/test"
+@using Chat.Blazor.Server.Services.Interfaces;
+@inject ITestService TestService
+
+<h3>Message:</h3>
+<h3>@result</h3>
+
+@code {
+    string result = "";
+    protected override async Task OnInitializedAsync()
+    {
+        result = await TestService.GetTestMessage();
+    }
+}

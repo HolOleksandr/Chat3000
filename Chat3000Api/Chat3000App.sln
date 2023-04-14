@@ -5,7 +5,7 @@ VisualStudioVersion = 17.5.33516.290
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChatApp.API", "ChatApp.API.csproj", "{FF6B6285-0F12-4A26-8445-9DEE21BA9793}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chat.Blazor.Server", "..\Chat.Blazor.Server\Chat.Blazor.Server.csproj", "{193055CA-122E-4DAC-9D03-BC4F740D7A9B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chat.Blazor.Server", "..\Chat.Blazor.Server\Chat.Blazor.Server.csproj", "{193055CA-122E-4DAC-9D03-BC4F740D7A9B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chat.DAL", "..\Chat.DAL\Chat.DAL.csproj", "{00F7D46E-7738-43BE-AB00-2E9F574A7413}"
 EndProject
