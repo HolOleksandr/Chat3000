@@ -61,6 +61,15 @@ namespace Chat.BLL.Services.Realizations
             return await _userManager.CheckPasswordAsync(_user, userModel.Password);
         }
 
+        public async Task<IdentityResult> ChangePasswordAsync(ChangePasswordModel model)
+        {
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            var result = await _userManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
+            return result;
+        }
+
+
+
         private SigningCredentials GetSigningCredentials()
         {
             var key = _configuration["Jwt:Key"];

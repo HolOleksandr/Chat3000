@@ -75,6 +75,7 @@ namespace ChatApp.API.Configurations
         {
             services.AddValidatorsFromAssemblyContaining<UserLoginValidator>();
             services.AddValidatorsFromAssemblyContaining<UserRegistrationValidator>();
+            services.AddValidatorsFromAssemblyContaining<UserChangePassValidator>();
         }
 
         public static void ConfigureSwagger(this IServiceCollection services)

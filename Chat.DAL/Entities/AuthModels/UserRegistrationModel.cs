@@ -9,6 +9,7 @@ namespace Chat.DAL.Entities.AuthModels
 {
     public class UserRegistrationModel : UserLoginModel
     {
+        public string ConfirmPassword { get; set; } = null!;
         public string FirstName { get; set; } = null!;
         public string LastName { get; set; } = null!;
 

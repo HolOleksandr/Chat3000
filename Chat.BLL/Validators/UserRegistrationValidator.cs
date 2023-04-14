@@ -26,6 +26,10 @@ namespace Chat.BLL.Validators
                 .Length(2, 25)
                 .Must(IsValidName).WithMessage("{PropertyName} should be all letters.");
 
+            RuleFor(x => x.ConfirmPassword).NotNull()
+                .NotEmpty()
+                .Equal(x => x.Password)
+                .WithMessage("Passwords do not match");
 
             RuleFor(x => x.Email)
                 .NotNull()

@@ -12,7 +12,7 @@ namespace Chat.BLL.Services.Interfaces
     {
         Task<string> CreateTokenAsync();
         Task<IdentityResult> RegisterUserAsync(UserRegistrationModel userModel);
-
+        Task<IdentityResult> ChangePasswordAsync(ChangePasswordModel model);
         Task<bool> ValidateUserAsync(UserLoginModel userModel);
     }
 }
