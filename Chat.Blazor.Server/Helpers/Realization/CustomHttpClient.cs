@@ -17,34 +17,29 @@ namespace Chat.Blazor.Server.Helpers.Realization
 
         public async Task<HttpResponseMessage> GetWithTokenAsync(string url)
         {
-            var token = await GetTokenAsync();
-            using var httpClient = _httpClientFactory.CreateClient();
-            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", token);
-            var response = await httpClient.GetAsync(url);
+            using var client = await GetClientWithTokenAsync());
+            var response = await client.GetAsync(url);
             return response;
         }
 
         public async Task<HttpResponseMessage> PostWithTokenAsync(string url, HttpContent content)
         {
-            var token = await GetTokenAsync();
-            using var httpClient = _httpClientFactory.CreateClient();
-            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", token);
-            var response = await httpClient.PostAsync(url, content);
+            using var client = await GetClientWithTokenAsync();
+            var response = await client.PostAsync(url, content);
             return response;
         }
 
+       
 
-        // TEST Method
-        public async Task<HttpResponseMessage> SendWithTokenAsync(HttpMethod method, string url, HttpContent content = null)
+
+        private async Task<HttpClient> GetClientWithTokenAsync()
         {
             var token = await GetTokenAsync();
-            using var httpClient = _httpClientFactory.CreateClient();
+            var httpClient = _httpClientFactory.CreateClient();
             httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", token);
-            var request = new HttpRequestMessage(method, url) { Content = content };
-            var response = await httpClient.SendAsync(request);
-            return response;
+            return httpClient;
         }
-        // TEST Method
+            
 
         private async Task<string> GetTokenAsync()
         {
@@ -57,7 +52,20 @@ namespace Chat.Blazor.Server.Helpers.Realization
             {
                 return string.Empty;
             }
-            
+
         }
+
+
+        // TEST Method
+        public async Task<HttpResponseMessage> SendWithTokenAsync(HttpMethod method, string url, HttpContent content = null)
+        {
+            using var httpClient = _httpClientFactory.CreateClient();
+            var request = new HttpRequestMessage(method, url) { Content = content };
+            var response = await httpClient.SendAsync(request);
+            return response;
+        }
+        // TEST Method
     }
+
+
 }
