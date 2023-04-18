@@ -33,6 +33,8 @@ namespace Chat.Blazor.Server.Helpers.Realization
             return response;
         }
 
+
+        // TEST Method
         public async Task<HttpResponseMessage> SendWithTokenAsync(HttpMethod method, string url, HttpContent content = null)
         {
             var token = await GetTokenAsync();
@@ -42,6 +44,7 @@ namespace Chat.Blazor.Server.Helpers.Realization
             var response = await httpClient.SendAsync(request);
             return response;
         }
+        // TEST Method
 
         private async Task<string> GetTokenAsync()
         {
