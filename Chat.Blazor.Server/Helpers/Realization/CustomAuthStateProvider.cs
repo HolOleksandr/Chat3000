@@ -5,7 +5,7 @@ using System.Security.Claims;
 using System.Text.Json;
 
 
-namespace Chat.Blazor.Server.Helpers
+namespace Chat.Blazor.Server.Helpers.Realization
 {
     public class CustomAuthStateProvider : AuthenticationStateProvider
     {

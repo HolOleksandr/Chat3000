@@ -1,4 +1,5 @@
 ﻿using Blazored.LocalStorage;
+using Chat.Blazor.Server.Helpers.Interfaces;
 using Chat.Blazor.Server.Services.Interfaces;
 using Microsoft.AspNetCore.Components.Authorization;
 using System.Net.Http.Headers;
@@ -8,23 +9,22 @@ namespace Chat.Blazor.Server.Services.Realization
 {
     public class TestService : ITestService
     {
-        private readonly HttpClient _httpClient;
-        private readonly string _baseUrl = "https://localhost:7121/";
-        private readonly ILocalStorageService _localStorage;
+        private readonly string _baseUrl = "";
+        private readonly IConfiguration _configuration;
+        private readonly ICustomHttpClient _customHttpClient;
 
 
-        public TestService(HttpClient httpClient, ILocalStorageService localStorageService)
+        public TestService( ICustomHttpClient customHttpClient, IConfiguration configuration)
         {
-            _httpClient = httpClient;
-            _localStorage = localStorageService;
+            _customHttpClient = customHttpClient;
+            _configuration = configuration;
+            _baseUrl = _configuration["ApiUrls:ChatApi"];
         }
 
         public async Task<string> GetTestMessage()
         {
-            var savedToken = await _localStorage.GetItemAsync<string>("authToken");
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", savedToken);
-
-            var result = await _httpClient.GetAsync(_baseUrl + "api/test/");
+            //var _baseUrl = _configuration["ApiUrls:ChatApi"];
+            var result = await _customHttpClient.GetWithTokenAsync(_baseUrl + "api/test/");
             if (result.IsSuccessStatusCode)
             {
                 var message =  await result.Content.ReadAsStringAsync();

@@ -1,6 +1,8 @@
 using Blazored.LocalStorage;
+using Chat.Blazor.Server.Configurations;
 using Chat.Blazor.Server.Data;
-using Chat.Blazor.Server.Helpers;
+using Chat.Blazor.Server.Helpers.Interfaces;
+using Chat.Blazor.Server.Helpers.Realization;
 using Chat.Blazor.Server.Services.Interfaces;
 using Chat.Blazor.Server.Services.Realization;
 using Microsoft.AspNetCore.Components;
@@ -17,6 +19,7 @@ builder.Services.AddAuthorizationCore();
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<ICustomHttpClient, CustomHttpClient>();
 builder.Services.AddScoped<ITestService, TestService>();
 builder.Services.AddSingleton<WeatherForecastService>();
 
@@ -39,5 +42,5 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
-
+//app.UseMiddleware<TokenMiddleware>();
 app.Run();
