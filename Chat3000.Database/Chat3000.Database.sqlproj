@@ -63,8 +63,8 @@
     <Folder Include="Scripts" />
     <Folder Include="dbo\Tables" />
     <Folder Include="dbo\Views" />
-    <Folder Include="Scripts\Predeployment" />
-    <Folder Include="Scripts\Postdeployment" />
+    <Folder Include="Scripts\PreDeployment" />
+    <Folder Include="Scripts\PostDeployment" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="dbo\Tables\AspNetRoles.sql" />
@@ -82,6 +82,8 @@
     <RefactorLog Include="Chat3000.Database.refactorlog" />
   </ItemGroup>
   <ItemGroup>
-    <PreDeploy Include="Scripts\Predeployment\RoleConfigScript.sql" />
+    <PostDeploy Include="Scripts\PostDeployment\ScriptRoleConfig.sql" />
+    <None Include="Scripts\PostDeployment\ScriptUserConfig.sql" />
+    <None Include="Scripts\PostDeployment\ScriptUserRoleConfig.sql" />
   </ItemGroup>
 </Project>
