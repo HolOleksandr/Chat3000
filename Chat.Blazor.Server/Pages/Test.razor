@@ -1,18 +1,50 @@
 ﻿@page "/test"
 @using Chat.Blazor.Server.Services.Interfaces;
-@inject ITestService TestService
+@inject Blazored.LocalStorage.ILocalStorageService _localStorage
+@inject HttpClient Http
 
-<h3>Message:</h3>
+<h3>JWT from Middleware::</h3>
 <h3>@result</h3>
+<h3>Token:</h3>
+<h3>@token</h3>
+
+
+<button type="submit" class="btn btn-primary" @onclick="GetMessage">Submit</button>
+<h3>JWT from Razor page:</h3>
+<h3>@secondMessage</h3>
 
 @code {
-    string result = "";
+    [Inject]
+    private ITestService TestService { get; set; }
+
+    string result = ""; 
+    string token = "";
+    string secondMessage = "";
+
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
+            token = await _localStorage.GetItemAsync<string>("authToken");
+            result = await TestService.GetTestMessage();
+            StateHasChanged();
         }
-        result = await TestService.GetTestMessage();
-        StateHasChanged();
+
     }
-}
+
+
+
+    private async Task GetMessage()
+    {
+        var requestMsg = new HttpRequestMessage(HttpMethod.Get, "https://localhost:7121/api/test/");
+        requestMsg.Headers.Add("Authorization", "Bearer " + token);
+        var response = await Http.SendAsync(requestMsg);
+        if (response.IsSuccessStatusCode)
+        {
+            var message = await response.Content.ReadAsStringAsync();
+            secondMessage = "Welcome: " + message;
+        }
+
+    }
+    }

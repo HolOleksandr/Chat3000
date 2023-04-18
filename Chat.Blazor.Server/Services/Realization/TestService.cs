@@ -34,6 +34,7 @@ namespace Chat.Blazor.Server.Services.Realization
                 return "Welcome: " + message; 
             }
             return "You are Unauthorized";
+
         }
 
     }

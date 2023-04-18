@@ -17,7 +17,7 @@ namespace Chat.Blazor.Server.Helpers.Realization
 
         public async Task<HttpResponseMessage> GetWithTokenAsync(string url)
         {
-            var token = await GetTokenASync();
+            var token = await GetTokenAsync();
             using var httpClient = _httpClientFactory.CreateClient();
             httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", token);
             var response = await httpClient.GetAsync(url);
@@ -26,14 +26,14 @@ namespace Chat.Blazor.Server.Helpers.Realization
 
         public async Task<HttpResponseMessage> PostWithTokenAsync(string url, HttpContent content)
         {
-            var token = await GetTokenASync();
+            var token = await GetTokenAsync();
             using var httpClient = _httpClientFactory.CreateClient();
             httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", token);
             var response = await httpClient.PostAsync(url, content);
             return response;
         }
 
-        private async Task<string> GetTokenASync()
+        private async Task<string> GetTokenAsync()
         {
             try
             {

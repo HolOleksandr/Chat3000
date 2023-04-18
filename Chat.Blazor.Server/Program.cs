@@ -14,17 +14,19 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
-builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddAuthorizationCore();
 builder.Services.AddTransient<TokenMiddleware>();
 builder.Services.AddHttpClient<ITestService, TestService>().AddHttpMessageHandler<TokenMiddleware>();
 
 builder.Services.AddHttpClient();
+builder.Services.AddScoped<CustomAuthStateProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 //builder.Services.AddScoped<ICustomHttpClient, CustomHttpClient>();
 //builder.Services.AddScoped<ITestService, TestService>();
 builder.Services.AddSingleton<WeatherForecastService>();
+
+builder.Services.AddBlazoredLocalStorage();
 
 var app = builder.Build();
 
