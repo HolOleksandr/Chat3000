@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Chat.DAL.Entities.AuthModels
+namespace Chat.BLL.Models
 {
     public class UserLoginModel
     {

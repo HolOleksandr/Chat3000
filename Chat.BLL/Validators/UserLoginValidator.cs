@@ -1,4 +1,4 @@
-﻿using Chat.DAL.Entities.AuthModels;
+﻿using Chat.BLL.Models;
 using FluentValidation;
 using System;
 using System.Collections.Generic;

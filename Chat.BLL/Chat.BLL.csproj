@@ -17,8 +17,4 @@
     <ProjectReference Include="..\Chat.DAL\Chat.DAL.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Models\" />
-  </ItemGroup>
-
 </Project>

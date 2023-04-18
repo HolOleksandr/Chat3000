@@ -2,7 +2,7 @@
 using Chat.BLL.Exceptions;
 using Chat.BLL.Services.Interfaces;
 using Chat.DAL.Entities;
-using Chat.DAL.Entities.AuthModels;
+using Chat.BLL.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;

@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using Chat.BLL.DTO;
 using Chat.DAL.Entities;
-using Chat.DAL.Entities.AuthModels;
+using Chat.BLL.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;

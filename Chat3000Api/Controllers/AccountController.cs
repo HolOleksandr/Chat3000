@@ -1,5 +1,5 @@
 ﻿using Chat.BLL.Services.Interfaces;
-using Chat.DAL.Entities.AuthModels;
+using Chat.BLL.Models;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

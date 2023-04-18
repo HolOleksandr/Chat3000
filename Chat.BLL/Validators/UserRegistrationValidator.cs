@@ -1,12 +1,6 @@
-﻿using Chat.DAL.Entities.AuthModels;
-
+﻿using Chat.BLL.Models;
 using FluentValidation;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace Chat.BLL.Validators
 {

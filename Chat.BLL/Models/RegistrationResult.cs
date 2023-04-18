@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Chat.DAL.Entities.AuthModels
+namespace Chat.BLL.Models
 {
-    public class LoginResult
+    public class RegistrationResult
     {
         public bool Success { get; set; }
-        public string Message { get; set; } = null!;
-        public string? Token { get; set; }
+        public IEnumerable<string>? Errors { get; set; }
+
     }
 }
