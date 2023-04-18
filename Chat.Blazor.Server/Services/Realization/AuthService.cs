@@ -74,5 +74,21 @@ namespace Chat.Blazor.Server.Services.Realization
             ((CustomAuthStateProvider)_authenticationStateProvider).MarkUserAsLoggedOut();
             _httpClient.DefaultRequestHeaders.Authorization = null;
         }
+
+
+        //**********************
+
+        public async Task<string> GetTokenAsync()
+        {
+            try
+            {
+                var savedToken = await _localStorage.GetItemAsync<string>("authToken");
+                return savedToken;
+            }
+            catch (InvalidOperationException)
+            {
+                return string.Empty;
+            }
+        }
     }
 }

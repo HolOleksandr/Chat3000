@@ -11,20 +11,23 @@ namespace Chat.Blazor.Server.Services.Realization
     {
         private readonly string _baseUrl = "";
         private readonly IConfiguration _configuration;
-        private readonly ICustomHttpClient _customHttpClient;
+        //private readonly ICustomHttpClient _customHttpClient;
+        private readonly HttpClient _httpClient;
 
 
-        public TestService( ICustomHttpClient customHttpClient, IConfiguration configuration)
+        public TestService( IConfiguration configuration, HttpClient httpClient)
         {
-            _customHttpClient = customHttpClient;
+            //_customHttpClient = customHttpClient;
             _configuration = configuration;
             _baseUrl = _configuration["ApiUrls:ChatApi"];
+            _httpClient = httpClient;
         }
 
         public async Task<string> GetTestMessage()
         {
             //var _baseUrl = _configuration["ApiUrls:ChatApi"];
-            var result = await _customHttpClient.GetWithTokenAsync(_baseUrl + "api/test/");
+            //var result = await _customHttpClient.GetWithTokenAsync(_baseUrl + "api/test/");
+            var result = await _httpClient.GetAsync(_baseUrl + "api/test/");
             if (result.IsSuccessStatusCode)
             {
                 var message =  await result.Content.ReadAsStringAsync();

@@ -9,5 +9,6 @@ namespace Chat.Blazor.Server.Services.Interfaces
         Task<RegistrationResult> ChangePassword(ChangePasswordModel changePassModel);
 
         Task Logout();
+        Task<string> GetTokenAsync();
     }
 }

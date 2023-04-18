@@ -1,36 +1,68 @@
 ﻿using Blazored.LocalStorage;
+using Chat.Blazor.Server.Services.Interfaces;
+using Microsoft.AspNetCore.Http;
 
 namespace Chat.Blazor.Server.Configurations
 {
-    public class TokenMiddleware
+    public class TokenMiddleware : DelegatingHandler
     {
-        private readonly RequestDelegate _next;
         private readonly ILocalStorageService _localStorage;
+        private readonly IAuthService _authService;
 
-        public TokenMiddleware(RequestDelegate next, ILocalStorageService localStorageService)
+        public TokenMiddleware(ILocalStorageService localStorage, IAuthService authService)
         {
-            _next = next;
-            _localStorage = localStorageService;
+            //_next = next;
+            _localStorage = localStorage;
+            _authService = authService;
         }
 
-        public async Task InvokeAsync(HttpContext httpContext)
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            if (httpContext.Request.Headers.ContainsKey("Authorization"))
+            var savedToken = await _authService.GetTokenAsync();
+
+            if (request.Headers.Contains("Authorization") || savedToken is null)
             {
-                await _next(httpContext);
-                return;
+                return await base.SendAsync(request, cancellationToken);
             }
 
-            var savedToken = await _localStorage.GetItemAsync<string>("authToken");
+            request.Headers.Add("Authorization", $"Bearer {savedToken}");
 
-            if (string.IsNullOrEmpty(savedToken))
-            {
-                await _next(httpContext);
-                return;
-            }
 
-            httpContext.Request.Headers.Add("Authorization", $"Bearer {savedToken}");
-            await _next(httpContext);
+            return await base.SendAsync(request, cancellationToken);
         }
+
+        private async Task<string> GetTokenAsync()
+        {
+            try
+            {
+                var savedToken = await _localStorage.GetItemAsync<string>("authToken");
+                return savedToken;
+            }
+            catch (InvalidOperationException)
+            {
+                return string.Empty;
+            }
+
+        }
+
+        //public async Task InvokeAsync(HttpContext httpContext)
+        //{
+        //    if (httpContext.Request.Headers.ContainsKey("Authorization"))
+        //    {
+        //        await _next(httpContext);
+        //        return;
+        //    }
+
+        //    var savedToken = await _localStorage.GetItemAsync<string>("authToken");
+
+        //    if (string.IsNullOrEmpty(savedToken))
+        //    {
+        //        await _next(httpContext);
+        //        return;
+        //    }
+
+        //    httpContext.Request.Headers.Add("Authorization", $"Bearer {savedToken}");
+        //    await _next(httpContext);
+        //}
     }
 }
