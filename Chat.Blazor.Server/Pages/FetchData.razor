@@ -4,6 +4,7 @@
 <PageTitle>Weather forecast</PageTitle>
 
 @using Chat.Blazor.Server.Data
+@using ServiceStack.Blazor.Components.Tailwind
 @inject WeatherForecastService ForecastService
 
 <h1>Weather forecast</h1>
@@ -38,6 +39,9 @@ else
         </tbody>
     </table>
 }
+
+@*<AutoQueryGrid Model="WeatherForecast" Apis="" />
+*@
 
 @code {
     private WeatherForecast[]? forecasts;

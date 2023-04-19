@@ -13,6 +13,8 @@
   <ItemGroup>
     <PackageReference Include="Blazored.LocalStorage" Version="4.3.0" />
     <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.15" />
+    <PackageReference Include="MudBlazor" Version="6.2.2" />
+    <PackageReference Include="ServiceStack.Blazor" Version="6.8.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -21,10 +23,16 @@
 
   <ItemGroup>
     <_ContentIncludedByDefault Remove="Pages\Login.razor" />
+    <_ContentIncludedByDefault Remove="Shared\UserMenu.razor" />
   </ItemGroup>
 
   <ItemGroup>
     <None Include="Pages\Account\Login.razor" />
+    <None Include="Shared\UserMenu.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <UpToDateCheckInput Remove="Shared\UserMenu.razor" />
   </ItemGroup>
 
 </Project>

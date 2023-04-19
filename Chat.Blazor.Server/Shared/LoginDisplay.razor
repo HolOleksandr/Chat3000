@@ -1,9 +1,10 @@
-﻿<CascadingAuthenticationState>
+﻿@using MudBlazor
+
+<CascadingAuthenticationState>
     <AuthorizeView>
         <Authorized>
             Hello, @context.User.Identity!.Name!
-            <a href="ChangePassword">Change password</a>
-            <a href="LogOut">Log out</a>
+            <UserMenu />
         </Authorized>
         <NotAuthorized>
             <a href="Register">Register</a>
@@ -11,3 +12,11 @@
         </NotAuthorized>
     </AuthorizeView>
 </CascadingAuthenticationState>
+
+
+@code {
+    private void Profile()
+    {
+        
+    }
+}
