@@ -17,7 +17,7 @@ namespace Chat.Blazor.Server.Helpers.Realization
 
         public async Task<HttpResponseMessage> GetWithTokenAsync(string url)
         {
-            using var client = await GetClientWithTokenAsync());
+            using var client = await GetClientWithTokenAsync();
             var response = await client.GetAsync(url);
             return response;
         }
