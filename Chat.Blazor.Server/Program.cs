@@ -23,6 +23,8 @@ builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ICustomHttpClient, CustomHttpClient>();
 builder.Services.AddScoped<ITestService, TestService>();
+builder.Services.AddScoped<IUserService, UserService>();
+
 builder.Services.AddSingleton<WeatherForecastService>();
 
 var app = builder.Build();

@@ -1,7 +1,10 @@
 ﻿
 using Chat.DAL.Data;
 using Chat.DAL.Entities;
+using Chat.DAL.Repositories.Extensions;
 using Chat.DAL.Repositories.Interfaces;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,5 +21,17 @@ namespace Chat.DAL.Repositories.Realizations
         {
             _dbContext = dbContext;
         }
+
+        public async Task<IEnumerable<User>> GetAllUsersWithFilterAsync(string? search)
+        {
+            var users = await Task.FromResult(
+                _dbContext.Users.AsQueryable()
+                .Search(search)
+                .AsNoTracking());
+
+            return users.AsEnumerable();
+        }
+
+        
     }
 }

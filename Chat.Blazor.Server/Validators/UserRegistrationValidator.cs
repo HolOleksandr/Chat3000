@@ -42,6 +42,8 @@ namespace Chat.Blazor.Server.Validators
 
         private static bool IsValidName(string name)
         {
+            if (name == null)
+                return false;
             return name.All(Char.IsLetter);
         }
     }

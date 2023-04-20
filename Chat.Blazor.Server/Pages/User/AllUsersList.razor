@@ -1,0 +1,131 @@
+﻿@page "/users"
+@using Chat.Blazor.Server.Models;
+@using System.Net.Http.Json
+@using Chat.Blazor.Server.Models.Paging;
+@using Chat.Blazor.Server.Services.Interfaces
+
+@inject IUserService _userService
+@inject NavigationManager Navigation
+
+
+<MudTable Items="@Users" 
+    ServerData="@(new Func<TableState, Task<TableData<UserDTO>>>(ServerReload))" 
+        Hover="true" Breakpoint="Breakpoint.Sm" @ref="table">
+    <ToolBarContent>
+        <MudText Typo="Typo.h6">Users list</MudText>
+        <MudSpacer />
+        <MudTextField T="string" ValueChanged="@(s=>OnSearch(s))" Placeholder="Search" Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+    </ToolBarContent>
+    <HeaderContent>
+        @*<MudTh>Nr</MudTh>*@
+        <MudTh>Avatar</MudTh>
+        <MudTh><MudTableSortLabel SortLabel="Id" T="UserDTO">Id</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortLabel="FirstName" T="UserDTO">First Name</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortLabel="LastName" T="UserDTO">Last Name</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortLabel="Nickname" T="UserDTO">Nickname</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortLabel="Email" T="UserDTO">Email</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortLabel="PhoneNumber" T="UserDTO">PhoneNumber</MudTableSortLabel></MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        @*<MudTd DataLabel="Nr">@(rowIndex++)</MudTd>*@
+        
+        <MudTd DataLabel="Avatar">
+            <MudAvatar Color="Color.Transparent" Size="Size.Large" Image="@context.Avatar" />
+        </MudTd>
+        <MudTd DataLabel="Id">@context.Id</MudTd>
+        <MudTd DataLabel="First Name">@context.FirstName</MudTd>
+        <MudTd DataLabel="Last Name">@context.LastName</MudTd>
+        <MudTd DataLabel="Nickname">@context.Nickname</MudTd>
+        <MudTd DataLabel="Email">@context.Email</MudTd>
+        <MudTd DataLabel="PhoneNumber">@context.PhoneNumber</MudTd>
+    </RowTemplate>
+    <NoRecordsContent>
+        <MudText>No matching records found</MudText>
+    </NoRecordsContent>
+    <LoadingContent>
+        <MudText>Loading...</MudText>
+    </LoadingContent>
+    <PagerContent>
+        <MudTablePager PageSizeOptions="@pageSizes" />
+    </PagerContent>
+</MudTable>
+
+
+@code {
+    private int rowIndex = 1;
+    private List<UserDTO> Users  = new();
+    private int[] pageSizes = new int[] {1, 3, 10, 25};
+    private MudTable<UserDTO> table;
+    private string searchString = string.Empty;
+    private string queryParams = string.Empty;
+
+    private SearchParameters searchParameters = new SearchParameters()
+        {
+            PageSize = 10,
+            PageIndex = 0
+        };
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        ConvertQueryParams();
+
+        string queryString = Navigation.ToAbsoluteUri(Navigation.Uri).Query;
+        if (string.IsNullOrEmpty(queryString))
+        {
+            this.queryParams = queryString;
+
+        }
+
+        var queryDictionary = QueryHelpers.ParseQuery(queryString);
+
+        
+        var result = await _userService.GetAllUsersWithSortAsync(this.queryParams);
+        Users = result.Data;
+        ChangeNavParam();
+    }
+
+
+    private async Task<TableData<UserDTO>> ServerReload(TableState state)
+    {
+        searchParameters.PageSize = state.PageSize;
+        searchParameters.PageIndex = state.Page;
+        searchParameters.SortColumn = state.SortLabel;
+        searchParameters.SortOrder = state.SortDirection == SortDirection.Descending ? "desc" : "asc";
+
+        ConvertQueryParams();
+        ChangeNavParam();
+        var data = await _userService.GetAllUsersWithSortAsync(this.queryParams);
+
+        return new TableData<UserDTO> { TotalItems = data.TotalCount, Items = data.Data };
+    }
+
+    private void OnSearch(string text)
+    {
+        searchParameters.FilterQuery = text;
+        table.ReloadServerData();
+    }
+
+    private void ConvertQueryParams()
+    {
+        var queryStringParam = new Dictionary<string, string>
+            {
+                ["PageIndex"] = searchParameters.PageIndex.ToString(),
+                ["PageSize"] = searchParameters.PageSize.ToString(),
+                ["SortColumn"] = searchParameters.SortColumn ?? "FirstName",
+                ["SortOrder"] = searchParameters.SortOrder ?? "asc",
+                ["FilterQuery"] = searchParameters.FilterQuery ?? string.Empty
+            };
+
+        this.queryParams = QueryHelpers.AddQueryString("", queryStringParam);
+        
+    }
+
+    private void ChangeNavParam()
+    {
+        Navigation.NavigateTo(Navigation.BaseUri + "users" + this.queryParams);
+    }
+
+}

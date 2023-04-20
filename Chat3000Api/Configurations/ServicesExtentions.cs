@@ -25,14 +25,16 @@ namespace ChatApp.API.Configurations
                 options.AddPolicy("CorsDefault", builder =>
                     builder.AllowAnyOrigin()
                     .AllowAnyMethod()
-                    .AllowAnyHeader().
-                    WithExposedHeaders("content-disposition"));
+                    .AllowAnyHeader()
+                    .WithExposedHeaders("content-disposition")
+                    .WithExposedHeaders("X-Pagination"));
             });
         }
 
         public static void RegisterDependencies(this IServiceCollection services)
         {
             services.AddScoped<IMessageRepository, MessageRepository>();
+            services.AddScoped<IUserRepository, UserRepository>();
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IMessageService, MessageService>();
