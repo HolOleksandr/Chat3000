@@ -57,7 +57,7 @@
         <MudText>Loading...</MudText>
     </LoadingContent>
     <PagerContent>
-        <MudTablePager PageSizeOptions="@pageSizes" />
+        <MudTablePager PageSizeOptions="@_pageSizes" />
     </PagerContent>
 </MudTable>
 
@@ -67,27 +67,28 @@
 @code {
     private int rowIndex = 1;
     private List<UserDTO> Users  = new();
-    private int[] pageSizes = new int[] {1, 3, 10, 25};
     private MudTable<UserDTO> _table;
-    private string searchString = string.Empty;
-    private string queryParams = string.Empty;
-
-    private int defaultPageIndex = 0;
-    private int defaultPageSize = 10;
-    private string defaultSortColumn = "FirstName";
-    private string defaultSortOrder = "asc";
-
-    private bool firstRenderTrigger = false;
     private TableState _queryTableState = new TableState();
-
-
+    private int[] _pageSizes = new int[] {1, 3, 10, 25};
+    private string _queryParams = string.Empty;
     private SearchParameters searchParameters = new SearchParameters();
+
+
+    private int _defaultPageIndex = 0;
+    private int _defaultPageSize = 10;
+    private string _defaultSortColumn = "FirstName";
+    private string _defaultSortOrder = "asc";
+
+    private bool _firstRenderTrigger = false;
+
+
+    
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            InitQueryParams();
+            InitTableWithQueryParams();
             _queryTableState.SortLabel = searchParameters.SortColumn;
             _queryTableState.Page = searchParameters.PageIndex;
             _queryTableState.PageSize = searchParameters.PageSize;
@@ -99,16 +100,14 @@
             {
                 _queryTableState.SortDirection = SortDirection.Descending;
             }
-            firstRenderTrigger = true;
+            _firstRenderTrigger = true;
         }
-
-
     }
 
 
     private async Task<TableData<UserDTO>> ServerReload(TableState state)
     {
-        if (firstRenderTrigger)
+        if (_firstRenderTrigger)
         {
             SetTableState(_queryTableState);
         }
@@ -129,7 +128,7 @@
         var data = await _userService.GetAllUsersWithSortAsync(queryStr);
         Navigate(queryStr);
         var table = new TableData<UserDTO> { TotalItems = data.TotalCount, Items = data.Data };
-        firstRenderTrigger = false;
+        _firstRenderTrigger = false;
         return table;
     }
 
@@ -142,37 +141,29 @@
         searchParameters.SortOrder = tableState.SortDirection == SortDirection.Descending ? "desc" : "asc";
     }
 
-
-
     private void OnSearch(string text)
     {
         searchParameters.FilterQuery = text;
         _table.ReloadServerData();
     }
 
-
-
     private void Navigate(string query)
     {
         Navigation.NavigateTo(Navigation.BaseUri + "users" + query);
     }
 
-
-
-    private void InitQueryParams()
+    private void InitTableWithQueryParams()
     {
-        searchParameters.PageIndex = Navigation.ExtractQueryValueOrSetDefault<int>("pageIndex", defaultPageIndex);
-        searchParameters.PageSize = Navigation.ExtractQueryValueOrSetDefault<int>("pageSize", defaultPageSize);
-        searchParameters.SortColumn = Navigation.ExtractQueryValueOrSetDefault<string>("sortColumn", defaultSortColumn);
-        searchParameters.SortOrder = Navigation.ExtractQueryValueOrSetDefault<string>("sortOrder", defaultSortOrder);
+        searchParameters.PageIndex = Navigation.ExtractQueryValueOrSetDefault<int>("pageIndex", _defaultPageIndex);
+        searchParameters.PageSize = Navigation.ExtractQueryValueOrSetDefault<int>("pageSize", _defaultPageSize);
+        searchParameters.SortColumn = Navigation.ExtractQueryValueOrSetDefault<string>("sortColumn", _defaultSortColumn);
+        searchParameters.SortOrder = Navigation.ExtractQueryValueOrSetDefault<string>("sortOrder", _defaultSortOrder);
         searchParameters.FilterQuery = Navigation.ExtractQueryValueOrSetDefault<string>("filterQuery");
                 
         _table.CurrentPage = searchParameters.PageIndex;
         _table.SortLabel = searchParameters.SortColumn;
         _table.SetRowsPerPage(searchParameters.PageSize);
         StateHasChanged();
-        //searchParameters.FilterQuery = query["filterQuery"];
-
     }
 
     private string GetQueryStr(SearchParameters searchParameters)
