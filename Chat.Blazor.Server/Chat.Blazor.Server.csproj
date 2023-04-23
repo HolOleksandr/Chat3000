@@ -36,8 +36,4 @@
     <UpToDateCheckInput Remove="Shared\UserMenu.razor" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Helpers\Extensions\" />
-  </ItemGroup>
-
 </Project>
