@@ -15,15 +15,19 @@ namespace Chat.Blazor.Server.Services.Realization
         private readonly HttpClient _httpClient;
         private readonly AuthenticationStateProvider _authenticationStateProvider;
         private readonly ILocalStorageService _localStorage;
-        private readonly string _baseUrl = "https://localhost:7121/";
+        private readonly string _baseUrl = "";
+        private readonly IConfiguration _configuration;
 
         public AuthService(HttpClient httpClient,
                            AuthenticationStateProvider authenticationStateProvider,
-                           ILocalStorageService localStorage)
+                           ILocalStorageService localStorage,
+                            IConfiguration configuration)
         {
+            _configuration = configuration;
             _httpClient = httpClient;
             _authenticationStateProvider = authenticationStateProvider;
             _localStorage = localStorage;
+            _baseUrl = _configuration["ApiUrls:ChatApi"];
         }
 
         public async Task<RegistrationResult> Register(UserRegistrationModel registerModel)

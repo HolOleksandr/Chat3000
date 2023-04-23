@@ -8,14 +8,23 @@
 @inject NavigationManager Navigation
 
 
-<MudTable Items="@Users" 
-    ServerData="@(new Func<TableState, Task<TableData<UserDTO>>>(ServerReload))" 
-        Hover="true" Breakpoint="Breakpoint.Sm" @ref="table">
+<MudTable
+          @ref="_table"
+          Items="@Users" 
+          ServerData="@(new Func<TableState, Task<TableData<UserDTO>>>(ServerReload))"
+          CurrentPage="searchParameters.PageIndex"
+        Hover="true" >
     <ToolBarContent>
         <MudText Typo="Typo.h6">Users list</MudText>
         <MudSpacer />
-        <MudTextField T="string" ValueChanged="@(s=>OnSearch(s))" Placeholder="Search" Adornment="Adornment.Start"
-                      AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+        <MudTextField T="string"
+                      ValueChanged="@(s=>OnSearch(s))"
+                      Placeholder="Search"
+                      Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Search"
+                      IconSize="Size.Medium"
+                      Class="mt-0">
+        </MudTextField>
     </ToolBarContent>
     <HeaderContent>
         @*<MudTh>Nr</MudTh>*@
@@ -56,76 +65,127 @@
     private int rowIndex = 1;
     private List<UserDTO> Users  = new();
     private int[] pageSizes = new int[] {1, 3, 10, 25};
-    private MudTable<UserDTO> table;
+    private MudTable<UserDTO> _table;
     private string searchString = string.Empty;
     private string queryParams = string.Empty;
-
-    private SearchParameters searchParameters = new SearchParameters()
-        {
-            PageSize = 10,
-            PageIndex = 0
-        };
+    private int defaultPageIndex = 0;
+    private int defaultPageSize = 10;
+    private string defaulstSortColumn = "FirstName";
 
 
+    private SearchParameters searchParameters = new SearchParameters();
 
-    protected override async Task OnInitializedAsync()
+
+
+
+    protected override void OnAfterRender(bool firstRender)
     {
-        ConvertQueryParams();
-
-        string queryString = Navigation.ToAbsoluteUri(Navigation.Uri).Query;
-        if (string.IsNullOrEmpty(queryString))
+        if (firstRender)
         {
-            this.queryParams = queryString;
-
+            InitQueryParams();
+            //var queryStr = ConvertQueryParams(searchParameters);
+            //var result = await _userService.GetAllUsersWithSortAsync(queryStr);
+            //Users = result.Data;
+            //ChangeNavParam();
         }
 
-        var queryDictionary = QueryHelpers.ParseQuery(queryString);
-
-        
-        var result = await _userService.GetAllUsersWithSortAsync(this.queryParams);
-        Users = result.Data;
-        ChangeNavParam();
     }
 
 
     private async Task<TableData<UserDTO>> ServerReload(TableState state)
     {
+        //state.PageSize = 3;
+
         searchParameters.PageSize = state.PageSize;
         searchParameters.PageIndex = state.Page;
         searchParameters.SortColumn = state.SortLabel;
         searchParameters.SortOrder = state.SortDirection == SortDirection.Descending ? "desc" : "asc";
 
-        ConvertQueryParams();
-        ChangeNavParam();
-        var data = await _userService.GetAllUsersWithSortAsync(this.queryParams);
+        var queryStr = ConvertQueryParams(searchParameters);
+        Navigate(queryStr);
+        var data = await _userService.GetAllUsersWithSortAsync(queryStr);
 
-        return new TableData<UserDTO> { TotalItems = data.TotalCount, Items = data.Data };
+        var table = new TableData<UserDTO> { TotalItems = data.TotalCount, Items = data.Data };
+        return table;
     }
 
     private void OnSearch(string text)
     {
         searchParameters.FilterQuery = text;
-        table.ReloadServerData();
+        _table.ReloadServerData();
     }
 
-    private void ConvertQueryParams()
+    private void Navigate(string query)
     {
-        var queryStringParam = new Dictionary<string, string>
-            {
-                ["PageIndex"] = searchParameters.PageIndex.ToString(),
-                ["PageSize"] = searchParameters.PageSize.ToString(),
-                ["SortColumn"] = searchParameters.SortColumn ?? "FirstName",
-                ["SortOrder"] = searchParameters.SortOrder ?? "asc",
-                ["FilterQuery"] = searchParameters.FilterQuery ?? string.Empty
-            };
-
-        this.queryParams = QueryHelpers.AddQueryString("", queryStringParam);
-        
+        Navigation.NavigateTo(Navigation.BaseUri + "users" + query);
     }
 
-    private void ChangeNavParam()
+
+
+    private void InitQueryParams()
     {
-        Navigation.NavigateTo(Navigation.BaseUri + "users" + this.queryParams);
+        var uri = new Uri(Navigation.Uri);
+        var query = QueryHelpers.ParseQuery(uri.Query);
+
+        if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("pageIndex", out var index))
+        {
+            searchParameters.PageIndex = Convert.ToInt32(index.First());
+        }
+        else
+        {
+            searchParameters.PageIndex = defaultPageIndex;
+        }
+
+        if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("pageSize", out var size))
+        {
+            searchParameters.PageSize = Convert.ToInt32(size.First());
+        }
+        else
+        {
+            searchParameters.PageSize = defaultPageSize;
+        }
+        if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("sortColumn", out var sortColumn))
+        {
+            searchParameters.SortColumn = sortColumn.First();
+        }
+        else
+        {
+            searchParameters.SortColumn = defaulstSortColumn;
+        }
+
+        if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("sortOrder", out var sortOrder))
+        {
+            searchParameters.SortOrder = sortOrder.First();
+        }
+        else
+        {
+            searchParameters.SortOrder = "asc";
+        }
+
+        //_table.CurrentPage = searchParameters.PageIndex - 1;
+
+
+
+
+        _table.SortLabel = searchParameters.SortColumn;
+        _table.SetRowsPerPage(searchParameters.PageSize);
+        //searchParameters.FilterQuery = query["filterQuery"];
+
+    }
+
+    private string ConvertQueryParams(SearchParameters searchParameters)
+    {
+        var queryStringParam = new Dictionary<string, string?>
+        {
+            ["PageIndex"] = searchParameters.PageIndex.ToString(),
+            ["PageSize"] = searchParameters.PageSize.ToString(),
+            ["SortColumn"] = searchParameters.SortColumn,
+            ["SortOrder"] = searchParameters.SortOrder,
+            ["FilterQuery"] = searchParameters.FilterQuery
+        };
+
+        var queryParams = QueryHelpers.AddQueryString("", queryStringParam);
+        return queryParams;
     }
 
 }
