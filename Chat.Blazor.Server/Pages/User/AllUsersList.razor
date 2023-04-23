@@ -75,18 +75,11 @@
 
     private SearchParameters searchParameters = new SearchParameters();
 
-
-
-
     protected override void OnAfterRender(bool firstRender)
     {
         if (firstRender)
         {
             InitQueryParams();
-            //var queryStr = ConvertQueryParams(searchParameters);
-            //var result = await _userService.GetAllUsersWithSortAsync(queryStr);
-            //Users = result.Data;
-            //ChangeNavParam();
         }
 
     }
@@ -94,8 +87,6 @@
 
     private async Task<TableData<UserDTO>> ServerReload(TableState state)
     {
-        //state.PageSize = 3;
-
         searchParameters.PageSize = state.PageSize;
         searchParameters.PageIndex = state.Page;
         searchParameters.SortColumn = state.SortLabel;
