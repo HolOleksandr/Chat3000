@@ -107,6 +107,7 @@
         if (_firstRenderTrigger)
         {
             SetTableState(_backUpTableState);
+            _userStateContainer.OnStateChange -= StateHasChanged;
         }
         else
         {
@@ -179,7 +180,7 @@
         searchParameters.SortColumn = Navigation.ExtractQueryValueOrSetDefault<string>("sortColumn", _defaultSortColumn);
         searchParameters.SortOrder = Navigation.ExtractQueryValueOrSetDefault<string>("sortOrder", _defaultSortOrder);
         searchParameters.FilterQuery = Navigation.ExtractQueryValueOrSetDefault<string>("filterQuery");
-        ValidateSearchParams();
+        ValidateQueryParams();
 
         _table.CurrentPage = searchParameters.PageIndex;
         _table.SortLabel = searchParameters.SortColumn;
@@ -187,7 +188,7 @@
         StateHasChanged();
     }
 
-    private void ValidateSearchParams()
+    private void ValidateQueryParams()
     {
         if (searchParameters.PageIndex < 0)
             searchParameters.PageIndex = _defaultPageIndex;

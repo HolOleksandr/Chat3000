@@ -1,5 +1,10 @@
 ﻿@using MudBlazor
+@using Chat.Blazor.Server.Helpers.StateContainers;
+
 @inject NavigationManager NavManager
+@inject UserStateContainer _userStateContainer
+@inject AuthenticationStateProvider _authStateProvider
+
 
 <div>
     <MudMenu>
@@ -17,9 +22,11 @@
             
 
 @code {
-    private void GetProfile()
+    private async Task GetProfile()
     {
-        NavManager.NavigateTo("/aboutuser");
+        var userState = await _authStateProvider.GetAuthenticationStateAsync();
+        var id = userState.User.Identity;
+        NavManager.NavigateTo("/user/about/");
     }
 
     private void ChangePass()
