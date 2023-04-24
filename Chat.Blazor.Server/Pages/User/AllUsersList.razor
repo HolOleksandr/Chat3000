@@ -1,19 +1,21 @@
 ﻿@page "/users"
 @using Chat.Blazor.Server.Helpers.Extensions;
+@using Chat.Blazor.Server.Helpers.StateContainers;
 @using Chat.Blazor.Server.Models;
 @using System.Net.Http.Json;
 @using Chat.Blazor.Server.Models.Paging;
 @using Chat.Blazor.Server.Services.Interfaces;
 
-<MudTable
-          @ref="_table"
-          Items="@Users" 
+<MudTable @ref="_table"
+          Items="@Users"
           ServerData="@(new Func<TableState, Task<TableData<UserDTO>>>(ServerReload))"
           CurrentPage="searchParameters.PageIndex"
           SortLabel="searchParameters.SortColumn"
           Loading=false
+          OnRowClick="RowDoubleClickEvent"
+          T="UserDTO"
+          Hover=false>
           
-        Hover="true" >
     <ToolBarContent>
         <MudText Typo="Typo.h6">Users list</MudText>
         <MudSpacer />
@@ -37,9 +39,8 @@
         <MudTh><MudTableSortLabel SortLabel="Email" T="UserDTO">Email</MudTableSortLabel></MudTh>
         <MudTh><MudTableSortLabel SortLabel="PhoneNumber" T="UserDTO">Phone Number</MudTableSortLabel></MudTh>
     </HeaderContent>
-    <RowTemplate>
-        @*<MudTd DataLabel="Nr">@(rowIndex++)</MudTd>*@
-        
+
+    <RowTemplate >
         <MudTd DataLabel="Avatar">
             <MudAvatar Color="Color.Transparent" Size="Size.Large" Image="@context.Avatar" />
         </MudTd>
@@ -50,6 +51,7 @@
         <MudTd DataLabel="Email">@context.Email</MudTd>
         <MudTd DataLabel="PhoneNumber">@context.PhoneNumber</MudTd>
     </RowTemplate>
+
     <NoRecordsContent>
         <MudText>No matching records found</MudText>
     </NoRecordsContent>
@@ -63,15 +65,17 @@
 
 @inject IUserService _userService
 @inject NavigationManager Navigation
+@inject UserStateContainer _userStateContainer
 
 @code {
     private int rowIndex = 1;
     private List<UserDTO> Users  = new();
-    private MudTable<UserDTO> _table;
-    private TableState _queryTableState = new TableState();
+    private MudTable<UserDTO> _table = null!;
+    private TableState _backUpTableState = new TableState();
     private int[] _pageSizes = new int[] {1, 3, 10, 25};
     private string _queryParams = string.Empty;
     private SearchParameters searchParameters = new SearchParameters();
+    private string[] _sortColumns = new string[] { "Id", "FirstName", "LastName", "Nickname", "Email", "PhoneNumber" };
 
 
     private int _defaultPageIndex = 0;
@@ -82,26 +86,18 @@
     private bool _firstRenderTrigger = false;
 
 
-    
-
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
             InitTableWithQueryParams();
-            _queryTableState.SortLabel = searchParameters.SortColumn;
-            _queryTableState.Page = searchParameters.PageIndex;
-            _queryTableState.PageSize = searchParameters.PageSize;
-            if (string.Equals(searchParameters.SortOrder, "asc"))
-            {
-                _queryTableState.SortDirection = SortDirection.Ascending;
-            }
-            else
-            {
-                _queryTableState.SortDirection = SortDirection.Descending;
-            }
+            BackUpTableState();
+
             _firstRenderTrigger = true;
+            _userStateContainer.OnStateChange += StateHasChanged;
+            StateHasChanged();
         }
+        base.OnAfterRender(firstRender);
     }
 
 
@@ -109,17 +105,17 @@
     {
         if (_firstRenderTrigger)
         {
-            SetTableState(_queryTableState);
+            SetTableState(_backUpTableState);
         }
         else
         {
             if (state.SortLabel == null)
             {
-                state.SortLabel = _queryTableState.SortLabel;
+                state.SortLabel = _backUpTableState.SortLabel;
             }
             if (state.SortDirection == SortDirection.None)
             {
-                state.SortDirection = _queryTableState.SortDirection;
+                state.SortDirection = _backUpTableState.SortDirection;
             }
             SetTableState(state);
         }
@@ -130,15 +126,6 @@
         var table = new TableData<UserDTO> { TotalItems = data.TotalCount, Items = data.Data };
         _firstRenderTrigger = false;
         return table;
-    }
-
-
-    private void SetTableState(TableState tableState)
-    {
-        searchParameters.PageSize = tableState.PageSize;
-        searchParameters.PageIndex = tableState.Page;
-        searchParameters.SortColumn = tableState.SortLabel;
-        searchParameters.SortOrder = tableState.SortDirection == SortDirection.Descending ? "desc" : "asc";
     }
 
     private void OnSearch(string text)
@@ -152,6 +139,38 @@
         Navigation.NavigateTo(Navigation.BaseUri + "users" + query);
     }
 
+    private void RowDoubleClickEvent(TableRowClickEventArgs<UserDTO> tableRowClickEventArgs)
+    {
+        if (tableRowClickEventArgs.MouseEventArgs.Detail == 2)
+        {
+            _userStateContainer.SetValue(tableRowClickEventArgs.Item);
+            Navigation.NavigateTo("/aboutuser");
+        }
+    }
+
+    private void BackUpTableState()
+    {
+        _backUpTableState.SortLabel = searchParameters.SortColumn;
+        _backUpTableState.Page = searchParameters.PageIndex;
+        _backUpTableState.PageSize = searchParameters.PageSize;
+        if (string.Equals(searchParameters.SortOrder, "asc"))
+        {
+            _backUpTableState.SortDirection = SortDirection.Ascending;
+        }
+        else
+        {
+            _backUpTableState.SortDirection = SortDirection.Descending;
+        }
+    }
+
+    private void SetTableState(TableState tableState)
+    {
+        searchParameters.PageSize = tableState.PageSize;
+        searchParameters.PageIndex = tableState.Page;
+        searchParameters.SortColumn = tableState.SortLabel;
+        searchParameters.SortOrder = tableState.SortDirection == SortDirection.Descending ? "desc" : "asc";
+    }
+
     private void InitTableWithQueryParams()
     {
         searchParameters.PageIndex = Navigation.ExtractQueryValueOrSetDefault<int>("pageIndex", _defaultPageIndex);
@@ -159,11 +178,25 @@
         searchParameters.SortColumn = Navigation.ExtractQueryValueOrSetDefault<string>("sortColumn", _defaultSortColumn);
         searchParameters.SortOrder = Navigation.ExtractQueryValueOrSetDefault<string>("sortOrder", _defaultSortOrder);
         searchParameters.FilterQuery = Navigation.ExtractQueryValueOrSetDefault<string>("filterQuery");
-                
+        ValidateSearchParams();
+
         _table.CurrentPage = searchParameters.PageIndex;
         _table.SortLabel = searchParameters.SortColumn;
         _table.SetRowsPerPage(searchParameters.PageSize);
         StateHasChanged();
+    }
+
+    private void ValidateSearchParams()
+    {
+        if (searchParameters.PageIndex < 0)
+            searchParameters.PageIndex = _defaultPageIndex;
+        if (searchParameters.PageSize < 0)
+            searchParameters.PageSize = _defaultPageSize;
+
+        if (!_sortColumns.Contains(searchParameters.SortColumn))
+        {
+            searchParameters.SortColumn = _defaultSortColumn;
+        }
     }
 
     private string GetQueryStr(SearchParameters searchParameters)
@@ -182,7 +215,10 @@
     }
 
 
-    
+    public void Dispose()
+    {
+        _userStateContainer.OnStateChange -= StateHasChanged;
+    }
 
 
 }

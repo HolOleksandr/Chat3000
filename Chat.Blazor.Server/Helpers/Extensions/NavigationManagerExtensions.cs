@@ -45,7 +45,7 @@ namespace Chat.Blazor.Server.Helpers.Extensions
                 }
 
             }
-            return default(T);
+            return default;
 
         }
 

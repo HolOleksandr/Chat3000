@@ -26,10 +26,6 @@ namespace Chat.Blazor.Server.Services.Realization
             //var _baseUrl = _configuration["ApiUrls:ChatApi"];
             var result = await _customHttpClient.GetWithTokenAsync(_baseUrl + "api/test/");
 
-
-            //TEST method
-            var resultTest = await _customHttpClient.SendWithTokenAsync(HttpMethod.Get, _baseUrl + "api/test/");
-
             if (result.IsSuccessStatusCode)
             {
                 var message =  await result.Content.ReadAsStringAsync();

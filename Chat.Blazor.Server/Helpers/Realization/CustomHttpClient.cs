@@ -22,12 +22,13 @@ namespace Chat.Blazor.Server.Helpers.Realization
             return response;
         }
 
-        public async Task<HttpResponseMessage> PostWithTokenAsync(string url, HttpContent content)
+        public async Task<HttpResponseMessage> PostWithTokenAsync<T>(string url, T content) where T : class
         {
             using var client = await GetClientWithTokenAsync();
-            var response = await client.PostAsync(url, content);
+            var response = await client.PostAsJsonAsync(url, content);
             return response;
         }
+        
 
        
 
@@ -55,16 +56,6 @@ namespace Chat.Blazor.Server.Helpers.Realization
 
         }
 
-
-        // TEST Method
-        public async Task<HttpResponseMessage> SendWithTokenAsync(HttpMethod method, string url, HttpContent content = null)
-        {
-            using var httpClient = await GetClientWithTokenAsync();
-            var request = new HttpRequestMessage(method, url) { Content = content };
-            var response = await httpClient.SendAsync(request);
-            return response;
-        }
-        // TEST Method
     }
 
 

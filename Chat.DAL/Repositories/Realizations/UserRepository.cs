@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -32,6 +33,23 @@ namespace Chat.DAL.Repositories.Realizations
             return users.AsEnumerable();
         }
 
-        
+        public async Task<User?> GetUserByStringIdAsync(string id)
+        {
+            var user = await _dbContext.Users.AsQueryable().FirstOrDefaultAsync(x => string.Equals(x.Id, id));
+            return user;
+        }
+
+        public async Task<bool> IsEmailExistsAsync(string email)
+        {
+            var user = await _dbContext.Users.AsQueryable().FirstOrDefaultAsync(x => string.Equals(x.Email, email));
+            
+            if (user == null)
+            {
+                return false;
+            }
+            return true;
+        }
+
+
     }
 }

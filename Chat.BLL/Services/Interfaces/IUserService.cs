@@ -13,5 +13,6 @@ namespace Chat.BLL.Services.Interfaces
     public interface IUserService
     {
         Task<FilterResult<UserDTO>> GetAllUsersAsync(SearchParameters searchParameters);
+        Task UpdateUserInfoAsync(UserDTO userupdateModel);
     }
 }

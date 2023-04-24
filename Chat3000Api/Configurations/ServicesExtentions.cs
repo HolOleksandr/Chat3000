@@ -26,8 +26,7 @@ namespace ChatApp.API.Configurations
                     builder.AllowAnyOrigin()
                     .AllowAnyMethod()
                     .AllowAnyHeader()
-                    .WithExposedHeaders("content-disposition")
-                    .WithExposedHeaders("X-Pagination"));
+                    .WithExposedHeaders("content-disposition"));
             });
         }
 
@@ -78,6 +77,7 @@ namespace ChatApp.API.Configurations
             services.AddValidatorsFromAssemblyContaining<UserLoginValidator>();
             services.AddValidatorsFromAssemblyContaining<UserRegistrationValidator>();
             services.AddValidatorsFromAssemblyContaining<UserChangePassValidator>();
+            services.AddValidatorsFromAssemblyContaining<UserDTOValidator>();
         }
 
         public static void ConfigureSwagger(this IServiceCollection services)

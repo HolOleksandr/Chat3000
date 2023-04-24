@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Components.Authorization;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text;
-using static System.Net.WebRequestMethods;
 using Chat.Blazor.Server.Helpers.Realization;
 
 namespace Chat.Blazor.Server.Services.Realization

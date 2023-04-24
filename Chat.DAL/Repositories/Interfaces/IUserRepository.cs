@@ -11,5 +11,7 @@ namespace Chat.DAL.Repositories.Interfaces
     public interface IUserRepository : IBaseRepository<User>
     {
         Task<IEnumerable<User>> GetAllUsersWithFilterAsync(string? search);
+        Task<User?> GetUserByStringIdAsync(string id);
+        Task<bool> IsEmailExistsAsync(string email);
     }
 }

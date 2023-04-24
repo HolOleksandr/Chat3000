@@ -1,9 +1,123 @@
 ﻿@page "/aboutuser"
 @attribute [Authorize]
 
-<h3>Here will be information about the User</h3>
+@using Chat.Blazor.Server.Helpers.Realization;
+@using Chat.Blazor.Server.Helpers.StateContainers;
+@using Chat.Blazor.Server.Models;
+@using Chat.Blazor.Server.Services.Interfaces;
 
 
+<h3>User Information:</h3>
+
+@if (ShowErrors)
+{
+    <div class="alert alert-danger" role="alert">
+        <p>@Error</p>
+    </div>
+}
+
+<EditForm Model="@_selectedUser" OnValidSubmit="@SubmitForm">
+    <FluentValidationValidator />
+    <ValidationSummary />
+    <fieldset disabled="@isReadOnly">
+
+        <MudTextField T="string" ReadOnly=true Label="Id" Value="@_selectedUser.Id" />
+        <div class="form-group">
+            <label for="firstname">First Name</label>
+            <InputText Id="firstname" class="form-control" @bind-Value="_selectedUser.FirstName" />
+            <ValidationMessage For="@(() => _selectedUser.FirstName)" />
+        </div>
+        <div class="form-group">
+            <label for="lastname">Last Name</label>
+            <InputText Id="lastname" class="form-control" @bind-Value="_selectedUser.LastName" />
+            <ValidationMessage For="@(() => _selectedUser.LastName)" />
+        </div>
+        <div class="form-group">
+            <label for="email">Email address</label>
+            <InputText Id="email" class="form-control" @bind-Value="_selectedUser.Email" />
+            <ValidationMessage For="@(() => _selectedUser.Email)" />
+        </div>
+        <div class="form-group">
+            <label for="nickname">Nickname</label>
+            <InputText Id="nickname" class="form-control" @bind-Value="_selectedUser.Nickname" />
+            <ValidationMessage For="@(() => _selectedUser.Nickname)" />
+        </div>
+        <div class="form-group">
+            <label for="username">Username</label>
+            <InputText Id="username" class="form-control" @bind-Value="_selectedUser.UserName" />
+            <ValidationMessage For="@(() => _selectedUser.UserName)" />
+        </div>
+        <div class="form-group">
+            <label for="phonenumber">Phone Number</label>
+            <InputText Id="phonenumber" class="form-control" @bind-Value="_selectedUser.PhoneNumber" />
+            <ValidationMessage For="@(() => _selectedUser.PhoneNumber)" />
+        </div>
+        <div class="form-group">
+            <label for="nickname">Avatar</label>
+            <InputText Id="avatar" class="form-control" @bind-Value="_selectedUser.Avatar" />
+            <ValidationMessage For="@(() => _selectedUser.Avatar)" />
+        </div>
+    </fieldset>
+    
+    @if (!isReadOnly)
+    {
+        <MudButton Variant="Variant.Filled"
+               Color="Color.Primary" Class="ml-auto"
+               ButtonType=ButtonType.Submit Disabled="@(!context.Validate() || !context.IsModified())">Update</MudButton>
+    }
+
+    
+</EditForm>
+
+
+@inject IUserService _userService
+@inject UserStateContainer _userStateContainer
+@inject AuthenticationStateProvider _authStateProvider
+@inject NavigationManager Navigation
 
 @code {
+    private UserDTO _selectedUser = new();
+    private bool isReadOnly = true;
+    private string userId = "";
+    private bool ShowErrors;
+    private string Error = "";
+    private FluentValidationValidator? _fluentValidationValidator;
+
+
+    protected override async void OnInitialized()
+    {
+
+        base.OnInitialized();
+        _selectedUser = _userStateContainer.Value;
+        await IsOwnerOfData(_selectedUser.Email);
+        
+        StateHasChanged();
+    }
+
+
+    private async Task SubmitForm()
+    {
+        ShowErrors = false;
+
+        var result = await _userService.UpdateUserAsync(_selectedUser);
+
+        if (result.Success)
+        {
+            Navigation.NavigateTo("/users");
+        }
+        else
+        {
+            Error = result.Errors.First();
+            ShowErrors = true;
+        }
+    }
+
+    private async Task IsOwnerOfData(string userEmail)
+    {
+        var userState = await _authStateProvider.GetAuthenticationStateAsync();
+        if (string.Equals(userEmail, userState.User.Identity.Name))
+        {
+            isReadOnly = false;
+        }
+    }
 }
