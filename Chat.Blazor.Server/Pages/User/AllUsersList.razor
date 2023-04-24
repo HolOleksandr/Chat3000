@@ -145,7 +145,7 @@
         if (tableRowClickEventArgs.MouseEventArgs.Detail == 2)
         {
             _userStateContainer.SetValue(tableRowClickEventArgs.Item);
-            Navigation.NavigateTo("/aboutuser");
+            Navigation.NavigateTo("/user/about/" + tableRowClickEventArgs.Item.Id);
         }
     }
 

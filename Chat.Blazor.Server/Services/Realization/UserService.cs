@@ -41,7 +41,17 @@ namespace Chat.Blazor.Server.Services.Realization
             return pagingResponse;
         }
 
+        public async Task<UserDTO> GetUserByIdAsync(string userId)
+        {
+            using var response = await _customHttpClient
+                .GetWithTokenAsync((_baseUrl + "api/user/id/" + userId));
 
+            response.EnsureSuccessStatusCode();
+            var stream = await response.Content.ReadAsStreamAsync();
+            var userDto = await ServiceStack.Text.JsonSerializer.DeserializeFromStreamAsync<UserDTO>(stream);
+
+            return userDto;
+        }
 
 
         public async Task<RegistrationResult> UpdateUserAsync(UserDTO updateUserModel)

@@ -7,5 +7,6 @@ namespace Chat.Blazor.Server.Services.Interfaces
     {
         Task<PagingResponse<UserDTO>> GetAllUsersWithSortAsync(string queryParams);
         Task<RegistrationResult> UpdateUserAsync(UserDTO updateUserModel);
+        Task<UserDTO> GetUserByIdAsync(string userId);
     }
 }

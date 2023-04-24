@@ -1,4 +1,4 @@
-﻿@page "/aboutuser"
+﻿@page "/user/about/{userId}"
 @attribute [Authorize]
 
 @using Chat.Blazor.Server.Helpers.Realization;
@@ -76,24 +76,40 @@
 @inject NavigationManager Navigation
 
 @code {
+    [Parameter]
+    public string? UserId { get; set; }
+
     private UserDTO _selectedUser = new();
     private bool isReadOnly = true;
-    private string userId = "";
     private bool ShowErrors;
     private string Error = "";
-    private FluentValidationValidator? _fluentValidationValidator;
+
 
 
     protected override async void OnInitialized()
     {
 
         base.OnInitialized();
-        _selectedUser = _userStateContainer.Value;
+        await GetUserFromQueryOrContainer();
         await IsOwnerOfData(_selectedUser.Email);
+
         
         StateHasChanged();
     }
 
+
+    private async Task GetUserFromQueryOrContainer()
+    {
+        if (_userStateContainer.Value == null)
+        {
+            _selectedUser = await _userService.GetUserByIdAsync(UserId);
+        }
+        else
+        {
+            _selectedUser = _userStateContainer.Value;
+        }
+        _userStateContainer.Value = null;
+    }
 
     private async Task SubmitForm()
     {
@@ -119,5 +135,10 @@
         {
             isReadOnly = false;
         }
+    }
+
+    public void Dispose()
+    {
+        _userStateContainer.OnStateChange -= StateHasChanged;
     }
 }

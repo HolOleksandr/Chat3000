@@ -34,7 +34,18 @@ namespace ChatApp.API.Controllers
             return Ok(users);
         }
 
-        
+        [HttpGet("id/{userId}")]
+        public async Task<IActionResult> GetAllUsers( string userId)
+        {
+            var user = await _userService.GetUserByIdAsync(userId);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            return Ok(user);
+        }
+
+
         [HttpPost("update")]
         public async Task<IActionResult> UpdateUser([FromBody] UserDTO userUpdateModel)
         {

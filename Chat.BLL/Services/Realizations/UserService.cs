@@ -70,6 +70,14 @@ namespace Chat.BLL.Services.Realizations
 
         }
 
+        public async Task<UserDTO?> GetUserByIdAsync(string userId)
+        {
+            var user = await _unitOfWork.GetRepository<IUserRepository>().GetUserByStringIdAsync(userId);
+            
+            return _mapper.Map<UserDTO>(user);
+        }
+
+
         private async Task CheckUserEmailAsync(string email)
         {
 
@@ -78,7 +86,6 @@ namespace Chat.BLL.Services.Realizations
             {
                 throw new ChatException("An account with this email address already exists");
             }
-
         }
 
     }

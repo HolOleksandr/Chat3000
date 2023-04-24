@@ -14,5 +14,6 @@ namespace Chat.BLL.Services.Interfaces
     {
         Task<FilterResult<UserDTO>> GetAllUsersAsync(SearchParameters searchParameters);
         Task UpdateUserInfoAsync(UserDTO userupdateModel);
+        Task<UserDTO?> GetUserByIdAsync(string userId);
     }
 }
