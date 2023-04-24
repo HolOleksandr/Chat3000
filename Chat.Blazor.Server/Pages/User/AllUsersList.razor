@@ -5,6 +5,7 @@
 @using System.Net.Http.Json;
 @using Chat.Blazor.Server.Models.Paging;
 @using Chat.Blazor.Server.Services.Interfaces;
+@using System.Text.Json;
 
 <MudTable @ref="_table"
           Items="@Users"
@@ -75,12 +76,12 @@
     private int[] _pageSizes = new int[] {1, 3, 10, 25};
     private string _queryParams = string.Empty;
     private SearchParameters searchParameters = new SearchParameters();
-    private string[] _sortColumns = new string[] { "Id", "FirstName", "LastName", "Nickname", "Email", "PhoneNumber" };
+    private readonly string _sortColumns = "Id, FirstName, LastName, Nickname, Email, PhoneNumber" ;
 
 
     private int _defaultPageIndex = 0;
     private int _defaultPageSize = 10;
-    private string _defaultSortColumn = "FirstName";
+    private string _defaultSortColumn = "firstName";
     private string _defaultSortOrder = "asc";
 
     private bool _firstRenderTrigger = false;
@@ -193,7 +194,7 @@
         if (searchParameters.PageSize < 0)
             searchParameters.PageSize = _defaultPageSize;
 
-        if (!_sortColumns.Contains(searchParameters.SortColumn))
+        if (!_sortColumns.Contains(searchParameters.SortColumn, StringComparison.OrdinalIgnoreCase))
         {
             searchParameters.SortColumn = _defaultSortColumn;
         }
@@ -201,13 +202,14 @@
 
     private string GetQueryStr(SearchParameters searchParameters)
     {
+        
         var queryStringParam = new Dictionary<string, string?>
         {
-            ["PageIndex"] = searchParameters.PageIndex.ToString(),
-            ["PageSize"] = searchParameters.PageSize.ToString(),
-            ["SortColumn"] = searchParameters.SortColumn,
-            ["SortOrder"] = searchParameters.SortOrder,
-            ["FilterQuery"] = searchParameters.FilterQuery ?? ""
+            ["pageIndex"] = searchParameters.PageIndex.ToString(),
+            ["pageSize"] = searchParameters.PageSize.ToString(),
+            ["sortColumn"] = searchParameters.SortColumn,
+            ["sortOrder"] = searchParameters.SortOrder,
+            ["filterQuery"] = searchParameters.FilterQuery ?? ""
         };
 
         var queryParams = QueryHelpers.AddQueryString("", queryStringParam);
