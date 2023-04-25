@@ -5,6 +5,7 @@
 @using Chat.Blazor.Server.Helpers.StateContainers;
 @using Chat.Blazor.Server.Models;
 @using Chat.Blazor.Server.Services.Interfaces;
+@using Chat.Blazor.Server.Models.DTO;
 
 
 <h3>User Information:</h3>
@@ -131,6 +132,7 @@
     private async Task IsOwnerOfData(string userEmail)
     {
         var userState = await _authStateProvider.GetAuthenticationStateAsync();
+
         if (string.Equals(userEmail, userState.User.Identity.Name))
         {
             isReadOnly = false;

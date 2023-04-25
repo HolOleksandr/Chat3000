@@ -13,5 +13,9 @@ namespace Chat.DAL.Entities
         public string? LastName { get; set; }
         public string? Nickname { get; set; }
         public string? Avatar {get; set;}
+
+        //public IList<UserGroup> UserGroups { get; set; }
+        public IEnumerable<Group> Groups { get; set; }
+        public IEnumerable<Group> AdminInGroups { get; set; }
     }
 }

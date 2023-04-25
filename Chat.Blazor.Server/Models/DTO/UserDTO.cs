@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Chat.Blazor.Server.Models
+namespace Chat.Blazor.Server.Models.DTO
 {
     public class UserDTO
     {

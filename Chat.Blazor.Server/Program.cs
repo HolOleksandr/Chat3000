@@ -26,6 +26,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ICustomHttpClient, CustomHttpClient>();
 builder.Services.AddScoped<ITestService, TestService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IGroupService, GroupService>();
 
 builder.Services.AddSingleton<WeatherForecastService>();
 
@@ -48,5 +49,4 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
-//app.UseMiddleware<TokenMiddleware>();
 app.Run();

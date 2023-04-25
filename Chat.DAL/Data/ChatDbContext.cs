@@ -16,6 +16,21 @@ namespace Chat.DAL.Data
         }
 
         public DbSet<Message> Messages { get; set; } = null!;
-        //public DbSet<User> Users { get; set; } = null!;
+        public DbSet<Group> Groups { get; set; }
+        public DbSet<UserGroup> UserGroup { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<Group>()
+                .HasMany(g => g.Users)
+                .WithMany(u => u.Groups)
+                .UsingEntity<UserGroup>();
+
+            modelBuilder.Entity<Group>()
+                .HasOne(g => g.Admin)
+                .WithMany(a => a.AdminInGroups)
+                .HasForeignKey(g => g.AdminId);
+        }
     }
 }

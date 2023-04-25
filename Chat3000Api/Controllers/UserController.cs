@@ -34,8 +34,25 @@ namespace ChatApp.API.Controllers
             return Ok(users);
         }
 
+        [HttpGet("all/emails/{makerEmail}")]
+        public async Task<IActionResult> GetEmailsExceptMakerAsync(string makerEmail)
+        {
+            var emails = await _userService.GetEmailsExceptMakerAsync(makerEmail);
+            var result = JsonConvert.SerializeObject(emails);
+            
+            return Ok(result);
+        }
+
+        [HttpGet("allinfo/except/{makerEmail}")]
+        public async Task<IActionResult> GetUsersShortInfoExceptMakerAsync(string? makerEmail)
+        {
+            var users = await _userService.GetUsersShortInfoExceptMakerAsync(makerEmail);
+            return Ok(users);
+        }
+
+
         [HttpGet("id/{userId}")]
-        public async Task<IActionResult> GetAllUsers( string userId)
+        public async Task<IActionResult> GetUserById( string userId)
         {
             var user = await _userService.GetUserByIdAsync(userId);
             if (user == null)

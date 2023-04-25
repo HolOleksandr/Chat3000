@@ -34,8 +34,11 @@ namespace ChatApp.API.Configurations
         {
             services.AddScoped<IMessageRepository, MessageRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IGroupRepository, GroupRepository>();
+
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped<IGroupService, GroupService>();
             services.AddScoped<IMessageService, MessageService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IUserAuthService, UserAuthService>();

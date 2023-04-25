@@ -12,11 +12,6 @@ namespace Chat.Blazor.Server.Helpers.Extensions
             QueryHelpers.ParseQuery(uri.Query)
                 .TryGetValue(key, out var queryValue);
 
-            //if (string.IsNullOrEmpty(queryValue))
-            //{
-            //    return default(T);
-            //}
-
             if (typeof(T).Equals(typeof(int)))
             {
                 var isSuccess = int.TryParse(queryValue, out int result);

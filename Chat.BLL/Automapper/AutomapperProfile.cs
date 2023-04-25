@@ -20,7 +20,14 @@ namespace Chat.BLL.Automapper
                 .ReverseMap();
 
             CreateMap<Message, MessageDTO>().ReverseMap();
+
             CreateMap<User, UserDTO>().ReverseMap();
+
+            CreateMap<Group, GroupDTO>()
+                .ForMember(m => m.UsersCount, g => g.MapFrom(u=>u.Users.AsEnumerable().Count()))                
+                .ReverseMap();
+
+            CreateMap<User, UserShortInfoDTO>().ReverseMap();
         }
 
     }

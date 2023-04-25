@@ -53,6 +53,7 @@ namespace Chat.Blazor.Server.Services.Realization
             await _localStorage.SetItemAsync("authToken", loginResult!.Token);
             ((CustomAuthStateProvider)_authenticationStateProvider).NotifyAuthState();
             ((CustomAuthStateProvider)_authenticationStateProvider).MarkUserAsAuthenticated(loginModel.Email!);
+
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", loginResult.Token);
 
             return loginResult;

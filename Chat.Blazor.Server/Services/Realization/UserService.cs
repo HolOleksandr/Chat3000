@@ -10,7 +10,7 @@ using System.IO;
 using System.Text.Json;
 using System.Text;
 using System.Text.Json.Serialization;
-
+using Chat.Blazor.Server.Models.DTO;
 
 namespace Chat.Blazor.Server.Services.Realization
 {
@@ -64,6 +64,30 @@ namespace Chat.Blazor.Server.Services.Realization
             var registrationResult = System.Text.Json.JsonSerializer.Deserialize<Error>(await result.Content.ReadAsStringAsync(), new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
             return new RegistrationResult { Success = false, Errors = new List<string> { registrationResult.Message } };
+        }
+
+        public async Task<IEnumerable<string>> GetUsersEmailsExcepMaker(string makerEmail)
+        {
+            using var response = await _customHttpClient
+                .GetWithTokenAsync((_baseUrl + "api/user/all/emails/" + makerEmail));
+
+            response.EnsureSuccessStatusCode();
+            var stream = await response.Content.ReadAsStreamAsync();
+            var emails = await ServiceStack.Text.JsonSerializer.DeserializeFromStreamAsync<IEnumerable<string>>(stream);
+
+            return emails;
+        }
+
+        public async Task<IEnumerable<UserShortInfoDTO>> GetUsersShortInfoExceptMaker(string makerEmail)
+        {
+            using var response = await _customHttpClient
+                .GetWithTokenAsync((_baseUrl + "api/user/allinfo/except/" + makerEmail));
+
+            response.EnsureSuccessStatusCode();
+            var stream = await response.Content.ReadAsStreamAsync();
+            var userDto = await ServiceStack.Text.JsonSerializer.DeserializeFromStreamAsync<IEnumerable<UserShortInfoDTO>>(stream);
+
+            return userDto;
         }
 
     }

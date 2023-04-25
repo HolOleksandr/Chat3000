@@ -16,13 +16,11 @@ namespace Chat.BLL.Services.Realizations
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly UserManager<User> _userManager;
 
-        public UserService(IUnitOfWork unitOfWork, IMapper mapper, UserManager<User> userManager)
+        public UserService(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
-            _userManager = userManager;
         }
 
         public async Task<FilterResult<UserDTO>> GetAllUsersAsync(SearchParameters searchParameters)
@@ -77,6 +75,20 @@ namespace Chat.BLL.Services.Realizations
             return _mapper.Map<UserDTO>(user);
         }
 
+        public async Task<IEnumerable<string>> GetEmailsExceptMakerAsync (string makerEmail)
+        {
+            var emails = await _unitOfWork.GetRepository<IUserRepository>().GetEmailsListExceptMakerAsync(makerEmail);
+            return emails;
+        }
+
+        public async Task<IEnumerable<UserShortInfoDTO>> GetUsersShortInfoExceptMakerAsync(string? makerEmail)
+        {
+            var usersInfo = await _unitOfWork.GetRepository<IUserRepository>().GetAllUsersExceptMakerAsync(makerEmail); 
+
+            var mappedInfo = _mapper.Map<IEnumerable<UserShortInfoDTO>>(usersInfo);
+            return mappedInfo;
+        }
+
 
         private async Task CheckUserEmailAsync(string email)
         {
@@ -87,6 +99,8 @@ namespace Chat.BLL.Services.Realizations
                 throw new ChatException("An account with this email address already exists");
             }
         }
+
+
 
     }
 

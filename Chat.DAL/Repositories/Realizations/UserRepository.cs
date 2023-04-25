@@ -39,15 +39,39 @@ namespace Chat.DAL.Repositories.Realizations
             return user;
         }
 
-        public async Task<bool> IsEmailExistsAsync(string email)
+        public async Task<User?> GetUserByEmailAsync(string email)
         {
             var user = await _dbContext.Users.AsQueryable().FirstOrDefaultAsync(x => string.Equals(x.Email, email));
+            return user;
+        }
+
+        public async Task<bool> IsEmailExistsAsync(string email)
+        {
+            var user = await GetUserByEmailAsync(email);
             
             if (user == null)
             {
                 return false;
             }
             return true;
+        }
+
+        public async Task<IEnumerable<string>> GetEmailsListExceptMakerAsync(string makerEmail)
+        {
+            var emails = await Task.FromResult(_dbContext.Users
+                .Where(u => u.Email != makerEmail)
+                .Select(u => u.Email)
+                .AsNoTracking());
+            return emails.AsEnumerable();
+        }
+
+        public async Task<IEnumerable<User>> GetAllUsersExceptMakerAsync(string? makerEmail)
+        {
+            var users = await Task.FromResult(_dbContext.Users
+                .Where(u => u.Email != makerEmail)
+                .AsNoTracking());
+
+            return users.AsEnumerable();
         }
 
 

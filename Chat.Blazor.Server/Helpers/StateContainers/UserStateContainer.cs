@@ -1,4 +1,4 @@
-﻿using Chat.Blazor.Server.Models;
+﻿using Chat.Blazor.Server.Models.DTO;
 
 namespace Chat.Blazor.Server.Helpers.StateContainers
 {
