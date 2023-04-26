@@ -2,6 +2,7 @@
 using Chat.Blazor.Server.Models;
 using Chat.Blazor.Server.Models.DTO;
 using Chat.Blazor.Server.Models.Paging;
+using Chat.Blazor.Server.Models.Requests;
 using Chat.Blazor.Server.Services.Interfaces;
 using System.Text.Json;
 
@@ -32,10 +33,10 @@ namespace Chat.Blazor.Server.Services.Realization
             return pagingResponse;
         }
 
-        public async Task<RegistrationResult> CreateNewGroup(IEnumerable<string> emails)
+        public async Task<RegistrationResult> CreateNewGroup(CreateGroupRequest createGroupRequest)
         {
 
-            var result = await _customHttpClient.PostWithTokenAsync(_baseUrl + "api/group/new", emails);
+            var result = await _customHttpClient.PostWithTokenAsync(_baseUrl + "api/group/new", createGroupRequest);
 
             if (result.IsSuccessStatusCode)
                 return new RegistrationResult { Success = true, Errors = null };

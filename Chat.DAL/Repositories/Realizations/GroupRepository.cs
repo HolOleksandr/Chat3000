@@ -37,6 +37,46 @@ namespace Chat.DAL.Repositories.Realizations
 
             return sortedGroups.AsEnumerable();
         }
-    
+
+        public async Task<IEnumerable<Group>> GetGroupsSortedByUsersQtyAsync(string userId, bool sortAsc, string searchText)
+        {
+            var _groups = (await GetGroupsByUserIdAsync(userId, searchText)).AsQueryable();
+
+            if (sortAsc)
+            {
+                _groups = _groups.OrderBy(g => g.Users.Count);
+            }
+            else
+            {
+                _groups = _groups.OrderByDescending(g => g.Users.Count);
+            }
+            return await Task.FromResult(_groups.AsEnumerable());
+        }
+
+        public async Task<IEnumerable<Group>> GetGroupsSortedByAdminEmailAsync(string userId, bool sortAsc, string searchText)
+        {
+            var user = await _dbContext.Users
+                .Include(u => u.Groups)
+                .ThenInclude(g => g.Users)
+                .FirstOrDefaultAsync(u => string.Equals(u.Id, userId));
+                
+            var _groups = user.Groups.AsQueryable().SearchInGroups(searchText);
+
+            if (sortAsc)
+            {
+                _groups = _groups.OrderBy(g => g.Admin.Email);
+            }
+            else
+            {
+                _groups = _groups.OrderByDescending(g => g.Admin.Email);
+            }
+
+            return await Task.FromResult(_groups.AsEnumerable());
+        }
+
+
+
+
+
     }
 }

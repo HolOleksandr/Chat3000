@@ -1,6 +1,7 @@
 ﻿@page "/chats"
 @attribute [Authorize]
 
+@using System.Security.Claims;
 @using Chat.Blazor.Server.Helpers.Extensions;
 @using Chat.Blazor.Server.Helpers.StateContainers;
 @using Chat.Blazor.Server.Models;
@@ -84,9 +85,10 @@
     private MudTable<GroupDTO> _table = null!;
     private TableState _backUpTableState = new();
     private SearchParameters searchParameters = new();
-    private int[] _pageSizes = new int[] { 1, 2, 3, 5, 10 };
+    private int[] _pageSizes = new int[] { 3, 5, 10, 25, 50 };
     private string _queryParams = string.Empty;
     private string _userEmail = string.Empty;
+    private string _userId = string.Empty;
     private readonly string _sortColumns = "Id, Name, Admin, CreationDate, Members, Description";
 
 
@@ -104,9 +106,10 @@
         {
             InitTableWithQueryParams();
             BackUpTableState();
-
+            
             _firstRenderTrigger = true;
-            //StateHasChanged();
+            StateHasChanged();
+
         }
         base.OnAfterRender(firstRender);
     }
@@ -114,8 +117,8 @@
 
     private async Task<TableData<GroupDTO>> ServerReload(TableState state)
     {
-
-        await GetUserEmail();
+        //_userEmail = ParseEmailFromQuery(Navigation.Uri);
+        await GetUserClaims();
         if (_firstRenderTrigger)
         {
             SetTableState(_backUpTableState);
@@ -135,7 +138,7 @@
 
         var queryStr = GetQueryStr(searchParameters);
         var data = await _groupService.GetAllUserGroupsWithSortAsync(_userEmail, queryStr);
-        //Navigate(queryStr);
+        Navigate(queryStr);
         var table = new TableData<GroupDTO> { TotalItems = data.TotalCount, Items = data.Data };
         _firstRenderTrigger = false;
         return table;
@@ -149,15 +152,20 @@
 
     private void Navigate(string query)
     {
-        Navigation.NavigateTo($"{Navigation.BaseUri}/groups/{_userEmail}/{query}");
+        Navigation.NavigateTo($"{Navigation.BaseUri}chats/{query}");
     }
 
-    private void OpenAddChatDialog(MouseEventArgs args)
+    private async Task OpenAddChatDialog(MouseEventArgs args)
     {
-        var parameters = new DialogParameters { ["CreatorEmail"] = _userEmail };
+        var parameters = new DialogParameters { ["CreatorEmail"] = _userEmail, ["CreatorId"] = _userId };
         var options = new DialogOptions() { CloseOnEscapeKey = true, MaxWidth=MaxWidth.Medium, FullWidth = true };
 
-        _dialogService.Show<AddNewChatDialog>("Create", parameters, options);
+        var dialog = _dialogService.Show<AddNewChatDialog>("Create new chat", parameters, options);
+        var result = await dialog.Result;
+        if (!result.Canceled)
+        {
+            await _table.ReloadServerData();
+        }    
     }
 
     private void RowDoubleClickEvent(TableRowClickEventArgs<GroupDTO> tableRowClickEventArgs)
@@ -169,12 +177,14 @@
         }
     }
 
-    private async Task GetUserEmail()
+    private async Task GetUserClaims()
     {
         var _userState = await _authStateProvider.GetAuthenticationStateAsync();
         _userEmail = _userState.User.Identity.Name;
+
+        _userId = _userState.User.Claims.FirstOrDefault(c => c.Type.Equals(ClaimTypes.NameIdentifier))?.Value;
     }
-    
+
 
     private void BackUpTableState()
     {
@@ -206,12 +216,22 @@
         searchParameters.SortColumn = Navigation.ExtractQueryValueOrSetDefault<string>("sortColumn", _defaultSortColumn);
         searchParameters.SortOrder = Navigation.ExtractQueryValueOrSetDefault<string>("sortOrder", _defaultSortOrder);
         searchParameters.FilterQuery = Navigation.ExtractQueryValueOrSetDefault<string>("filterQuery");
+        this._userEmail = Navigation.ExtractQueryValueOrSetDefault<string>("filterQuery");
         ValidateQueryParams();
 
         _table.CurrentPage = searchParameters.PageIndex;
-        _table.SortLabel = searchParameters.SortColumn; // for Example
+
         _table.SetRowsPerPage(searchParameters.PageSize);
         StateHasChanged();
+    }
+
+    private string ParseEmailFromQuery(string strUri)
+    {
+        int startIndex = strUri.IndexOf("/chats/") + "/chats/".Length;
+        int endIndex = strUri.IndexOf("/", startIndex);
+        string email = strUri.Substring(startIndex, endIndex - startIndex);
+        return email;
+
     }
 
     private void ValidateQueryParams()

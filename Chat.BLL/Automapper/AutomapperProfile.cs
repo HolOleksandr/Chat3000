@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Chat.BLL.Models.Requests;
 
 namespace Chat.BLL.Automapper
 {
@@ -28,6 +29,9 @@ namespace Chat.BLL.Automapper
                 .ReverseMap();
 
             CreateMap<User, UserShortInfoDTO>().ReverseMap();
+
+            CreateMap<CreateGroupRequest, Group>();
+
         }
 
     }

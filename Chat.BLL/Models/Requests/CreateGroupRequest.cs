@@ -1,6 +1,6 @@
-﻿using Chat.Blazor.Server.Models.DTO;
+﻿using Chat.BLL.DTO;
 
-namespace Chat.Blazor.Server.Models.Requests
+namespace Chat.BLL.Models.Requests
 {
     public class CreateGroupRequest
     {

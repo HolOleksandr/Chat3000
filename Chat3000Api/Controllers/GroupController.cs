@@ -1,4 +1,6 @@
-﻿using Chat.BLL.Models.Paging;
+﻿using Chat.BLL.Models;
+using Chat.BLL.Models.Paging;
+using Chat.BLL.Models.Requests;
 using Chat.BLL.Services.Interfaces;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
@@ -43,13 +45,15 @@ namespace ChatApp.API.Controllers
         }
 
         [HttpPost("new")]
-        public async Task<IActionResult> UpdateUser(IEnumerable<string> emails)
+        public async Task<IActionResult> CreateNewChat([FromBody] CreateGroupRequest groupRequest)
         {
-            if (emails == null || !emails.Any()) 
+            if (string.IsNullOrEmpty(groupRequest.Name) 
+                || !groupRequest.Members.Any() 
+                || string.IsNullOrEmpty(groupRequest.AdminId)) 
             {
-                return BadRequest("Emails list is empty");
+                return BadRequest("You can not create this group");
             }
-            await _groupService.CreateNewChat(emails);
+            await _groupService.CreateNewChat(groupRequest);
 
             return Ok();
         }

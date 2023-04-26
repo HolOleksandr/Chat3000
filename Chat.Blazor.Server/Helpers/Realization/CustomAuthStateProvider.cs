@@ -35,7 +35,8 @@ namespace Chat.Blazor.Server.Helpers.Realization
                 }
 
                 _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", savedToken);
-                return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(ParseClaimsFromJwt(savedToken), "jwt")));
+                var state = new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(ParseClaimsFromJwt(savedToken), "jwt")));
+                return state;
             }
             catch (InvalidOperationException)
             {
@@ -49,6 +50,7 @@ namespace Chat.Blazor.Server.Helpers.Realization
         public void MarkUserAsAuthenticated(string email)
         {
             var authenticatedUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, email) }, "apiauth"));
+            authenticatedUser.AddIdentity(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, email) }, "apiauth"));
             var authState = Task.FromResult(new AuthenticationState(authenticatedUser));
             NotifyAuthenticationStateChanged(authState);
         }
@@ -68,6 +70,22 @@ namespace Chat.Blazor.Server.Helpers.Realization
             var keyValuePairs = JsonSerializer.Deserialize<Dictionary<string, object>>(jsonBytes);
 
             keyValuePairs!.TryGetValue(ClaimTypes.Role, out object roles);
+            keyValuePairs!.TryGetValue(ClaimTypes.NameIdentifier, out object userId);
+            
+            if(userId != null)
+            {
+                if (userId.ToString()!.Trim().StartsWith("["))
+                {
+                    var parsedId = JsonSerializer.Deserialize<string>(userId.ToString()!);
+
+                    claims.Add(new Claim(ClaimTypes.NameIdentifier, parsedId));
+                }
+                else
+                {
+                    claims.Add(new Claim(ClaimTypes.NameIdentifier, userId.ToString()!));
+                }
+            }
+
 
             if (roles != null)
             {

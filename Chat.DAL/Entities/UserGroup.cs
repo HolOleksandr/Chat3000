@@ -14,5 +14,6 @@ namespace Chat.DAL.Entities
 
         public string UserId { get; set; }
         public User User { get; set; }
+        public DateTime JoinDate { get; set; }
     }
 }
