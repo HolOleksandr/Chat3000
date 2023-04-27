@@ -15,7 +15,8 @@ namespace Chat.DAL.Entities
         public User Admin { get; set; } = null!;
         public DateTime CreationDate { get; set; }
         //public IList<UserGroup> UserGroups { get; set; }
-        public IList<User> Users { get; set; }
+        public IList<User> Users { get; set; } = null!;
+        public ICollection<Message>? Messages { get; set; }
 
     }
 }

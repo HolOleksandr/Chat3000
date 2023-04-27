@@ -28,9 +28,17 @@ namespace Chat.DAL.Data
                 .UsingEntity<UserGroup>();
 
             modelBuilder.Entity<Group>()
+                .HasMany(g => g.Messages)
+                .WithOne(m => m.Group)
+                .HasForeignKey(m => m.GroupId);
+
+            modelBuilder.Entity<Group>()
                 .HasOne(g => g.Admin)
                 .WithMany(a => a.AdminInGroups)
                 .HasForeignKey(g => g.AdminId);
+
+
+
         }
     }
 }

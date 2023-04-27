@@ -20,13 +20,19 @@ namespace Chat.BLL.Services.Realizations
             _mapper = mapper;
         }
 
-        public async Task<MessageDTO> GetMessageByIdAsync(Guid id)
+        public async Task AddNewMessageAsync(MessageDTO message)
         {
-            var repo = _unitOfWork.GetRepository<IMessageRepository>();
-            repo.CreateMessageTest(new Message());
+            message.SendDate = DateTime.Now;
+            var messageEntity = _mapper.Map<Message>(message);
+            await _unitOfWork.GetRepository<IMessageRepository>().AddAsync(messageEntity);
 
+            await _unitOfWork.SaveAsync();
+        }
 
-            return new MessageDTO();
-        } 
+        public async Task<IEnumerable<MessageDTO>> GetAllMessagesByGroupIdasync(int groupId)
+        {
+            var messages = await _unitOfWork.GetRepository<IMessageRepository>().GetAllByGroupIdAsync(groupId);
+            return _mapper.Map<IEnumerable<MessageDTO>>(messages);
+        }
     }
 }

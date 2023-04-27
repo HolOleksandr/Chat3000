@@ -106,10 +106,9 @@
         {
             InitTableWithQueryParams();
             BackUpTableState();
-            
+
             _firstRenderTrigger = true;
             StateHasChanged();
-
         }
         base.OnAfterRender(firstRender);
     }
@@ -117,7 +116,6 @@
 
     private async Task<TableData<GroupDTO>> ServerReload(TableState state)
     {
-        //_userEmail = ParseEmailFromQuery(Navigation.Uri);
         await GetUserClaims();
         if (_firstRenderTrigger)
         {
@@ -173,7 +171,7 @@
         if (tableRowClickEventArgs.MouseEventArgs.Detail == 2)
         {
             //_userStateContainer.SetValue(tableRowClickEventArgs.Item);
-            Navigation.NavigateTo("/user/about/" + tableRowClickEventArgs.Item.Id);
+            Navigation.NavigateTo("/chats/" + tableRowClickEventArgs.Item.Id);
         }
     }
 
@@ -225,14 +223,6 @@
         StateHasChanged();
     }
 
-    private string ParseEmailFromQuery(string strUri)
-    {
-        int startIndex = strUri.IndexOf("/chats/") + "/chats/".Length;
-        int endIndex = strUri.IndexOf("/", startIndex);
-        string email = strUri.Substring(startIndex, endIndex - startIndex);
-        return email;
-
-    }
 
     private void ValidateQueryParams()
     {
@@ -246,6 +236,7 @@
             searchParameters.SortColumn = _defaultSortColumn;
         }
     }
+
 
     private string GetQueryStr(SearchParameters searchParameters)
     {

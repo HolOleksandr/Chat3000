@@ -1,0 +1,20 @@
+﻿@page "/chats/{chatId}"
+@attribute [Authorize]
+
+<h3>GroupChat</h3>
+
+
+
+@inject NavigationManager Navigation 
+
+@code {
+
+    [Parameter]
+    public string ChatId { get; set; }
+
+    protected override void OnInitialized()
+    {
+        
+    }
+
+}

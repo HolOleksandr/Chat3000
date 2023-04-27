@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Chat.BLL.Automapper;
+using Chat.BLL.DTO;
 using Chat.BLL.Services.Interfaces;
 using Chat.BLL.Services.Realizations;
 using Chat.BLL.Validators;
@@ -83,6 +84,7 @@ namespace ChatApp.API.Configurations
             services.AddValidatorsFromAssemblyContaining<UserRegistrationValidator>();
             services.AddValidatorsFromAssemblyContaining<UserChangePassValidator>();
             services.AddValidatorsFromAssemblyContaining<UserDTOValidator>();
+            services.AddValidatorsFromAssemblyContaining<MessageDTO>();
         }
 
         public static void ConfigureSwagger(this IServiceCollection services)

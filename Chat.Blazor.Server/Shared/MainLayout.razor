@@ -1,8 +1,13 @@
 ﻿@inherits LayoutComponentBase
+
 @using MudBlazor
+@using Microsoft.AspNetCore.SignalR.Client
+
+<MudThemeProvider />
+<MudSnackbarProvider />
+<MudDialogProvider />
 
 <PageTitle>Chat.Blazor.Server</PageTitle>
-<MudThemeProvider />
 
 <div class="page">
     <div class="sidebar">
@@ -13,7 +18,7 @@
     <main>
         <div class="top-row px-4">
             <LoginDisplay />
-            <MudDialogProvider />
+            
         </div>
 
         <article class="content px-4">
@@ -21,3 +26,40 @@
         </article>
     </main>
 </div>
+
+@inject NavigationManager Navigation
+
+@code{
+    private HubConnection hubConnection;
+    public bool IsConnected => hubConnection.State == HubConnectionState.Connected;
+    protected override async Task OnInitializedAsync()
+    {
+        
+
+        hubConnection = new HubConnectionBuilder().WithUrl(Navigation.ToAbsoluteUri("/chatHub")).Build();
+        await hubConnection.StartAsync();
+        hubConnection.On<string, string>("ReceiveChatNotification", (groupName, message) =>
+        {
+            //if (CurrentUserId == receiverUserId)
+            //{
+                _snackBar.Add(message, Severity.Info, config =>
+                {
+                    config.VisibleStateDuration = 10000;
+                    config.HideTransitionDuration = 500;
+                    config.ShowTransitionDuration = 500;
+                    config.Action = "Chat?";
+                    config.ActionColor = Color.Info;
+                    config.Onclick = snackbar =>
+                    {
+                        Navigation.NavigateTo($"chat/{groupName}");
+                        return Task.CompletedTask;
+                    };
+                });
+            //}
+        });
+
+        //var state = await _stateProvider.GetAuthenticationStateAsync();
+        //var user = state.User;
+        //CurrentUserId = user.Claims.Where(a => a.Type == "sub").Select(a => a.Value).FirstOrDefault();
+    }
+}

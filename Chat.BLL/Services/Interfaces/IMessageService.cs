@@ -9,6 +9,7 @@ namespace Chat.BLL.Services.Interfaces
 {
     public interface IMessageService
     {
-        Task<MessageDTO> GetMessageByIdAsync (Guid id);
+        Task AddNewMessageAsync(MessageDTO message);
+        Task<IEnumerable<MessageDTO>> GetAllMessagesByGroupIdasync(int groupId);
     }
 }
