@@ -22,6 +22,17 @@ namespace Chat.Blazor.Server.Services.Realization
             
         }
 
+        public async Task<GroupDTO> GetGroupByIdAsync(int groupId)
+        {
+            using var response = await _customHttpClient
+                .GetWithTokenAsync((_baseUrl + "api/group/" + groupId));
+            response.EnsureSuccessStatusCode();
+            var stream = await response.Content.ReadAsStreamAsync();
+            var requestResult = await ServiceStack.Text.JsonSerializer.DeserializeFromStreamAsync<GroupDTO>(stream);
+
+            return requestResult;
+        }
+
         public async Task<PagingResponse<GroupDTO>> GetAllUserGroupsWithSortAsync(string userEmail, string queryParams)
         {
             using var response = await _customHttpClient
@@ -35,7 +46,6 @@ namespace Chat.Blazor.Server.Services.Realization
 
         public async Task<RegistrationResult> CreateNewGroup(CreateGroupRequest createGroupRequest)
         {
-
             var result = await _customHttpClient.PostWithTokenAsync(_baseUrl + "api/group/new", createGroupRequest);
 
             if (result.IsSuccessStatusCode)

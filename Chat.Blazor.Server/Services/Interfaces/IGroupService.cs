@@ -9,5 +9,6 @@ namespace Chat.Blazor.Server.Services.Interfaces
     {
         Task<PagingResponse<GroupDTO>> GetAllUserGroupsWithSortAsync(string userEmail, string queryParams);
         Task<RegistrationResult> CreateNewGroup(CreateGroupRequest _createGroupRequest);
+        Task<GroupDTO> GetGroupByIdAsync(int groupId);
     }
 }

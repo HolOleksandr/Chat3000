@@ -33,6 +33,17 @@ namespace ChatApp.API.Controllers
             return Ok(groups);
         }
 
+        //[HttpGet("user/{groupId}")]
+        //public async Task<IActionResult> GetGroupById(int groupId)
+        //{
+        //    var group = await _groupService.GetGroupByIdAsync(groupId);
+        //    if (group == null)
+        //    {
+        //        return NotFound();
+        //    }
+        //    return Ok(group);
+        //}
+
         [HttpGet("user/{userEmail}")]
         public async Task<IActionResult> GetUserGroups(string userEmail, [FromQuery] SearchParameters searchParameters)
         {

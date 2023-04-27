@@ -34,8 +34,6 @@ namespace Chat.BLL.Services.Realizations
 
         public async Task CreateNewChat(CreateGroupRequest groupRequest)
         {
-            
-            
             var _newGroup = _mapper.Map<DAL.Entities.Group>(groupRequest);
             _newGroup.CreationDate = DateTime.Now;
             await _unitOfWork.GetRepository<IGroupRepository>().AddAsync(_newGroup);
@@ -53,6 +51,7 @@ namespace Chat.BLL.Services.Realizations
             await _unitOfWork.SaveAsync();
         }
 
+
         private async Task AddNewUserGroup(int groupId, string userId) 
         {
             var _userGroupRepo = _unitOfWork.GetRepository<IUserGroupRepository>();
@@ -65,12 +64,16 @@ namespace Chat.BLL.Services.Realizations
             await _userGroupRepo.AddAsync(newUserGroup);
         }
 
+
+
         public async Task<IEnumerable<GroupDTO>> GetGroupsAsync()
         {
             var groups = await _unitOfWork.GetRepository<IGroupRepository>().GetAllGroupsWithUsersAsync();
             var mappedGroups = _mapper.Map<IEnumerable<GroupDTO>>(groups);
             return mappedGroups;
         }
+
+
 
         public async Task<FilterResult<GroupDTO>> GetGroupsByUserEmailAsync(string userEmail, SearchParameters searchParameters)
         {

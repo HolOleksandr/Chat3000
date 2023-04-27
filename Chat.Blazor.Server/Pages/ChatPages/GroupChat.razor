@@ -1,20 +1,182 @@
-﻿@page "/chats/{chatId}"
+﻿@page "/chats/{groupId}"
 @attribute [Authorize]
+
+@using Chat.Blazor.Server.Helpers.StateContainers;
+@using Chat.Blazor.Server.Models.DTO;
+@using Chat.Blazor.Server.Services.Interfaces;
+@using Microsoft.AspNetCore.SignalR.Client;
+@using System.Security.Claims;
 
 <h3>GroupChat</h3>
 
 
+<div class="d-flex flex-grow-1 flex-row">
+    <MudPaper Elevation="25" Class="py-4 flex-grow-1">
+        <MudToolBar Dense="true">
+            @if (string.IsNullOrEmpty(_selectedGroup.Id.ToString()))
+            {
+                <MudIcon Icon="@Icons.Material.Outlined.Person" Style="margin-right:10px"></MudIcon>
+                <MudText Typo="Typo.h6">chat</MudText>
+            }
+            else
+            {
+                <MudIcon Icon="@Icons.Material.Outlined.ChatBubble" Style="margin-right:10px"></MudIcon>
+                <MudText Typo="Typo.h6">@_selectedGroup.Name</MudText>
+            }
+        </MudToolBar>
+        <div class="d-flex flex-column px-4" style="max-height:65vh;min-height:65vh; overflow:scroll;" id="chatContainer">
+            @foreach (var message in messages)
+            {
+                <div class="d-flex flex-row my-4">
+                    <div class="mr-4">
+                        <MudAvatar Color="Color.Secondary" Style="height:50px; width:50px;">@message.Sender.FirstName.Substring(0,1) @message.Sender.LastName.Substring(0,1)</MudAvatar>
+                    </div>
+                    <div>
+                        <MudText Typo="Typo.body1">@message.SenderName</MudText>
+                        <MudText Typo="Typo.caption" Style="font-size: xx-small!important;">@message.SendDate.ToString("dd MMM, yyyy hh:mm tt")</MudText>
+                        <MudText Typo="Typo.body2" Style=" padding: 15px;background-color: var(--mud-palette-background-grey);border-radius: 5px;margin-top:5px">@message.Text</MudText>
+                    </div>
+                </div>
+            }
+        </div>
+        <MudPaper Elevation="25" Class="d-flex flex-row px-2 mx-4" Style="">
+            <MudTextField T="string" Placeholder="Enter your message..." DisableUnderLine="true" Class="mt-n2 mx-4"
+                          @bind-Value="CurrentMessage" For="@(()=> CurrentMessage)" />
+            <MudButton OnClick="SendMessage" StartIcon="@Icons.Material.Outlined.Send" Color="Color.Secondary" ButtonType="ButtonType.Button">Send</MudButton>
+        </MudPaper>
+    </MudPaper>
+    <MudPaper Elevation="25" Class="pa-3 ml-6" MinWidth="350px">
+        <MudToolBar Dense="true">
+            <MudText Typo="Typo.h6" Inline="true" Class="mr-2">#</MudText>
+            <MudText Typo="Typo.h6">Description</MudText>
+        </MudToolBar>
+        <div class="d-flex flex-column px-4" style="max-height:70vh;min-height:70vh; overflow:scroll;">
+            <MudText> @_selectedGroup.Description</MudText>
+        </div>
+    </MudPaper>
+</div>
+
 
 @inject NavigationManager Navigation 
+@inject GroupStateContainer _groupStateContainer
+@inject IGroupService _groupService
+@inject IUserService _userService
+@inject IChatMessageService _messageService
+@inject AuthenticationStateProvider _authStateProvider
 
 @code {
 
-    [Parameter]
-    public string ChatId { get; set; }
+    [Parameter] public string GroupId { get; set; }
 
-    protected override void OnInitialized()
+    [CascadingParameter] public HubConnection hubConnection { get; set; }
+    private List<MessageDTO> messages = new List<MessageDTO>();
+    [Parameter] public string CurrentMessage { get; set; }
+    [Parameter] public string CurrentUserEmail { get; set; }
+    [Parameter] public string CurrentUserId { get; set; }
+    private UserDTO CurrentUser { get; set; }
+
+    private GroupDTO _selectedGroup = new();
+
+
+
+    protected override async Task OnInitializedAsync()
     {
-        
+        base.OnInitialized();
+        await GetGroupFromQueryOrContainer();
+        await CheckHubConnection();
+        await GetUserClaims();
+
+
+        hubConnection.On<MessageDTO>("ReceiveMessage", async(message) =>
+        {
+            if (message.GroupId == _selectedGroup.Id)
+            {
+                messages.Add(message);
+                await _jsRuntime.InvokeAsync<string>("ScrollToBottom", "chatContainer");
+                await InvokeAsync(StateHasChanged);
+            }
+
+        });
+
+        await LoadGroupChat(_selectedGroup.Id);
+
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await _jsRuntime.InvokeAsync<string>("ScrollToBottom", "chatContainer");
+    }
+
+    private async Task LoadGroupChat(int groupId)
+    {
+        messages = (await _messageService.GetAllMessagesInGroupAsync(groupId)).ToList();
+        StateHasChanged();
+    }
+
+
+    private async Task SendMessage()
+    {
+        if (!string.IsNullOrEmpty(CurrentMessage) 
+            && !string.IsNullOrEmpty(CurrentUserId) 
+            && !string.IsNullOrEmpty(_selectedGroup.Name))
+        {
+            var newMessage = new MessageDTO()
+                {
+                    SenderId = CurrentUserId,
+                    GroupId = _selectedGroup.Id,
+                    Text = CurrentMessage,
+                    SendDate = DateTime.Now,
+                    Sender =  new UserDTO()
+                    {
+                        FirstName = CurrentUser.FirstName,
+                        LastName = CurrentUser.LastName
+                    },
+                    SenderName = CurrentUser.FirstName + " " + CurrentUser.LastName
+                };
+
+            await _messageService.SendMessageAsync(newMessage);
+
+            //await hubConnection.SendAsync("SendMessageAsync", newMessage, _selectedGroup.Name, CurrentUserEmail);
+            await hubConnection.SendAsync("SendMessageAsync", newMessage);
+            CurrentMessage = string.Empty;
+
+
+        };
+    }
+
+
+
+    private async Task CheckHubConnection()
+    {
+        if (hubConnection == null)
+        {
+            hubConnection = new HubConnectionBuilder().WithUrl(Navigation.ToAbsoluteUri("/chatHub")).Build();
+        }
+        if (hubConnection.State == HubConnectionState.Disconnected)
+        {
+            await hubConnection.StartAsync();
+        }
+    }
+
+    private async Task GetGroupFromQueryOrContainer()
+    {
+        if (_groupStateContainer.Value == null && int.TryParse(GroupId, out int groupIdInt))
+        {
+            _selectedGroup = await _groupService.GetGroupByIdAsync(groupIdInt);
+        }
+        else
+        {
+            _selectedGroup = _groupStateContainer.Value;
+        }
+        _groupStateContainer.Value = null;
+    }
+
+    private async Task GetUserClaims()
+    {
+        var _userState = await _authStateProvider.GetAuthenticationStateAsync();
+        CurrentUserEmail = _userState.User.Identity.Name;
+        CurrentUserId = _userState.User.Claims.FirstOrDefault(c => c.Type.Equals(ClaimTypes.NameIdentifier))?.Value;
+
+        CurrentUser = await _userService.GetUserByIdAsync(CurrentUserId);
+    }
 }

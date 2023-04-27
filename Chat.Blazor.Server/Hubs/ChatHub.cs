@@ -1,12 +1,13 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using Chat.Blazor.Server.Models.DTO;
+using Microsoft.AspNetCore.SignalR;
 
 namespace Chat.Blazor.Server.Hubs
 {
     public class ChatHub : Hub
     {
-        public async Task SendMessageAsync(string groupName, string messageText, string userName)
+        public async Task SendMessageAsync(MessageDTO message)
         {
-            await Clients.Group(groupName).SendAsync("ReceiveMessage", messageText, userName);
+            await Clients.All.SendAsync("ReceiveMessage", message);
         }
 
         public async Task ChatNotificationAsync(string groupName)
@@ -15,3 +16,4 @@ namespace Chat.Blazor.Server.Hubs
         }
     }
 }
+

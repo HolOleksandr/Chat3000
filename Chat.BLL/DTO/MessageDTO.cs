@@ -12,6 +12,7 @@ namespace Chat.BLL.DTO
         public int Id { get; set; }
         public string SenderId { get; set; } = null!;
         public UserDTO? Sender { get; set; } = null!;
+        public string SenderName { get; set; } = null!;
         public string? ReceiverId { get; set; }
         public UserDTO? Receiver { get; set; }
         public int GroupId { get; set; }

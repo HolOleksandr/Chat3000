@@ -78,6 +78,7 @@
 @inject IDialogService _dialogService
 @inject NavigationManager Navigation
 @inject AuthenticationStateProvider _authStateProvider
+@inject GroupStateContainer _groupStateContainer
 
 @code {
     private int rowIndex = 1;
@@ -108,6 +109,7 @@
             BackUpTableState();
 
             _firstRenderTrigger = true;
+            _groupStateContainer.OnStateChange += StateHasChanged;
             StateHasChanged();
         }
         base.OnAfterRender(firstRender);
@@ -120,6 +122,7 @@
         if (_firstRenderTrigger)
         {
             SetTableState(_backUpTableState);
+            _groupStateContainer.OnStateChange -= StateHasChanged;
         }
         else
         {
@@ -170,7 +173,7 @@
     {
         if (tableRowClickEventArgs.MouseEventArgs.Detail == 2)
         {
-            //_userStateContainer.SetValue(tableRowClickEventArgs.Item);
+            _groupStateContainer.SetValue(tableRowClickEventArgs.Item);
             Navigation.NavigateTo("/chats/" + tableRowClickEventArgs.Item.Id);
         }
     }
@@ -179,7 +182,6 @@
     {
         var _userState = await _authStateProvider.GetAuthenticationStateAsync();
         _userEmail = _userState.User.Identity.Name;
-
         _userId = _userState.User.Claims.FirstOrDefault(c => c.Type.Equals(ClaimTypes.NameIdentifier))?.Value;
     }
 

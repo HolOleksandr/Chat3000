@@ -20,7 +20,8 @@ namespace Chat.BLL.Automapper
                 .ForMember(u => u.LastName, x => x.MapFrom(z => z.LastName))
                 .ReverseMap();
 
-            CreateMap<Message, MessageDTO>().ReverseMap();
+            CreateMap<Message, MessageDTO>()
+                .ForMember(m => m.SenderName, x => x.MapFrom(z => $"{z.Sender.FirstName} {z.Sender.LastName}")).ReverseMap();
 
             CreateMap<User, UserDTO>().ReverseMap();
 
