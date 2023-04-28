@@ -32,7 +32,7 @@
                         <MudAvatar Color="Color.Secondary" Style="height:50px; width:50px;">@message.Sender.FirstName.Substring(0,1) @message.Sender.LastName.Substring(0,1)</MudAvatar>
                     </div>
                     <div>
-                        <MudText Typo="Typo.body1">@message.SenderName</MudText>
+                        <MudText Typo="Typo.body1">@message.Sender.FirstName @message.Sender.LastName</MudText>
                         <MudText Typo="Typo.caption" Style="font-size: xx-small!important;">@message.SendDate.ToString("dd MMM, yyyy hh:mm tt")</MudText>
                         <MudText Typo="Typo.body2" Style=" padding: 15px;background-color: var(--mud-palette-background-grey);border-radius: 5px;margin-top:5px">@message.Text</MudText>
                     </div>
@@ -86,8 +86,8 @@
         await CheckHubConnection();
         await GetUserClaims();
 
-
-        hubConnection.On<MessageDTO>("ReceiveMessage", async(message) =>
+        
+         hubConnection.On<MessageDTO>("ReceiveMessage", async(message) =>
         {
             if (message.GroupId == _selectedGroup.Id)
             {
@@ -97,7 +97,7 @@
             }
 
         });
-
+        await hubConnection.InvokeAsync("JoinGroup", _selectedGroup.Id.ToString());
         await LoadGroupChat(_selectedGroup.Id);
 
     }
@@ -126,18 +126,14 @@
                     GroupId = _selectedGroup.Id,
                     Text = CurrentMessage,
                     SendDate = DateTime.Now,
-                    Sender =  new UserDTO()
-                    {
-                        FirstName = CurrentUser.FirstName,
-                        LastName = CurrentUser.LastName
-                    },
-                    SenderName = CurrentUser.FirstName + " " + CurrentUser.LastName
+                    Sender = CurrentUser
+                    //SenderName = CurrentUser.FirstName + " " + CurrentUser.LastName
                 };
 
             await _messageService.SendMessageAsync(newMessage);
 
-            //await hubConnection.SendAsync("SendMessageAsync", newMessage, _selectedGroup.Name, CurrentUserEmail);
-            await hubConnection.SendAsync("SendMessageAsync", newMessage);
+            //await hubConnection.SendAsync("SendMessageAsync", newMessage);
+            await hubConnection.SendAsync("SendMessageToGroupAsync", newMessage, _selectedGroup.Id.ToString());
             CurrentMessage = string.Empty;
 
 
@@ -178,5 +174,17 @@
         CurrentUserId = _userState.User.Claims.FirstOrDefault(c => c.Type.Equals(ClaimTypes.NameIdentifier))?.Value;
 
         CurrentUser = await _userService.GetUserByIdAsync(CurrentUserId);
+    }
+
+    
+
+    @implements IAsyncDisposable
+
+    public async ValueTask DisposeAsync()
+    {
+        
+        await hubConnection.InvokeAsync("LeaveGroup", _selectedGroup.Id.ToString());
+        //await hubConnection.DisposeAsync();
+        
     }
 }

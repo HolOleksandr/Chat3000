@@ -23,6 +23,7 @@ namespace Chat.BLL.Services.Realizations
         public async Task AddNewMessageAsync(MessageDTO message)
         {
             message.SendDate = DateTime.Now;
+            message.Sender = null;
             var messageEntity = _mapper.Map<Message>(message);
             await _unitOfWork.GetRepository<IMessageRepository>().AddAsync(messageEntity);
 

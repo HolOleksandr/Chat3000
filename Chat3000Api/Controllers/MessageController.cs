@@ -18,11 +18,11 @@ namespace ChatApp.API.Controllers
         }
 
         [HttpPost("add")]
-        public async Task<IActionResult> CreateNewChat([FromBody] MessageDTO message)
+        public async Task<IActionResult> AddNewMessage([FromBody] MessageDTO message)
         {
-            var validation = await _messageValidator.ValidateAsync(message);
-            if (!validation.IsValid)
-                return StatusCode(400, validation.Errors.Select(e => e.ErrorMessage));
+            //var validation = await _messageValidator.ValidateAsync(message);
+            //if (!validation.IsValid)
+            //    return StatusCode(400, validation.Errors.Select(e => e.ErrorMessage));
 
             await _messageService.AddNewMessageAsync(message);
             return Ok();

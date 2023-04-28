@@ -6,16 +6,16 @@ using System.Threading.Tasks;
 
 namespace Chat.DAL.Entities
 {
-    public class Group
+    public class GroupInfoView
     {
         public int Id { get; set; }
         public string Name { get; set; } = null!;
         public string? Description { get; set; }
         public string AdminId { get; set; } = null!;
-        public User Admin { get; set; } = null!;
+        public string AdminEmail { get; set; } = null!;
         public DateTime CreationDate { get; set; }
-        public IList<User> Users { get; set; } = null!;
-        public ICollection<Message>? Messages { get; set; }
+        public int TotalMessages { get; set; }
+        public int Members { get; set; }
 
     }
 }
