@@ -16,6 +16,7 @@ namespace Chat.DAL.Entities
 
         //public IList<UserGroup> UserGroups { get; set; }
         public IEnumerable<Group> Groups { get; set; }
+        public IEnumerable<GroupInfoView> GroupsInfo { get; set; }
         public IEnumerable<Group> AdminInGroups { get; set; }
     }
 }

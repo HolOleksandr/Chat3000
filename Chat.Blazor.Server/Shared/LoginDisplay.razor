@@ -4,6 +4,7 @@
     <AuthorizeView>
         <Authorized>
             @context.User.Identity!.Name :
+            
             <UserMenu />
         </Authorized>
         <NotAuthorized>

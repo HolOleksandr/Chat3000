@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Chat.DAL.Entities
+namespace Chat.Blazor.Server.Models.DTO
 {
-    public class GroupInfoView
+    public class GroupInfoViewDTO
     {
         public int Id { get; set; }
         public string Name { get; set; } = null!;
@@ -16,6 +16,5 @@ namespace Chat.DAL.Entities
         public DateTime CreationDate { get; set; }
         public int TotalMessages { get; set; }
         public int Members { get; set; }
-        public IList<User> Users { get; set; } = null!;
     }
 }

@@ -1,4 +1,5 @@
-﻿using Chat.DAL.Entities;
+﻿using Chat.DAL.Configurations;
+using Chat.DAL.Entities;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -18,10 +19,16 @@ namespace Chat.DAL.Data
         public DbSet<Message> Messages { get; set; } = null!;
         public DbSet<Group> Groups { get; set; }
         public DbSet<UserGroup> UserGroup { get; set; }
+        public DbSet<GroupInfoView> GroupsInfo { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+
+            new GroupInfoViewConfiguration().Configure(modelBuilder.Entity<GroupInfoView>());
+
+
             modelBuilder.Entity<Group>()
                 .HasMany(g => g.Users)
                 .WithMany(u => u.Groups)
@@ -37,6 +44,13 @@ namespace Chat.DAL.Data
                 .WithMany(a => a.AdminInGroups)
                 .HasForeignKey(g => g.AdminId);
 
+
+            modelBuilder.Entity<GroupInfoView>()
+                .HasMany(g => g.Users)
+                .WithMany(u => u.GroupsInfo)
+                .UsingEntity<UserGroup>(
+                    g => g.HasOne<User>().WithMany().HasForeignKey("userId"),
+                    u => u.HasOne<GroupInfoView>().WithMany().HasForeignKey("groupId"));
 
 
         }

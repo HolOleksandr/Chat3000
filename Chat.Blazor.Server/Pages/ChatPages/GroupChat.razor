@@ -29,7 +29,7 @@
             {
                 <div class="d-flex flex-row my-4">
                     <div class="mr-4">
-                        <MudAvatar Color="Color.Secondary" Style="height:50px; width:50px;">@message.Sender.FirstName.Substring(0,1) @message.Sender.LastName.Substring(0,1)</MudAvatar>
+                        <MudAvatar Style="height:50px; width:50px;"><MudImage Src="@message.Sender.Avatar"></MudImage></MudAvatar>
                     </div>
                     <div>
                         <MudText Typo="Typo.body1">@message.Sender.FirstName @message.Sender.LastName</MudText>
@@ -58,7 +58,7 @@
 
 
 @inject NavigationManager Navigation 
-@inject GroupStateContainer _groupStateContainer
+@inject GroupInfoStateContainer _groupStateContainer
 @inject IGroupService _groupService
 @inject IUserService _userService
 @inject IChatMessageService _messageService
@@ -75,7 +75,7 @@
     [Parameter] public string CurrentUserId { get; set; }
     private UserDTO CurrentUser { get; set; }
 
-    private GroupDTO _selectedGroup = new();
+    private GroupInfoViewDTO _selectedGroup = new();
 
 
 
@@ -127,7 +127,6 @@
                     Text = CurrentMessage,
                     SendDate = DateTime.Now,
                     Sender = CurrentUser
-                    //SenderName = CurrentUser.FirstName + " " + CurrentUser.LastName
                 };
 
             await _messageService.SendMessageAsync(newMessage);

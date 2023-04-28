@@ -2,11 +2,11 @@
 
 namespace Chat.Blazor.Server.Helpers.StateContainers
 {
-    public class GroupStateContainer
+    public class GroupInfoStateContainer
     {
-        public GroupDTO? Value { get; set; }
+        public GroupInfoViewDTO? Value { get; set; }
         public event Action? OnStateChange;
-        public void SetValue(GroupDTO value)
+        public void SetValue(GroupInfoViewDTO value)
         {
             this.Value = value;
             NotifyStateChanged();

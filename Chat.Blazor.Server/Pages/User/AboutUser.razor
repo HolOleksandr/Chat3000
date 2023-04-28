@@ -54,17 +54,32 @@
             <ValidationMessage For="@(() => _selectedUser.PhoneNumber)" />
         </div>
         <div class="form-group">
-            <label for="nickname">Avatar</label>
-            <InputText Id="avatar" class="form-control" @bind-Value="_selectedUser.Avatar" />
-            <ValidationMessage For="@(() => _selectedUser.Avatar)" />
+        <MudAvatar Style="height:250px; width:250px;"><MudImage Src="@_selectedUser.Avatar"></MudImage></MudAvatar>
         </div>
     </fieldset>
     
+    
+   
+   
+
     @if (!isReadOnly)
     {
+        <MudFileUpload T="IBrowserFile" FilesChanged="UploadImage">
+            <ButtonTemplate Context="imageContext">
+                <MudButton HtmlTag="label"
+                       Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.CloudUpload"
+                           for="@imageContext">
+                    Choose avatar
+                </MudButton>
+            </ButtonTemplate>
+        </MudFileUpload>
+        
+
         <MudButton Variant="Variant.Filled"
-               Color="Color.Primary" Class="ml-auto"
-               ButtonType=ButtonType.Submit Disabled="@(!context.Validate() || !context.IsModified())">Update</MudButton>
+               Color="Color.Primary" Class="ml-auto m-2"
+               ButtonType=ButtonType.Submit Disabled="@(!context.Validate() || !context.IsModified())">Update Account</MudButton>
     }
 
     
@@ -72,6 +87,7 @@
 
 
 @inject IUserService _userService
+@inject IImageService _imageService
 @inject UserStateContainer _userStateContainer
 @inject AuthenticationStateProvider _authStateProvider
 @inject NavigationManager Navigation
@@ -84,6 +100,7 @@
     private bool isReadOnly = true;
     private bool ShowErrors;
     private string Error = "";
+    private UserMenu UserMenu = new();
 
 
 
@@ -94,7 +111,7 @@
         await GetUserFromQueryOrContainer();
         await IsOwnerOfData(_selectedUser.Email);
 
-        
+
         StateHasChanged();
     }
 
@@ -120,6 +137,8 @@
 
         if (result.Success)
         {
+            //await UserMenu.UpdateUserInfo();
+            StateHasChanged();
             Navigation.NavigateTo("/users");
         }
         else
@@ -138,6 +157,16 @@
             isReadOnly = false;
         }
     }
+
+    
+    private string ImageUrl = "";
+    private async Task UploadImage(IBrowserFile file)
+    {
+        _selectedUser.Avatar = await _imageService.SaveImageInBase64(file);
+        StateHasChanged();
+    }
+
+
 
     public void Dispose()
     {

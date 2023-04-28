@@ -33,16 +33,17 @@ namespace ChatApp.API.Controllers
             return Ok(groups);
         }
 
-        //[HttpGet("user/{groupId}")]
-        //public async Task<IActionResult> GetGroupById(int groupId)
-        //{
-        //    var group = await _groupService.GetGroupByIdAsync(groupId);
-        //    if (group == null)
-        //    {
-        //        return NotFound();
-        //    }
-        //    return Ok(group);
-        //}
+        [HttpGet("user/group/{groupId}")]
+        public async Task<IActionResult> GetGroupById(int groupId)
+        {
+            string group = null;
+            //var group = await _groupService.GetGroupByIdAsync(groupId);
+            if (group == null)
+            {
+                return NotFound();
+            }
+            return Ok(group);
+        }
 
         [HttpGet("user/{userEmail}")]
         public async Task<IActionResult> GetUserGroups(string userEmail, [FromQuery] SearchParameters searchParameters)
@@ -64,7 +65,7 @@ namespace ChatApp.API.Controllers
             {
                 return BadRequest("You can not create this group");
             }
-            await _groupService.CreateNewChat(groupRequest);
+            await _groupService.CreateNewGroup(groupRequest);
 
             return Ok();
         }

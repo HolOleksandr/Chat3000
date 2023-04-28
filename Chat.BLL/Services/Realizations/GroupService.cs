@@ -32,7 +32,7 @@ namespace Chat.BLL.Services.Realizations
             _mapper = mapper;
         }
 
-        public async Task CreateNewChat(CreateGroupRequest groupRequest)
+        public async Task CreateNewGroup(CreateGroupRequest groupRequest)
         {
             var _newGroup = _mapper.Map<DAL.Entities.Group>(groupRequest);
             _newGroup.CreationDate = DateTime.Now;
@@ -75,27 +75,17 @@ namespace Chat.BLL.Services.Realizations
 
 
 
-        public async Task<FilterResult<GroupDTO>> GetGroupsByUserEmailAsync(string userEmail, SearchParameters searchParameters)
+        public async Task<FilterResult<GroupInfoViewDTO>> GetGroupsByUserEmailAsync(string userEmail, SearchParameters searchParameters)
         {
-            FilterResult<GroupDTO> result;
             var user = await _unitOfWork.GetRepository<IUserRepository>().GetUserByEmailAsync(userEmail) 
                 ?? throw new ChatException("User was not found.");
 
             var _groupRepo = _unitOfWork.GetRepository<IGroupRepository>();
             
-            if (IsSortColumnIsCustomColumn(searchParameters.SortColumn, "members"))
-            {
-                result = await GetGroupsSortedByUsersQtyAsync(user.Id, searchParameters);
-            }
-            else if (IsSortColumnIsCustomColumn(searchParameters.SortColumn, "admin"))
-            {
-                result = await GetGroupsSortedByAdminEmailAsync(user.Id, searchParameters);
-            }
-            else
-            {
                 var groups = await _groupRepo.GetGroupsByUserIdAsync(user.Id, searchParameters.FilterQuery);
-                var mappedGroups = _mapper.Map<IEnumerable<GroupDTO>>(groups);
-                result = await FilterResult<GroupDTO>.CreateAsync(
+                var mappedGroups = _mapper.Map<IEnumerable<GroupInfoViewDTO>>(groups);
+                
+            var result = await FilterResult<GroupInfoViewDTO>.CreateAsync(
                 mappedGroups,
                 searchParameters.PageIndex,
                 searchParameters.PageSize,
@@ -103,7 +93,6 @@ namespace Chat.BLL.Services.Realizations
                 searchParameters.SortOrder,
                 searchParameters.FilterQuery);
 
-            }
             
             return result;
         }
@@ -111,69 +100,7 @@ namespace Chat.BLL.Services.Realizations
 
 
 
-        private async Task<FilterResult<GroupDTO>> GetGroupsSortedByUsersQtyAsync(string userId, SearchParameters searchParameters)
-        {
-            var ascOrder = IsAscOrder(searchParameters.SortOrder);
 
-            var sortedGroups = await _unitOfWork.GetRepository<IGroupRepository>()
-                .GetGroupsSortedByUsersQtyAsync(userId, ascOrder, searchParameters.FilterQuery);
-
-            var result = await CreateCustomFilterResult(sortedGroups, searchParameters);
-            return result;
-        }
-
-
-
-
-        private async Task<FilterResult<GroupDTO>> GetGroupsSortedByAdminEmailAsync(string userId, SearchParameters searchParameters)
-        {
-            var ascOrder = IsAscOrder(searchParameters.SortOrder);
-
-            var sortedGroups = await _unitOfWork.GetRepository<IGroupRepository>()
-                .GetGroupsSortedByAdminEmailAsync(userId, ascOrder,searchParameters.FilterQuery);
-
-            var result = await CreateCustomFilterResult(sortedGroups, searchParameters);
-
-            return result;
-        }
-
-
-
-
-        private async Task<FilterResult<GroupDTO>> CreateCustomFilterResult(IEnumerable<DAL.Entities.Group> groups, SearchParameters parameters)
-        {
-            var count = groups.Count();
-            var pagedData = groups.Skip((parameters.PageIndex) * parameters.PageSize).Take(parameters.PageSize);
-            var mappedSortedGroups = _mapper.Map<IEnumerable<GroupDTO>>(pagedData);
-            var result = await FilterResult<GroupDTO>.CreateAsync(mappedSortedGroups, 0, 0, null, null);
-           
-            result.Data = mappedSortedGroups.ToList();
-            result.FilterQuery = parameters.FilterQuery;
-            result.PageIndex = parameters.PageIndex;
-            result.PageSize = parameters.PageSize;
-            result.TotalPages = (int)Math.Ceiling(count / (double)parameters.PageSize);
-            result.TotalCount = count;
-
-            return result;
-        }
-
-        private static bool IsSortColumnIsCustomColumn(string columnName, string customColumn)
-        {
-            if (string.IsNullOrEmpty(columnName)) return false;
-
-            return string.Equals(columnName, customColumn, StringComparison.OrdinalIgnoreCase);
-        }
-
-        private static bool IsAscOrder(string order)
-        {
-            if (!string.Equals(order, "asc"))
-            {
-                return false;
-            }
-            return true;
-        }
-
-        
 
 
 }

@@ -21,13 +21,14 @@ namespace Chat.BLL.Automapper
                 .ReverseMap();
 
             CreateMap<Message, MessageDTO>().ReverseMap();
-                //.ForMember(m => m.SenderName, x => x.MapFrom(z => $"{z.Sender.FirstName} {z.Sender.LastName}"))
 
             CreateMap<User, UserDTO>().ReverseMap();
 
             CreateMap<Group, GroupDTO>()
                 .ForMember(m => m.UsersCount, g => g.MapFrom(u=>u.Users.AsEnumerable().Count()))                
                 .ReverseMap();
+
+            CreateMap<GroupInfoView, GroupInfoViewDTO>().ReverseMap();
 
             CreateMap<User, UserShortInfoDTO>().ReverseMap();
 

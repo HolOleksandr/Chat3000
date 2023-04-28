@@ -1,15 +1,15 @@
-﻿@using MudBlazor
+﻿@using Chat.Blazor.Server.Models.DTO;
+@using MudBlazor
 @using Chat.Blazor.Server.Helpers.StateContainers;
+@using System.Security.Claims;
+@using Chat.Blazor.Server.Services.Interfaces;
 
-@inject NavigationManager NavManager
-@inject UserStateContainer _userStateContainer
-@inject AuthenticationStateProvider _authStateProvider
 
 
 <div>
     <MudMenu>
         <ActivatorContent>
-            <MudAvatar Image="images\UserProfile.webp" />
+            <MudAvatar><MudImage Src="@CurrentUser.Avatar"></MudImage></MudAvatar>
         </ActivatorContent>
         <ChildContent>
             <MudMenuItem OnClick="GetProfile">Profile</MudMenuItem>
@@ -21,12 +21,27 @@
 </div>
             
 
+
+@inject NavigationManager NavManager
+@inject UserStateContainer _userStateContainer
+@inject AuthenticationStateProvider _authStateProvider
+@inject IUserService _userService
+
 @code {
+    private UserDTO CurrentUser = new();
+    protected override async Task OnInitializedAsync()
+    {
+        await UpdateUserInfo();
+        base.OnInitialized();
+
+    }
+
     private async Task GetProfile()
     {
-        var userState = await _authStateProvider.GetAuthenticationStateAsync();
-        var id = userState.User.Identity;
-        NavManager.NavigateTo("/user/about/");
+        var _userState = await _authStateProvider.GetAuthenticationStateAsync();
+        var userId = _userState.User.Claims.FirstOrDefault(c => c.Type.Equals(ClaimTypes.NameIdentifier))?.Value;
+
+        NavManager.NavigateTo($"/user/about/{userId}");
     }
 
     private void ChangePass()
@@ -37,5 +52,18 @@
     {
         NavManager.NavigateTo("/LogOut");
     }
+
+
+    public async Task UpdateUserInfo()
+    {
+        var _userState = await _authStateProvider.GetAuthenticationStateAsync();
+        
+        var id = _userState.User.Claims.FirstOrDefault(c => c.Type.Equals(ClaimTypes.NameIdentifier))?.Value;
+
+        this.CurrentUser = await _userService.GetUserByIdAsync(id);
+    }
+    
+
+   
 }
 

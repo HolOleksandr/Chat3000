@@ -15,6 +15,7 @@ namespace Chat.DAL.Configurations
         {
             builder.ToView("GroupView");
             builder.HasKey(x => x.Id);
+
         }
     }
 }

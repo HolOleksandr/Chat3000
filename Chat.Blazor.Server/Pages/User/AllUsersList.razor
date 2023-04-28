@@ -131,16 +131,22 @@
         return table;
     }
 
+
+
     private void OnSearch(string text)
     {
         searchParameters.FilterQuery = text;
         _table.ReloadServerData();
     }
 
+
+
     private void Navigate(string query)
     {
         Navigation.NavigateTo(Navigation.BaseUri + "users" + query);
     }
+
+
 
     private void RowDoubleClickEvent(TableRowClickEventArgs<UserDTO> tableRowClickEventArgs)
     {

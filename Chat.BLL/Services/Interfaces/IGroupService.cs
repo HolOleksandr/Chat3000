@@ -14,8 +14,8 @@ namespace Chat.BLL.Services.Interfaces
     public interface IGroupService
     {
         Task<IEnumerable<GroupDTO>> GetGroupsAsync();
-        Task<FilterResult<GroupDTO>> GetGroupsByUserEmailAsync(string userEmail, SearchParameters searchParameters);
+        Task<FilterResult<GroupInfoViewDTO>> GetGroupsByUserEmailAsync(string userEmail, SearchParameters searchParameters);
 
-        Task CreateNewChat(CreateGroupRequest groupRequest);
+        Task CreateNewGroup(CreateGroupRequest groupRequest);
     }
 }

@@ -18,12 +18,12 @@
 
 <MudTable @ref="_table"
           Items="@Groups"
-          ServerData="@(new Func<TableState, Task<TableData<GroupDTO>>>(ServerReload))"
+          ServerData="@(new Func<TableState, Task<TableData<GroupInfoViewDTO>>>(ServerReload))"
           CurrentPage="searchParameters.PageIndex"
           SortLabel="searchParameters.SortColumn"
           Loading=false
           OnRowClick="RowDoubleClickEvent"
-          T="GroupDTO"
+          T="GroupInfoViewDTO"
           Hover=false>
 
     <ToolBarContent>
@@ -46,20 +46,22 @@
     </ToolBarContent>
     <HeaderContent>
         
-        <MudTh><MudTableSortLabel SortLabel="Id" T="GroupDTO">Id</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortLabel="Name" T="GroupDTO">Name</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortLabel="Admin" T="GroupDTO">Admin</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortLabel="CreationDate" T="GroupDTO">Creation Date</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortLabel="Members" T="GroupDTO">Members</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortLabel="Description" T="GroupDTO">Description</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortLabel="Id" T="GroupInfoViewDTO">Id</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortLabel="Name" T="GroupInfoViewDTO">Name</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortLabel="AdminEmail" T="GroupInfoViewDTO">Admin</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortLabel="CreationDate" T="GroupInfoViewDTO">Creation Date</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortLabel="Members" T="GroupInfoViewDTO">Members</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortLabel="TotalMessages" T="GroupInfoViewDTO">Total Messages</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortLabel="Description" T="GroupInfoViewDTO">Description</MudTableSortLabel></MudTh>
     </HeaderContent>
 
     <RowTemplate>
         <MudTd DataLabel="Id">@context.Id</MudTd>
         <MudTd DataLabel="Name">@context.Name</MudTd>
-        <MudTd DataLabel="Admin">@context.Admin.Email</MudTd>
+        <MudTd DataLabel="Admin">@context.AdminEmail</MudTd>
         <MudTd DataLabel="CreationDate">@context.CreationDate</MudTd>
-        <MudTd DataLabel="Members">@context.UsersCount</MudTd>
+        <MudTd DataLabel="Members">@context.Members</MudTd>
+        <MudTd DataLabel="TotalMessages">@context.TotalMessages</MudTd>
         <MudTd DataLabel="Description">@context.Description</MudTd>
     </RowTemplate>
 
@@ -78,19 +80,19 @@
 @inject IDialogService _dialogService
 @inject NavigationManager Navigation
 @inject AuthenticationStateProvider _authStateProvider
-@inject GroupStateContainer _groupStateContainer
+@inject GroupInfoStateContainer _groupStateContainer
 
 @code {
     private int rowIndex = 1;
-    private List<GroupDTO> Groups = new();
-    private MudTable<GroupDTO> _table = null!;
+    private List<GroupInfoViewDTO> Groups = new();
+    private MudTable<GroupInfoViewDTO> _table = null!;
     private TableState _backUpTableState = new();
     private SearchParameters searchParameters = new();
     private int[] _pageSizes = new int[] { 3, 5, 10, 25, 50 };
     private string _queryParams = string.Empty;
     private string _userEmail = string.Empty;
     private string _userId = string.Empty;
-    private readonly string _sortColumns = "Id, Name, Admin, CreationDate, Members, Description";
+    private readonly string _sortColumns = "Id, Name, Admin, CreationDate, Members, TotalMessages, Description";
 
 
     private int _defaultPageIndex = 0;
@@ -116,7 +118,7 @@
     }
 
 
-    private async Task<TableData<GroupDTO>> ServerReload(TableState state)
+    private async Task<TableData<GroupInfoViewDTO>> ServerReload(TableState state)
     {
         await GetUserClaims();
         if (_firstRenderTrigger)
@@ -140,7 +142,7 @@
         var queryStr = GetQueryStr(searchParameters);
         var data = await _groupService.GetAllUserGroupsWithSortAsync(_userEmail, queryStr);
         Navigate(queryStr);
-        var table = new TableData<GroupDTO> { TotalItems = data.TotalCount, Items = data.Data };
+        var table = new TableData<GroupInfoViewDTO> { TotalItems = data.TotalCount, Items = data.Data };
         _firstRenderTrigger = false;
         return table;
     }
@@ -169,7 +171,7 @@
         }    
     }
 
-    private void RowDoubleClickEvent(TableRowClickEventArgs<GroupDTO> tableRowClickEventArgs)
+    private void RowDoubleClickEvent(TableRowClickEventArgs<GroupInfoViewDTO> tableRowClickEventArgs)
     {
         if (tableRowClickEventArgs.MouseEventArgs.Detail == 2)
         {

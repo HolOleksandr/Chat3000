@@ -24,8 +24,9 @@ builder.Services.AddMudServices(c => { c.SnackbarConfiguration.PositionClass = D
 builder.Services.AddHttpClient();
 builder.Services.AddSignalR();
 builder.Services.AddSingleton<UserStateContainer>();
-builder.Services.AddSingleton<GroupStateContainer>();
+builder.Services.AddSingleton<GroupInfoStateContainer>();
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
+builder.Services.AddSingleton<IImageService, ImageService>();
 builder.Services.AddScoped<ICustomHttpClient, CustomHttpClient>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITestService, TestService>();

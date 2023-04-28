@@ -17,7 +17,7 @@
     [FirstName]                 NVARCHAR (50)     NULL,
     [LastName] NVARCHAR(50) NULL, 
     [Nickname] NVARCHAR(50) NULL, 
-    [Avatar] BIT NULL, 
+    [Avatar] NVARCHAR(MAX) NULL, 
     CONSTRAINT [PK_AspNetUsers] PRIMARY KEY CLUSTERED ([Id] ASC)
 );
 
