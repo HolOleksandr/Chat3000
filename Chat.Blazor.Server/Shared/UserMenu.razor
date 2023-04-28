@@ -21,7 +21,7 @@
 </div>
             
 
-
+@inject AvatarStateContainer _avatarStateContainer
 @inject NavigationManager NavManager
 @inject UserStateContainer _userStateContainer
 @inject AuthenticationStateProvider _authStateProvider
@@ -33,6 +33,7 @@
     {
         await UpdateUserInfo();
         base.OnInitialized();
+        _avatarStateContainer.OnAvatarChange += AvatarHandler;
 
     }
 
@@ -53,6 +54,11 @@
         NavManager.NavigateTo("/LogOut");
     }
 
+    private void AvatarHandler(string message)
+    {
+        CurrentUser.Avatar = message;
+        StateHasChanged();
+    }
 
     public async Task UpdateUserInfo()
     {
@@ -63,6 +69,12 @@
         this.CurrentUser = await _userService.GetUserByIdAsync(id);
     }
     
+
+
+    public void Dispose()
+    {
+        _avatarStateContainer.OnAvatarChange -= AvatarHandler;
+    }
 
    
 }

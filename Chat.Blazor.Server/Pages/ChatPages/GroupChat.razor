@@ -10,6 +10,9 @@
 <h3>GroupChat</h3>
 
 
+
+
+
 <div class="d-flex flex-grow-1 flex-row">
     <MudPaper Elevation="25" Class="py-4 flex-grow-1">
         <MudToolBar Dense="true">
@@ -27,14 +30,27 @@
         <div class="d-flex flex-column px-4" style="max-height:65vh;min-height:65vh; overflow:scroll;" id="chatContainer">
             @foreach (var message in messages)
             {
-                <div class="d-flex flex-row my-4">
+                <div class="d-flex flex-row my-4 @((message.Sender.Id == CurrentUserId) ? "flex-row-reverse" :"")">
                     <div class="mr-4">
                         <MudAvatar Style="height:50px; width:50px;"><MudImage Src="@message.Sender.Avatar"></MudImage></MudAvatar>
                     </div>
                     <div>
                         <MudText Typo="Typo.body1">@message.Sender.FirstName @message.Sender.LastName</MudText>
                         <MudText Typo="Typo.caption" Style="font-size: xx-small!important;">@message.SendDate.ToString("dd MMM, yyyy hh:mm tt")</MudText>
-                        <MudText Typo="Typo.body2" Style=" padding: 15px;background-color: var(--mud-palette-background-grey);border-radius: 5px;margin-top:5px">@message.Text</MudText>
+
+                        @if (message.Sender.Id == CurrentUserId)
+                        {
+                            <MudText Typo="Typo.body2" Style=" padding: 15px;border-radius: 5px;margin-top:5px; background-color: var(--mud-palette-info);">
+                                @message.Text
+                            </MudText>
+                        }
+                        else
+                        {
+                            <MudText Typo="Typo.body2" Style=" padding: 15px;border-radius: 5px;margin-top:5px; background-color: var(--mud-palette-background-grey);">
+                                @message.Text
+                            </MudText>
+                        }
+                        
                     </div>
                 </div>
             }
@@ -65,7 +81,7 @@
 @inject AuthenticationStateProvider _authStateProvider
 
 @code {
-
+    private string styleString ;
     [Parameter] public string GroupId { get; set; }
 
     [CascadingParameter] public HubConnection hubConnection { get; set; }
@@ -78,6 +94,19 @@
     private GroupInfoViewDTO _selectedGroup = new();
 
 
+    //private void SetMessageStyle(MessageDTO message)
+    //{
+    //    if(message.Sender.Id == CurrentUserId)
+    //    {
+    //        styleString = " padding: 15px;border-radius: 5px;margin-top:5px; background-color: var(--mud-palette-palette-info);";
+    //    }
+    //    else
+    //    {
+    //        styleString = " padding: 15px;border-radius: 5px;margin-top:5px; background-color: var(--mud-palette-background-grey);";
+    //    }
+    //    StateHasChanged();
+    //}
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -86,11 +115,12 @@
         await CheckHubConnection();
         await GetUserClaims();
 
-        
-         hubConnection.On<MessageDTO>("ReceiveMessage", async(message) =>
-        {
-            if (message.GroupId == _selectedGroup.Id)
-            {
+
+        hubConnection.On<MessageDTO>("ReceiveMessage", async(message) =>
+       {
+           if (message.GroupId == _selectedGroup.Id)
+           {
+               //SetMessageStyle(message);
                 messages.Add(message);
                 await _jsRuntime.InvokeAsync<string>("ScrollToBottom", "chatContainer");
                 await InvokeAsync(StateHasChanged);

@@ -89,6 +89,7 @@
 @inject IUserService _userService
 @inject IImageService _imageService
 @inject UserStateContainer _userStateContainer
+@inject AvatarStateContainer _avatarStateContainer
 @inject AuthenticationStateProvider _authStateProvider
 @inject NavigationManager Navigation
 
@@ -139,6 +140,7 @@
         {
             //await UserMenu.UpdateUserInfo();
             StateHasChanged();
+            _avatarStateContainer.ChangeAvatar(_selectedUser.Avatar); 
             Navigation.NavigateTo("/users");
         }
         else
