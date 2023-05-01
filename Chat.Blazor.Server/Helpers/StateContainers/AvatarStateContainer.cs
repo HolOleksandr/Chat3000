@@ -2,7 +2,7 @@
 {
     public class AvatarStateContainer
     {
-        public event Action<string> OnAvatarChange;
+        public event Action<string>? OnAvatarChange;
 
         public void ChangeAvatar(string avatar)
         {

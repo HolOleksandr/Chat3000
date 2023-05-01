@@ -41,7 +41,6 @@
     {
         var _userState = await _authStateProvider.GetAuthenticationStateAsync();
         var userId = _userState.User.Claims.FirstOrDefault(c => c.Type.Equals(ClaimTypes.NameIdentifier))?.Value;
-
         NavManager.NavigateTo($"/user/about/{userId}");
     }
 
@@ -63,9 +62,7 @@
     public async Task UpdateUserInfo()
     {
         var _userState = await _authStateProvider.GetAuthenticationStateAsync();
-        
         var id = _userState.User.Claims.FirstOrDefault(c => c.Type.Equals(ClaimTypes.NameIdentifier))?.Value;
-
         this.CurrentUser = await _userService.GetUserByIdAsync(id);
     }
     

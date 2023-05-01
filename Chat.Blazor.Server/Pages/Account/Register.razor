@@ -15,7 +15,90 @@
         }
     </div>
 }
+@*
+<MudCard>
+    <MudCardContent>
+        <h3>Register:</h3>
 
+        @if (ShowErrors)
+        {
+            <div class="alert alert-danger" role="alert">
+                @foreach (var error in Errors!)
+                {
+                    <p>@error</p>
+                }
+            </div>
+        }
+        <EditForm Model="RegisterModel" OnValidSubmit="HandleRegistration">
+            <FluentValidationValidator />
+            <ValidationSummary />
+            <div class="d-flex flex-wrap mt-3">
+                <fieldset class="col-md-6">
+
+                    <div class="form-group">
+                        <label for="firstname">First Name</label>
+                        <InputText Id="firstname" class="form-control" @bind-Value="RegisterModel.FirstName" />
+                        <ValidationMessage For="@(() => RegisterModel.FirstName)" />
+                    </div>
+                    <div class="form-group">
+                        <label for="lastname">Last Name</label>
+                        <InputText Id="lastname" class="form-control" @bind-Value="RegisterModel.LastName" />
+                        <ValidationMessage For="@(() => RegisterModel.LastName)" />
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email address</label>
+                        <InputText Id="email" class="form-control" @bind-Value="RegisterModel.Email" />
+                        <ValidationMessage For="@(() => RegisterModel.Email)" />
+                    </div>
+                    <div class="form-group">
+                        <label for="nickname">Nickname</label>
+                        <InputText Id="nickname" class="form-control" @bind-Value="RegisterModel.Nickname" />
+                        <ValidationMessage For="@(() => RegisterModel.Nickname)" />
+                    </div>
+                    <div class="form-group">
+                        <label for="phonenumber">Phone Number</label>
+                        <InputText Id="phonenumber" class="form-control" @bind-Value="RegisterModel.PhoneNumber" />
+                        <ValidationMessage For="@(() => RegisterModel.PhoneNumber)" />
+                    </div>
+                    <div class="form-group">
+                        <MudDatePicker Label="Date of Birth" @bind-Date="RegisterModel.BirthDate" DisableToolbar="true" />
+                        <ValidationMessage For="@(() => RegisterModel.BirthDate)" />
+                    </div>
+                </fieldset>
+
+                <div class="col-md-6 d-flex flex-column align-items-center">
+                    <div>
+                        <MudAvatar Style="height:250px; width:250px;" @bind-Value="RegisterModel.Avatar"><MudImage Src="@RegisterModel.Avatar"></MudImage></MudAvatar>
+                    </div>
+                    <div>
+                        <MudFileUpload T="IBrowserFile" FilesChanged="UploadImage">
+                            <ButtonTemplate Context="imageContext">
+                                <MudButton Class="mt-3" HtmlTag="label"
+                                           Variant="Variant.Filled"
+                                           Color="Color.Primary"
+                                           StartIcon="@Icons.Material.Filled.CloudUpload"
+                                           for="@imageContext">
+                                    Choose avatar
+                                </MudButton>
+                            </ButtonTemplate>
+                        </MudFileUpload>
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex justify-content-center">
+                @if (!isReadOnly)
+                {
+                    <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           Class="ml-auto m-2"
+                           ButtonType=ButtonType.Submit
+                           Disabled="@(!context.Validate() || !context.IsModified() && !newAvatar && !dateChanged)">Update Account</MudButton>
+                }
+            </div>
+        </EditForm>
+    </MudCardContent>
+</MudCard>
+*@
 <div class="card">
     <div class="card-body">
         <h5 class="card-title">Please enter your details</h5>
@@ -58,6 +141,9 @@
     </div>
 </div>
 
+
+@inject IImageService _imageService
+
 @code {
 
     private UserRegistrationModel RegisterModel = new UserRegistrationModel();
@@ -80,5 +166,15 @@
             ShowErrors = true;
         }
     }
+
+    private bool newAvatar = false;
+    private string ImageUrl = "";
+    private async Task UploadImage(IBrowserFile file)
+    {
+        RegisterModel.Avatar = await _imageService.SaveImageInBase64(file);
+        this.newAvatar = true;
+        StateHasChanged();
+    }
+
 
 }

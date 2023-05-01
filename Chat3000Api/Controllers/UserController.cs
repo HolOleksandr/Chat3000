@@ -70,7 +70,6 @@ namespace ChatApp.API.Controllers
             if (!validation.IsValid)
                 return StatusCode(400, validation.Errors.Select(e => e.ErrorMessage));
 
-            var users = userUpdateModel;
             await _userService.UpdateUserInfoAsync(userUpdateModel);
            
             return Ok();

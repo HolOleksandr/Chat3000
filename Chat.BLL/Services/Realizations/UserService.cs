@@ -63,6 +63,7 @@ namespace Chat.BLL.Services.Realizations
             user.UserName = userUpdateModel.Email;
             user.Nickname = userUpdateModel.Nickname;
             user.Avatar = userUpdateModel.Avatar;
+            user.BirthDate = userUpdateModel.BirthDate;
 
             await _unitOfWork.SaveAsync();
 

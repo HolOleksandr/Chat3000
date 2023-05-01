@@ -18,6 +18,7 @@
     [LastName] NVARCHAR(50) NULL, 
     [Nickname] NVARCHAR(50) NULL, 
     [Avatar] NVARCHAR(MAX) NULL, 
+    [BirthDate] DATETIME NULL, 
     CONSTRAINT [PK_AspNetUsers] PRIMARY KEY CLUSTERED ([Id] ASC)
 );
 
