@@ -81,7 +81,6 @@
 @inject AuthenticationStateProvider _authStateProvider
 
 @code {
-    private string styleString ;
     [Parameter] public string GroupId { get; set; }
 
     [CascadingParameter] public HubConnection hubConnection { get; set; }
@@ -93,40 +92,24 @@
 
     private GroupInfoViewDTO _selectedGroup = new();
 
-
-    //private void SetMessageStyle(MessageDTO message)
-    //{
-    //    if(message.Sender.Id == CurrentUserId)
-    //    {
-    //        styleString = " padding: 15px;border-radius: 5px;margin-top:5px; background-color: var(--mud-palette-palette-info);";
-    //    }
-    //    else
-    //    {
-    //        styleString = " padding: 15px;border-radius: 5px;margin-top:5px; background-color: var(--mud-palette-background-grey);";
-    //    }
-    //    StateHasChanged();
-    //}
-
-
     protected override async Task OnInitializedAsync()
     {
         base.OnInitialized();
         await GetGroupFromQueryOrContainer();
         await CheckHubConnection();
         await GetUserClaims();
-
+        
 
         hubConnection.On<MessageDTO>("ReceiveMessage", async(message) =>
        {
            if (message.GroupId == _selectedGroup.Id)
            {
-               //SetMessageStyle(message);
-                messages.Add(message);
-                await _jsRuntime.InvokeAsync<string>("ScrollToBottom", "chatContainer");
-                await InvokeAsync(StateHasChanged);
-            }
+               messages.Add(message);
+               await _jsRuntime.InvokeAsync<string>("ScrollToBottom", "chatContainer");
+               await InvokeAsync(StateHasChanged);
+           }
 
-        });
+       });
         await hubConnection.InvokeAsync("JoinGroup", _selectedGroup.Id.ToString());
         await LoadGroupChat(_selectedGroup.Id);
 
@@ -161,11 +144,9 @@
 
             await _messageService.SendMessageAsync(newMessage);
 
-            //await hubConnection.SendAsync("SendMessageAsync", newMessage);
             await hubConnection.SendAsync("SendMessageToGroupAsync", newMessage, _selectedGroup.Id.ToString());
+            //await hubConnection.SendAsync("ChatNotificationAsync", GroupId); // TODO 
             CurrentMessage = string.Empty;
-
-
         };
     }
 

@@ -22,6 +22,7 @@ mono_crash.*
 [Rr]elease/
 [Rr]eleases/
 # [Pp]roperties/ -----------------------------
+.config/
 x64/
 x86/
 [Aa][Rr][Mm]/

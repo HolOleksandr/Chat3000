@@ -26,6 +26,8 @@ builder.Services.AddSignalR();
 builder.Services.AddSingleton<UserStateContainer>();
 builder.Services.AddSingleton<GroupInfoStateContainer>();
 builder.Services.AddSingleton<AvatarStateContainer>();
+builder.Services.AddSingleton<PeerIdStateContainer>();
+
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
 builder.Services.AddSingleton<IImageService, ImageService>();
 builder.Services.AddScoped<ICustomHttpClient, CustomHttpClient>();

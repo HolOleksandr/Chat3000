@@ -1,0 +1,77 @@
+﻿
+@attribute [Authorize]
+@using Microsoft.AspNetCore.SignalR.Client;
+
+<h3>VideoCalls</h3>
+
+
+
+
+<MudTextField Class="w-10; m-3" Value="@receiverEmail" Label="Enter user Email" Variant="Variant.Text"></MudTextField>
+
+<MudTextField Class="w-10; m-3" @bind-Value="@peerId" Label="PeerId" Variant="Variant.Text"></MudTextField>
+
+
+<MudButton @onclick="StartCall" Variant="Variant.Filled" EndIcon="@Icons.Material.Filled.Call" Color="Color.Primary" >Call</MudButton>
+
+<div>Local Video</div>
+<div style="height:400px; width:600px; background-color:black; position:relative;">
+    <video id="localVideo" autoplay playsinline
+           style=" position:absolute; top:50%;  height:400px; width:600px;  transform: translateY(-50%);">
+    </video>
+</div>
+
+
+
+
+<div>Remote Video</div>
+<div style="height:400px; width:600px; background-color:black; position:relative;">
+    <video id="remoteVideo" autoplay playsinline
+           style=" position:absolute; top:50%;  height:400px; width:600px;  transform: translateY(-50%);">
+    </video>
+
+</div>
+
+
+@inject NavigationManager Navigation
+
+@code {
+    [CascadingParameter] public HubConnection hubConnection { get; set; }
+    private ElementReference localVideo;
+    private ElementReference remoteVideo;
+    private string receiverEmail;
+    private string peerId;
+    private IJSObjectReference _peerModule;
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        _peerModule= await _jsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/peerjs-service.js");
+        receiverEmail = await _peerModule.InvokeAsync<string>("createPeer");
+        await InvokeAsync(StateHasChanged);
+        await CheckHubConnection();
+
+    }
+
+    private async Task StartCall()
+    {
+        var stream = await  _peerModule.InvokeAsync<IJSObjectReference>("startLocalStream");
+        await _peerModule.InvokeVoidAsync("setLocalStream", stream);
+        await _peerModule.InvokeVoidAsync("callPeer", peerId);
+
+       
+    }
+
+    private async Task CheckHubConnection()
+    {
+        if (hubConnection == null)
+        {
+            hubConnection = new HubConnectionBuilder().WithUrl(Navigation.ToAbsoluteUri("/chatHub")).Build();
+        }
+        if (hubConnection.State == HubConnectionState.Disconnected)
+        {
+            await hubConnection.StartAsync();
+        }
+    }
+}

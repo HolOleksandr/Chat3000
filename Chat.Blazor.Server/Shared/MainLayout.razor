@@ -2,6 +2,7 @@
 
 @using MudBlazor
 @using Microsoft.AspNetCore.SignalR.Client
+@using Chat.Blazor.Server.Helpers.StateContainers;
 
 <MudThemeProvider />
 <MudSnackbarProvider />
@@ -30,38 +31,74 @@
 </div>
 
 @inject NavigationManager Navigation
+@inject AuthenticationStateProvider _authStateProvider
+@inject PeerIdStateContainer _peerIdStateContainer
 
 @code{
     private HubConnection hubConnection;
     public bool IsConnected => hubConnection.State == HubConnectionState.Connected;
+    private string currentUserEmail;
+
     protected override async Task OnInitializedAsync()
     {
-        
-
         hubConnection = new HubConnectionBuilder().WithUrl(Navigation.ToAbsoluteUri("/chatHub")).Build();
         await hubConnection.StartAsync();
-        hubConnection.On<string, string>("ReceiveChatNotification", (groupName, message) =>
+        await SubscribeForChatNotifications();
+        await SubscribeForCallNotifications();
+        await GetCurrentUserEmail();
+
+
+    }
+
+    private async Task SubscribeForCallNotifications()
+    {
+    //    hubConnection = new HubConnectionBuilder().WithUrl(Navigation.ToAbsoluteUri("/chatHub")).Build();
+    //    await hubConnection.StartAsync();
+        hubConnection.On<string, string, string>("ReceiveCallMessage", (senderEmail, receiverEmail, message) =>
         {
-            //if (CurrentUserId == receiverUserId)
-            //{
-                _snackBar.Add(message, Severity.Info, config =>
+            if(currentUserEmail == receiverEmail){
+                _snackBar.Add($"{senderEmail} calling you", Severity.Info, config =>
                 {
                     config.VisibleStateDuration = 10000;
                     config.HideTransitionDuration = 500;
                     config.ShowTransitionDuration = 500;
-                    config.Action = "Chat?";
+                    config.Action = "Answer?";
                     config.ActionColor = Color.Info;
                     config.Onclick = snackbar =>
                     {
-                        Navigation.NavigateTo($"chat/{groupName}");
+                        Navigation.NavigateTo($"/calls/video/");
+                        _peerIdStateContainer.SetupPeerId(message);
                         return Task.CompletedTask;
                     };
                 });
-            //}
+            }
+            
         });
+    }
+    private async Task GetCurrentUserEmail(){
+        var _userState = await _authStateProvider.GetAuthenticationStateAsync();
+        currentUserEmail = _userState.User.Identity.Name;
+    }
+    
 
-        //var state = await _stateProvider.GetAuthenticationStateAsync();
-        //var user = state.User;
-        //CurrentUserId = user.Claims.Where(a => a.Type == "sub").Select(a => a.Value).FirstOrDefault();
+
+    private async Task SubscribeForChatNotifications()
+    {
+        hubConnection.On("ReceiveChatNotification", () =>
+        {
+            _snackBar.Add("Message", Severity.Info, config =>
+                {
+                    config.VisibleStateDuration = 10000;
+                    config.HideTransitionDuration = 500;
+                    config.ShowTransitionDuration = 500;
+                    config.Action = "Open chat";
+                    config.ActionColor = Color.Info;
+                    config.Onclick = snackbar =>
+                    {
+                        Navigation.NavigateTo($"chat/");
+                        return Task.CompletedTask;
+                    };
+                });
+        });
     }
 }
