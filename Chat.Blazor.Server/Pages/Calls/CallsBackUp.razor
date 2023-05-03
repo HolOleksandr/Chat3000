@@ -49,46 +49,43 @@
     private IJSObjectReference _peerModule;
     [Parameter] public string CurrentUserEmail { get; set; }
     [Parameter] public string CurrentUserId { get; set; }
-    
 
 
-    protected override async Task OnInitializedAsync()
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        _peerModule = await _jsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/peerjs-service.js");
-        peerId = await _peerModule.InvokeAsync<string>("createPeer");
-
-        //await InvokeAsync(StateHasChanged);
-        await CheckHubConnection();
-        _peerIdStateContainer.OnPeerIdChange += AnswerCall;
+        if (firstRender)
+        {
+            _peerModule = await _jsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/peerjs-service.js");
+            peerId = await _peerModule.InvokeAsync<string>("createPeer");
+            await GetUserClaims();
+            //await InvokeAsync(StateHasChanged);
+            await CheckHubConnection();
+            _peerIdStateContainer.OnPeerIdChange += AnswerCall;
+        }
+        base.OnAfterRender(firstRender);
     }
-
-    //protected override async Task OnAfterRenderAsync(bool firstRender)
-    //{
-    //    if (firstRender)
-    //    {
-    //        await CheckHubConnection();
-    //        //_peerModule = await _jsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/peerjs-service.js");
-    //        //peerId = await _peerModule.InvokeAsync<string>("createPeer"); 
-    //    }
-        
-    //}
 
     private async Task StartCall()
     {
         
         await hubConnection.SendAsync("SendCallMessage", CurrentUserEmail, receiverEmail, peerId);
-        //await _peerModule.InvokeVoidAsync("setLocalStream", stream);
+        
+        _peerIdStateContainer.OnPeerIdChange -= AnswerCall;
     }
 
     private async void AnswerCall(string peerId)
     {
         await CheckHubConnection();
-        //var _peerModule = await _jsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/peerjs-service.js");
-        var stream = await _peerModule.InvokeAsync<IJSObjectReference>("startLocalStream");
-        var peerId2 = await _peerModule.InvokeAsync<string>("createPeer");
-        await _peerModule.InvokeVoidAsync("setLocalStream", stream);
-        //var peer2 = await _peerModule.InvokeAsync<string>("createPeer");
-        await _peerModule.InvokeVoidAsync("callPeer", peerId);
+        var _peerModule2 = await _jsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/peerjs-service.js");
+        
+
+        var stream = await _peerModule2.InvokeAsync<IJSObjectReference>("startLocalStream");
+        
+        await _peerModule2.InvokeVoidAsync("setLocalStream", stream);
+
+
+        await _peerModule2.InvokeVoidAsync("callPeer", peerId);
         //await InvokeAsync(StateHasChanged);
     }
 

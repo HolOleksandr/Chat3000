@@ -21,6 +21,7 @@ export function createPeer() {
                     call.on('stream', function (stream) {
                         remoteStream = stream;
                         setRemoteStream(remoteStream);
+                        console.log('SET stream on peer');
                     });
                 })
                 .catch(function (err) {
@@ -28,6 +29,7 @@ export function createPeer() {
                 });
         });
         peer.on('error', function (err) {
+            console.log('Failed ', err);
             reject(err);
         });
     });
