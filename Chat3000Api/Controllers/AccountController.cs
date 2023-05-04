@@ -77,7 +77,8 @@ namespace ChatApp.API.Controllers
         {
             var validation = await _changePassValidator.ValidateAsync(model);
             if (!validation.IsValid)
-                return StatusCode(400, validation.Errors.Select(e => e.ErrorMessage));
+                return BadRequest(new RegistrationResult { Success = false, Errors = validation.Errors.Select(e => e.ErrorMessage) });
+            
 
             var result = await _userAuthService.ChangePasswordAsync(model);
             if (!result.Succeeded)

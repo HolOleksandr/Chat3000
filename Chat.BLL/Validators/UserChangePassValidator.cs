@@ -13,7 +13,6 @@ namespace Chat.BLL.Validators
         public UserChangePassValidator()
         {
             RuleFor(u => u.Email)
-                .NotNull()
                 .NotEmpty()
                 .EmailAddress()
                 .WithMessage("Please enter your e-mail");
@@ -22,7 +21,7 @@ namespace Chat.BLL.Validators
 
             RuleFor(u => u.NewPassword)
                 .NotEmpty()
-                .MinimumLength(5);
+                .MinimumLength(5).WithMessage("The minimum length of a new password is 5 characters."); ;
 
         }
     }
