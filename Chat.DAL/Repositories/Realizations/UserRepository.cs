@@ -41,7 +41,7 @@ namespace Chat.DAL.Repositories.Realizations
 
         public async Task<User?> GetUserByEmailAsync(string email)
         {
-            var user = await _dbContext.Users.AsQueryable().FirstOrDefaultAsync(x => string.Equals(x.Email, email));
+            var user = await _dbContext.Users.Include(u => u.Groups).AsQueryable().FirstOrDefaultAsync(x => string.Equals(x.Email, email));
             return user;
         }
 

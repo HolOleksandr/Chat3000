@@ -46,15 +46,13 @@
         await SubscribeForChatNotifications();
         await SubscribeForCallNotifications();
         await GetCurrentUserEmail();
-
+        //await hubConnection.SendAsync("SubscribeForMessages", currentUserEmail);
 
     }
 
     private async Task SubscribeForCallNotifications()
     {
-    //    hubConnection = new HubConnectionBuilder().WithUrl(Navigation.ToAbsoluteUri("/chatHub")).Build();
-    //    await hubConnection.StartAsync();
-        hubConnection.On<string, string, string>("ReceiveCallMessage", (senderEmail, receiverEmail, message) =>
+        hubConnection.On<string, string, string>("ReceiveCallMessage", (senderEmail, receiverEmail, peerId) =>
         {
             if(currentUserEmail == receiverEmail){
                 _snackBar.Add($"{senderEmail} calling you", Severity.Info, config =>
@@ -66,8 +64,8 @@
                     config.ActionColor = Color.Info;
                     config.Onclick = snackbar =>
                     {
-                        Navigation.NavigateTo($"/calls/video/");
-                        _peerIdStateContainer.SetupPeerId(message);
+                        Navigation.NavigateTo($"/calls/video?p={peerId}");
+                        //_peerIdStateContainer.SetupPeerId(message);
                         return Task.CompletedTask;
                     };
                 });

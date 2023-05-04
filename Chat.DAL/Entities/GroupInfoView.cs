@@ -17,5 +17,7 @@ namespace Chat.DAL.Entities
         public int TotalMessages { get; set; }
         public int Members { get; set; }
         public IList<User> Users { get; set; } = null!;
+
+        public Group Group { get; set; }
     }
 }

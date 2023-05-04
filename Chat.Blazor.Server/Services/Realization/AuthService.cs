@@ -6,6 +6,7 @@ using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text;
 using Chat.Blazor.Server.Helpers.Realization;
+using Chat.Blazor.Server.Models.Paging;
 
 namespace Chat.Blazor.Server.Services.Realization
 {
@@ -34,9 +35,11 @@ namespace Chat.Blazor.Server.Services.Realization
             var result = await _httpClient.PostAsJsonAsync(_baseUrl + "api/account/register", registerModel);
             if (result.IsSuccessStatusCode)
                 return new RegistrationResult { Success = true, Errors = null };
-            //var registrationResult = JsonSerializer.Deserialize<RegistrationResult>(await result.Content.ReadAsStringAsync(), new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-            return new RegistrationResult { Success = false, Errors = new List<string> { "Error occured" } };
+            var stream = await result.Content.ReadAsStreamAsync();
+            var registrationResult = await ServiceStack.Text.JsonSerializer.DeserializeFromStreamAsync<RegistrationResult>(stream);
+
+            return new RegistrationResult { Success = false, Errors = registrationResult.Errors };
         }
 
         public async Task<LoginResult> Login(UserLoginModel loginModel)
@@ -67,9 +70,11 @@ namespace Chat.Blazor.Server.Services.Realization
                 await Logout();
                 return new RegistrationResult { Success = true, Errors = null };
             }
-            //var registrationResult = JsonSerializer.Deserialize<RegistrationResult>(await result.Content.ReadAsStringAsync(), new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-            return new RegistrationResult { Success = false, Errors = new List<string> { "Error occured" } };
+            var stream = await result.Content.ReadAsStreamAsync();
+            var registrationResult = await ServiceStack.Text.JsonSerializer.DeserializeFromStreamAsync<RegistrationResult>(stream);
+
+            return new RegistrationResult { Success = false, Errors = registrationResult.Errors };
         }
 
         public async Task Logout()

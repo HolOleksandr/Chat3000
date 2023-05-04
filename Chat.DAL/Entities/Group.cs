@@ -17,5 +17,9 @@ namespace Chat.DAL.Entities
         public IList<User> Users { get; set; } = null!;
         public ICollection<Message>? Messages { get; set; }
 
+
+        public GroupInfoView GroupInfo { get; set; }
+        
+
     }
 }

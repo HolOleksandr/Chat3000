@@ -7,6 +7,7 @@ export function createPeer() {
     console.log("peer create: " + peer);
     return new Promise((resolve, reject) => {
         peer.on('open', function (id) {
+            console.log("peer create ID: " + id);
             resolve(id);
         });
         peer.on('call', function (call) {
@@ -28,6 +29,14 @@ export function createPeer() {
                     console.log('Failed to get local stream', err);
                 });
         });
+        //peer.on('destroy', function (call) {
+        //    console.log('Destroing call...');
+        //    navigator.mediaDevices.stop()
+                
+        //        .catch(function (err) {
+        //            console.log('Failed to stop local stream', err);
+        //        });
+        //});
         peer.on('error', function (err) {
             console.log('Failed ', err);
             reject(err);
@@ -43,7 +52,6 @@ export async function callPeer(id) {
     await startLocalStream();
     await callPeerInner(id);
 }
-
 
 async function callPeerInner(id) {
     navigator.mediaDevices
@@ -63,7 +71,18 @@ async function callPeerInner(id) {
         });
 }
 
-
+export async function destroyPeer(peerId) {
+    if (peerInstance) {
+        peerInstance.destroy();
+        localStream.getTracks().forEach(function (track) {
+            if (track.readyState === 'live') {
+                track.stop();
+            }
+        });
+        
+    }
+    
+}
 
 
 

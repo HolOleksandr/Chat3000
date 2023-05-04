@@ -56,7 +56,7 @@
                         <ValidationMessage For="@(() => _selectedUser.PhoneNumber)" />
                     </div>
                     <div class="form-group">
-                        <MudDatePicker Label="Date of Birth" @bind-Date="_selectedUser.BirthDate" DisableToolbar="true" />
+                        <MudDatePicker ReadOnly="@isReadOnly" Label="Date of Birth" @bind-Date="_selectedUser.BirthDate" DisableToolbar="true" />
                         <ValidationMessage For="@(() => _selectedUser.BirthDate)" />
                     </div>
                 </fieldset>

@@ -28,11 +28,16 @@ namespace Chat.DAL.Repositories.Realizations
 
         public async Task<IEnumerable<GroupInfoView>> GetGroupsByUserIdAsync(string userId, string searchText)
         {
-            var info = await _dbContext.GroupsInfo.ToListAsync();
-            var user = await _dbContext.Users.Include(u => u.GroupsInfo)
+            var user = await _dbContext.Users
+                .Include(u => u.Groups).ThenInclude(g => g.GroupInfo)
                 .FirstOrDefaultAsync(u => string.Equals(u.Id, userId));
 
-            var sortedGroupInfo = user.GroupsInfo.AsQueryable().SearchInGroupInfo(searchText);
+            //var user = await _dbContext.Users.Include(u => u.GroupsInfo)
+            //    .FirstOrDefaultAsync(u => string.Equals(u.Id, userId));
+
+            //var sortedGroupInfo = user.GroupsInfo.AsQueryable().SearchInGroupInfo(searchText);
+            var sortedGroupInfo = user.Groups.AsQueryable().Select(g => g.GroupInfo).SearchInGroupInfo(searchText);
+
 
             return sortedGroupInfo.AsEnumerable();
         }

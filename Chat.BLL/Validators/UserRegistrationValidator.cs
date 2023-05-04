@@ -49,6 +49,7 @@ namespace Chat.BLL.Validators
 
         private static bool BeValidNickName(string nickName)
         {
+            if (nickName == null) return true;
             string pattern = "^[a-zA-Z0-9_=\\/]+$";
             return Regex.IsMatch(nickName, pattern);
         }

@@ -10,8 +10,10 @@ using Chat.Blazor.Server.Services.Realization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.SignalR;
 using MudBlazor;
 using MudBlazor.Services;
+using ServiceStack;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,7 +29,7 @@ builder.Services.AddSingleton<UserStateContainer>();
 builder.Services.AddSingleton<GroupInfoStateContainer>();
 builder.Services.AddSingleton<AvatarStateContainer>();
 builder.Services.AddSingleton<PeerIdStateContainer>();
-
+//builder.Services.AddSingleton<IUserIdProvider, EmailBasedUserProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
 builder.Services.AddSingleton<IImageService, ImageService>();
 builder.Services.AddScoped<ICustomHttpClient, CustomHttpClient>();

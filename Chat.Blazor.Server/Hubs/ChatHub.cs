@@ -6,6 +6,14 @@ namespace Chat.Blazor.Server.Hubs
 {
     public class ChatHub : Hub
     {
+        private readonly Dictionary<string, string> Users = new Dictionary<string, string>();
+
+        public void SubscribeForMessages(string userEmail)
+        {
+            Users.Add(userEmail, Context.ConnectionId);
+        }
+
+
         public async Task SendMessageToGroupAsync(MessageDTO message, string groupName)
         {
             await Clients.Group(groupName).SendAsync("ReceiveMessage", message);
@@ -32,9 +40,11 @@ namespace Chat.Blazor.Server.Hubs
 
         // Call HUB
 
-        public async Task SendCallMessage(string senderEmail, string receiver, string message)
+        public async Task SendCallMessage(string senderEmail, string receiverEmail, string message)
         {
-            await Clients.All.SendAsync("ReceiveCallMessage", senderEmail, receiver, message);
+            await Clients.All.SendAsync("ReceiveCallMessage", senderEmail, receiverEmail, message);
+            //Users.TryGetValue(receiverEmail, out var connectionId);
+            //await Clients.User(connectionId).SendAsync("ReceiveCallMessage", senderEmail, receiverEmail, message);
         }
     }
 }

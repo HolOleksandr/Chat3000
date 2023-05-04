@@ -15,6 +15,7 @@
 
 
 <MudButton @onclick="StartCall" Variant="Variant.Filled" EndIcon="@Icons.Material.Filled.Call" Color="Color.Primary">Call</MudButton>
+<MudButton @onclick="StopCall" Variant="Variant.Filled" EndIcon="@Icons.Material.Filled.Call" Color="Color.Primary">Hang Up</MudButton>
 
 <div>Local Video</div>
 <div style="height:400px; width:600px; background-color:black; position:relative;">
@@ -41,6 +42,9 @@
 
 
 @code {
+    private bool firstRenderComplete;
+    private string? PeerIdStr { get; set; }
+
     [CascadingParameter] public HubConnection hubConnection { get; set; }
     private ElementReference localVideo;
     private ElementReference remoteVideo;
@@ -56,37 +60,47 @@
     {
         if (firstRender)
         {
+            firstRenderComplete = true;
             _peerModule = await _jsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/peerjs-service.js");
-            peerId = await _peerModule.InvokeAsync<string>("createPeer");
+            var uri = Navigation.ToAbsoluteUri(Navigation.Uri);  
+            if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("p", out var initCount))  
+            {
+                AnswerCall(initCount.ToString());
+            }  
+            else
+            {
+
+                //peerId = await _peerModule.InvokeAsync<string>("createPeer");
+            }
             await GetUserClaims();
-            //await InvokeAsync(StateHasChanged);
             await CheckHubConnection();
-            _peerIdStateContainer.OnPeerIdChange += AnswerCall;
+           
+            //_peerIdStateContainer.OnPeerIdChange += AnswerCall; // IMPRTNT: subscribing on incoming call
         }
         base.OnAfterRender(firstRender);
     }
 
     private async Task StartCall()
     {
-        
+        peerId = await _peerModule.InvokeAsync<string>("createPeer");
+        //_peerIdStateContainer.OnPeerIdChange -= AnswerCall;  // IMPRTNT: for usubscribing of ourself call
         await hubConnection.SendAsync("SendCallMessage", CurrentUserEmail, receiverEmail, peerId);
-        
-        _peerIdStateContainer.OnPeerIdChange -= AnswerCall;
+        Navigation.NavigateTo($"{Navigation.BaseUri}calls/video?p={peerId}");
+    }
+
+    private async void StopCall()
+    {
+        await _peerModule.InvokeVoidAsync("destroyPeer", peerId);
+        Navigation.NavigateTo($"{Navigation.BaseUri}calls/video");
     }
 
     private async void AnswerCall(string peerId)
     {
         await CheckHubConnection();
-        var _peerModule2 = await _jsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/peerjs-service.js");
-        
-
-        var stream = await _peerModule2.InvokeAsync<IJSObjectReference>("startLocalStream");
-        
-        await _peerModule2.InvokeVoidAsync("setLocalStream", stream);
-
-
-        await _peerModule2.InvokeVoidAsync("callPeer", peerId);
-        //await InvokeAsync(StateHasChanged);
+        var id = await _peerModule.InvokeAsync<string>("createPeer");
+        var stream = await _peerModule.InvokeAsync<IJSObjectReference>("startLocalStream");
+        await _peerModule.InvokeVoidAsync("setLocalStream", stream);
+        await _peerModule.InvokeVoidAsync("callPeer", peerId);
     }
 
 
@@ -117,8 +131,11 @@
 
     public void Dispose()
     {
-        
-            _peerIdStateContainer.OnPeerIdChange -= AnswerCall;
+        if(firstRenderComplete)
+        {
+            //_peerModule.Dispose();
+        }
+                //_peerIdStateContainer.OnPeerIdChange -= AnswerCall;
             
        
 

@@ -32,8 +32,7 @@ namespace Chat.Blazor.Server.Validators
             When(x => x.BirthDate != null, () => {
                 RuleFor(x => x.BirthDate)
                     .Must(BeValidMinAge).WithMessage("Your age must be more than 3")
-
-                    .Must(BeValidMaxAge).WithMessage("Congrats if your age is right. Contact with our admin.");
+                    .Must(BeValidMaxAge).WithMessage("Congrats if your age is right. Contact the admin to receive a gift.");
             });
 
             RuleFor(x => x.PhoneNumber)
@@ -59,10 +58,10 @@ namespace Chat.Blazor.Server.Validators
         {
             if (date.HasValue)
             {
-                int currentYear = DateTime.Now.Year;
-                int birthYear = date.Value.Year;
                 int minAge = 3;
-                if ((birthYear + minAge) <= currentYear)
+                var today = DateTime.Now;
+                var minBdDate = today.AddYears(-minAge);
+                if (minBdDate > date)
                 {
                     return true;
                 }
@@ -74,10 +73,10 @@ namespace Chat.Blazor.Server.Validators
         {
             if (date.HasValue)
             {
-                int currentYear = DateTime.Now.Year;
-                int birthYear = date.Value.Year;
-                int maxAge = 120;
-                if (birthYear > (currentYear - maxAge))
+                int maxAge = 60;
+                var today = DateTime.Now;
+                var manBdDate = today.AddYears(-maxAge);
+                if (manBdDate < date)
                 {
                     return true;
                 }

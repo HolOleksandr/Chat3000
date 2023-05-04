@@ -137,6 +137,11 @@
                 <ValidationMessage For="@(() => RegisterModel.ConfirmPassword)" />
             </div>
             <button type="submit" class="btn btn-primary">Submit</button>
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       Class="ml-auto m-2"
+                       ButtonType=ButtonType.Submit
+                       Disabled="@(!context.Validate() || !context.IsModified())">Update Account</MudButton>
         </EditForm>
     </div>
 </div>

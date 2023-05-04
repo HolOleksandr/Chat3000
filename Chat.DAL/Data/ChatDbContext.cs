@@ -45,13 +45,10 @@ namespace Chat.DAL.Data
                 .HasForeignKey(g => g.AdminId);
 
 
-            modelBuilder.Entity<GroupInfoView>()
-                .HasMany(g => g.Users)
-                .WithMany(u => u.GroupsInfo)
-                .UsingEntity<UserGroup>(
-                    g => g.HasOne<User>().WithMany().HasForeignKey("userId"),
-                    u => u.HasOne<GroupInfoView>().WithMany().HasForeignKey("groupId"));
-
+            modelBuilder.Entity<Group>()
+                .HasOne(c => c.GroupInfo)
+                .WithOne(ci => ci.Group)
+                .HasForeignKey<GroupInfoView>(ci => ci.Id);
 
         }
     }

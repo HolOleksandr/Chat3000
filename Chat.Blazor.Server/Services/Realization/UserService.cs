@@ -61,9 +61,10 @@ namespace Chat.Blazor.Server.Services.Realization
 
             if (result.IsSuccessStatusCode)
                 return new RegistrationResult { Success = true, Errors = null };
-            var registrationResult = System.Text.Json.JsonSerializer.Deserialize<Error>(await result.Content.ReadAsStringAsync(), new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            var stream = await result.Content.ReadAsStreamAsync();
+            var registrationResult = await ServiceStack.Text.JsonSerializer.DeserializeFromStreamAsync<Error>(stream);
 
-            return new RegistrationResult { Success = false, Errors = new List<string> { registrationResult.Message } };
+            return new RegistrationResult { Success = false, Errors = new List<string>() { registrationResult.Message } };
         }
 
         public async Task<IEnumerable<string>> GetUsersEmailsExcepMaker(string makerEmail)
