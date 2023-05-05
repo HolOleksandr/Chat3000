@@ -56,32 +56,30 @@
 
 
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override async Task OnInitializedAsync()
     {
-        if (firstRender)
+        _peerModule = await _jsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/peerjs-service.js");
+        var uri = Navigation.ToAbsoluteUri(Navigation.Uri);  
+        if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("p", out var initCount))  
         {
-            firstRenderComplete = true;
-            _peerModule = await _jsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/peerjs-service.js");
-            var uri = Navigation.ToAbsoluteUri(Navigation.Uri);  
-            if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("p", out var initCount))  
-            {
-                AnswerCall(initCount.ToString());
-            }  
-            else
-            {
+            AnswerCall(initCount.ToString());
+        }  
 
-                //peerId = await _peerModule.InvokeAsync<string>("createPeer");
-            }
-            await GetUserClaims();
-            await CheckHubConnection();
-           
-            //_peerIdStateContainer.OnPeerIdChange += AnswerCall; // IMPRTNT: subscribing on incoming call
-        }
-        base.OnAfterRender(firstRender);
+        await GetUserClaims();
+        await CheckHubConnection();
+
+        hubConnection.On("CallFinished", async () =>
+        {
+            await _peerModule.InvokeVoidAsync("destroyPeer", peerId);
+            Navigation.NavigateTo($"{Navigation.BaseUri}calls/video");
+        } );
+        _peerIdStateContainer.OnPeerIdChange += AnswerCall; // IMPRTNT: subscribing on incoming call
+        await InvokeAsync(StateHasChanged);
     }
 
     private async Task StartCall()
     {
+        //await hubConnection.SendAsync("JoinGroup", CurrentUserEmail);
         peerId = await _peerModule.InvokeAsync<string>("createPeer");
         //_peerIdStateContainer.OnPeerIdChange -= AnswerCall;  // IMPRTNT: for usubscribing of ourself call
         await hubConnection.SendAsync("SendCallMessage", CurrentUserEmail, receiverEmail, peerId);
@@ -90,13 +88,16 @@
 
     private async void StopCall()
     {
+        await hubConnection.SendAsync("HangUp", receiverEmail);
         await _peerModule.InvokeVoidAsync("destroyPeer", peerId);
         Navigation.NavigateTo($"{Navigation.BaseUri}calls/video");
     }
 
     private async void AnswerCall(string peerId)
     {
+        await GetUserClaims();
         await CheckHubConnection();
+        //await hubConnection.SendAsync("JoinGroup", CurrentUserEmail);
         var id = await _peerModule.InvokeAsync<string>("createPeer");
         var stream = await _peerModule.InvokeAsync<IJSObjectReference>("startLocalStream");
         await _peerModule.InvokeVoidAsync("setLocalStream", stream);

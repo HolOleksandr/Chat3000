@@ -47,6 +47,11 @@ namespace Chat.Blazor.Server.Hubs
             //await Clients.User(connectionId).SendAsync("ReceiveCallMessage", senderEmail, receiverEmail, message);
         }
 
+        public async Task HangUp(string userId)
+        {
+            await Clients.All.SendAsync("CallFinished");
+            // TODO leave group
+        }
     }
 }
 

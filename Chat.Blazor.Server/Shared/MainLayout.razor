@@ -65,7 +65,7 @@
                     config.Onclick = snackbar =>
                     {
                         Navigation.NavigateTo($"/calls/video?p={peerId}");
-                        //_peerIdStateContainer.SetupPeerId(message);
+                        _peerIdStateContainer.SetupPeerId(peerId);
                         return Task.CompletedTask;
                     };
                 });
