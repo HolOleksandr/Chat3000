@@ -31,7 +31,7 @@ namespace Chat.Blazor.Server.Validators
 
             When(x => x.BirthDate != null, () => {
                 RuleFor(x => x.BirthDate)
-                    .Must(BeValidMinAge).WithMessage("Your age must be more than 3")
+                    .Must(BeValidMinAge).WithMessage("Your age must be over 3 years old")
                     .Must(BeValidMaxAge).WithMessage("Congrats if your age is right. Contact the admin to receive a gift.");
             });
 
@@ -43,6 +43,7 @@ namespace Chat.Blazor.Server.Validators
 
         private static bool BeValidNickName(string nickName)
         {
+            if (nickName == null) return true;
             string pattern = "^[a-zA-Z0-9_=\\/]+$";
             return Regex.IsMatch(nickName, pattern);
         }

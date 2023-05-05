@@ -56,9 +56,13 @@
             }
         </div>
         <MudPaper Elevation="25" Class="d-flex flex-row px-2 mx-4" Style="">
-            <MudTextField T="string" Placeholder="Enter your message..." DisableUnderLine="true" Class="mt-n2 mx-4"
+            <MudTextField 
+                T="string" Placeholder="Enter your message..." DisableUnderLine="true" Class="mt-n2 mx-4"
                           @bind-Value="CurrentMessage" For="@(()=> CurrentMessage)" />
-            <MudButton OnClick="SendMessage" StartIcon="@Icons.Material.Outlined.Send" Color="Color.Secondary" ButtonType="ButtonType.Button">Send</MudButton>
+            <MudButton  Color="Color.Secondary" StartIcon="@Icons.Material.Outlined.Send" @onclick="SendMessage">
+                Send
+            </MudButton>
+            
         </MudPaper>
     </MudPaper>
     <MudPaper Elevation="25" Class="pa-3 ml-6" MinWidth="350px">
@@ -98,7 +102,7 @@
         await GetGroupFromQueryOrContainer();
         await CheckHubConnection();
         await GetUserClaims();
-        
+
 
         hubConnection.On<MessageDTO>("ReceiveMessage", async(message) =>
        {
@@ -126,6 +130,15 @@
         StateHasChanged();
     }
 
+    private ElementReference  sendButton;
+    private async void HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Code == "Enter")
+        {
+            await _jsRuntime.InvokeVoidAsync("blazorHelpers.simulateClick", sendButton);
+            CurrentMessage = string.Empty;
+        }
+    }
 
     private async Task SendMessage()
     {

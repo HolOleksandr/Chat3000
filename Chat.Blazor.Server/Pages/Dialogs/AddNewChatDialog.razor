@@ -8,7 +8,7 @@
     <DialogContent>
         
         <EditForm Model="@_newGroupRequest">
-            
+            <FluentValidationValidator />
             <div class="form-group">
                 <label for="groupname">Group Name</label>
                 <InputText Id="groupname" class="form-control" @bind-Value="_newGroupRequest.Name" />
@@ -50,7 +50,9 @@
         }
         
 
-        <MudTextField T="string"
+        @if (isHidden)
+        {
+            <MudTextField T="string"
                       Placeholder="Search"
                       Adornment="Adornment.Start"
                       AdornmentIcon="@Icons.Material.Filled.Search"
@@ -58,35 +60,38 @@
                       Class="mt-0"
                       OnBlur="HideTable"
                       onclick="@LoadData">
-        </MudTextField>
-        @if (!isHidden)
-        {
-            <MudTable Items="usersInfoList"
-                  Height="350px"
-                  @ref="_table"
-                  Breakpoint="Breakpoint.Sm"
-                  @bind-SelectedItems="selectedItems"
-                  FixedHeader="true"
-                  MultiSelection="true">
-                <HeaderContent>
-                    <MudTd>
-                        Select all users:
-                    </MudTd>
-                    <MudTd>
-                    </MudTd>
-                </HeaderContent>
-                <RowTemplate>
-                    <MudTd DataLabel="Column1">@context.FirstName @context.LastName</MudTd>
-                    <MudTd DataLabel="Column2">@context.Email</MudTd>
+            </MudTextField>
+            @if (!isHidden)
+            {
+                <MudTable Items="usersInfoList"
+                      Height="350px"
+                      @ref="_table"
+                      Breakpoint="Breakpoint.Sm"
+                      @bind-SelectedItems="selectedItems"
+                      FixedHeader="true"
+                      MultiSelection="true">
+                    <HeaderContent>
+                        <MudTd>
+                            Select all users:
+                        </MudTd>
+                        <MudTd>
+                        </MudTd>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Column1">@context.FirstName @context.LastName</MudTd>
+                        <MudTd DataLabel="Column2">@context.Email</MudTd>
 
-                </RowTemplate>
-            </MudTable>
+                    </RowTemplate>
+                </MudTable>
+            }
         }
+
+        
         
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="Cancel">Cancel</MudButton>
-        <MudButton Color="Color.Primary" OnClick="Submit">Ok</MudButton>
+        <MudButton Color="Color.Primary"  OnClick="Submit">Ok</MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -129,7 +134,7 @@
         if (!selectedValues.Any())
             return "Select users";
 
-        return $"Selected user{(selectedValues.Count > 1 ? "s" : "")}: {string.Join(", ", this.options.Select(x => x.FirstName + " "+ x.LastName))}";
+        return $"Selected user{(selectedValues.Count > 1 ? "s" : "")}({selectedValues.Count}): {string.Join(", ", this.options.Select(x => x.FirstName + " " + x.LastName))}";
     }
 
     private async Task Submit()

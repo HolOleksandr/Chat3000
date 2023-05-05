@@ -17,7 +17,11 @@ namespace Chat.Blazor.Server.Validators
 
             RuleFor(x => x.NewPassword)
                 .NotEmpty().WithMessage("{PropertyName} must not be empty.");
-                //.Equal(x => x.OldPassword).WithMessage("Passwords do not match");
+            //.Equal(x => x.OldPassword).WithMessage("Passwords do not match");
+           
+            RuleFor(x => x.NewPasswordConfirm)
+             .NotEmpty().WithMessage("Password confirmation is required.")
+             .Equal(x => x.NewPassword).WithMessage("New passwords do not match");
         }
     
     }
