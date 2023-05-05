@@ -9,13 +9,17 @@
 
 
 
-<MudTextField Class="w-10; m-3" @bind-Value="receiverEmail" Label="Enter user Email" Variant="Variant.Text"></MudTextField>
+<MudTextField Class="w-10; m-3" Disabled="OnCall" @bind-Value="receiverEmail" Label="Enter user Email" Variant="Variant.Text"></MudTextField>
 
-<MudTextField Class="w-10; m-3" @bind-Value="peerId" Label="PeerId" Variant="Variant.Text"></MudTextField>
+@if (false)
+{
+    <MudTextField Class="w-10; m-3"  @bind-Value="peerId" Label="PeerId" Variant="Variant.Text"></MudTextField>
+    
+}
 
 
-<MudButton @onclick="StartCall" Variant="Variant.Filled" EndIcon="@Icons.Material.Filled.Call" Color="Color.Primary">Call</MudButton>
-<MudButton @onclick="StopCall" Variant="Variant.Filled" EndIcon="@Icons.Material.Filled.Call" Color="Color.Primary">Hang Up</MudButton>
+<MudButton Disabled="OnCall" @onclick="StartCall" Variant="Variant.Filled" EndIcon="@Icons.Material.Filled.Call" Color="Color.Primary">Call</MudButton>
+<MudButton Disabled="!OnCall" @onclick="StopCall" Variant="Variant.Filled" EndIcon="@Icons.Material.Filled.CallEnd" Color="Color.Secondary">Hang Up</MudButton>
 
 <div>Local Video</div>
 <div style="height:400px; width:600px; background-color:black; position:relative;">
@@ -24,10 +28,9 @@
     </video>
 </div>
 
-
-
-
 <div>Remote Video</div>
+
+
 <div style="height:400px; width:600px; background-color:black; position:relative;">
     <video id="remoteVideo" autoplay playsinline
            style=" position:absolute; top:50%;  height:400px; width:600px;  transform: translateY(-50%);">
@@ -44,7 +47,7 @@
 @code {
     private bool firstRenderComplete;
     private string? PeerIdStr { get; set; }
-
+    private bool OnCall = false;
     [CascadingParameter] public HubConnection hubConnection { get; set; }
     private ElementReference localVideo;
     private ElementReference remoteVideo;
@@ -72,6 +75,7 @@
         {
             await _peerModule.InvokeVoidAsync("destroyPeer", peerId);
             Navigation.NavigateTo($"{Navigation.BaseUri}calls/video");
+            OnCall = false;
         } );
         _peerIdStateContainer.OnPeerIdChange += AnswerCall; // IMPRTNT: subscribing on incoming call
         await InvokeAsync(StateHasChanged);
@@ -79,11 +83,14 @@
 
     private async Task StartCall()
     {
+        _peerModule = await _jsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/peerjs-service.js");
         //await hubConnection.SendAsync("JoinGroup", CurrentUserEmail);
         peerId = await _peerModule.InvokeAsync<string>("createPeer");
         //_peerIdStateContainer.OnPeerIdChange -= AnswerCall;  // IMPRTNT: for usubscribing of ourself call
         await hubConnection.SendAsync("SendCallMessage", CurrentUserEmail, receiverEmail, peerId);
         Navigation.NavigateTo($"{Navigation.BaseUri}calls/video?p={peerId}");
+        OnCall = true;
+        
     }
 
     private async void StopCall()
@@ -91,6 +98,7 @@
         await hubConnection.SendAsync("HangUp", receiverEmail);
         await _peerModule.InvokeVoidAsync("destroyPeer", peerId);
         Navigation.NavigateTo($"{Navigation.BaseUri}calls/video");
+        OnCall = false;
     }
 
     private async void AnswerCall(string peerId)
@@ -102,6 +110,8 @@
         var stream = await _peerModule.InvokeAsync<IJSObjectReference>("startLocalStream");
         await _peerModule.InvokeVoidAsync("setLocalStream", stream);
         await _peerModule.InvokeVoidAsync("callPeer", peerId);
+        OnCall = true;
+        await InvokeAsync(StateHasChanged);
     }
 
 
