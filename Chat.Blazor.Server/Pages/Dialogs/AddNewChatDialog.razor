@@ -7,8 +7,9 @@
 <MudDialog>
     <DialogContent>
         
-        <EditForm Model="@_newGroupRequest">
+        <EditForm Model="_newGroupRequest">
             <FluentValidationValidator @ref="_fluentValidationValidator" />
+
             <div class="form-group">
                 <label for="groupname">Group Name</label>
                 <InputText Id="groupname" class="form-control" @bind-Value="_newGroupRequest.Name" />
@@ -149,7 +150,7 @@
                 MudDialog.Close(DialogResult.Ok(true));
             }
         }
-        
+
     }
 
 

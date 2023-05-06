@@ -15,11 +15,13 @@ namespace ChatApp.API.Controllers
     public class GroupController : Controller
     {
         private readonly IGroupService _groupService;
+        private readonly IValidator<CreateGroupRequest> _newGroupValidator;
+        
 
-
-        public GroupController(IGroupService groupService)
+        public GroupController(IGroupService groupService, IValidator<CreateGroupRequest> validator)
         {
             _groupService = groupService;
+            _newGroupValidator = validator;
         }
 
         [HttpGet("all")]
@@ -59,12 +61,10 @@ namespace ChatApp.API.Controllers
         [HttpPost("new")]
         public async Task<IActionResult> CreateNewChat([FromBody] CreateGroupRequest groupRequest)
         {
-            if (string.IsNullOrEmpty(groupRequest.Name) 
-                || !groupRequest.Members.Any() 
-                || string.IsNullOrEmpty(groupRequest.AdminId)) 
-            {
-                return BadRequest("You can not create this group");
-            }
+            var validation = await _newGroupValidator.ValidateAsync(groupRequest);
+            if (!validation.IsValid)
+                return BadRequest(new RequestResult { Success = false, Errors = validation.Errors.Select(e => e.ErrorMessage) });
+
             await _groupService.CreateNewGroup(groupRequest);
 
             return Ok();

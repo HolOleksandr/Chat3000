@@ -1,8 +1,12 @@
-﻿using Chat.Blazor.Server.Models.DTO;
-using Chat.Blazor.Server.Models.Requests;
+﻿using Chat.BLL.Models.Requests;
 using FluentValidation;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace Chat.Blazor.Server.Validators
+namespace Chat.BLL.Validators
 {
     public class CreateGroupValidator : AbstractValidator<CreateGroupRequest>
     {

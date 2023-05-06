@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Chat.BLL.Automapper;
 using Chat.BLL.DTO;
+using Chat.BLL.Models.Requests;
 using Chat.BLL.Services.Interfaces;
 using Chat.BLL.Services.Realizations;
 using Chat.BLL.Validators;
@@ -80,6 +81,7 @@ namespace ChatApp.API.Configurations
 
         public static void ConfigureValidators(this IServiceCollection services)
         {
+            services.AddValidatorsFromAssemblyContaining<CreateGroupRequest>();
             services.AddValidatorsFromAssemblyContaining<UserLoginValidator>();
             services.AddValidatorsFromAssemblyContaining<UserRegistrationValidator>();
             services.AddValidatorsFromAssemblyContaining<UserChangePassValidator>();
