@@ -13,12 +13,11 @@ namespace Chat.BLL.Validators
         public UserLoginValidator()
         {
             RuleFor(u => u.Email)
-                .NotNull()
-                .NotEmpty()
-                .EmailAddress()
-                .WithMessage("Please enter your e-mail");
+                .NotEmpty().WithMessage("{PropertyName} is required.")
+                .EmailAddress().WithMessage("Please enter your e-mail");
 
-            RuleFor(u => u.Password).NotEmpty();
+            RuleFor(u => u.Password)
+                .NotEmpty().WithMessage("{PropertyName} is required.");
         }
     }
 }

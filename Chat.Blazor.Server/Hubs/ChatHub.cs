@@ -33,7 +33,6 @@ namespace Chat.Blazor.Server.Hubs
         {
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
         }
-        //TODO: users must receive notification if they have new messages in their groups. 
 
 
 
@@ -42,14 +41,12 @@ namespace Chat.Blazor.Server.Hubs
 
         public async Task SendCallMessage(string senderEmail, string receiverEmail, string message)
         {
-            await Clients.All.SendAsync("ReceiveCallMessage", senderEmail, receiverEmail, message);
-            //Users.TryGetValue(receiverEmail, out var connectionId);
-            //await Clients.User(connectionId).SendAsync("ReceiveCallMessage", senderEmail, receiverEmail, message);
+            await Clients.Group(receiverEmail).SendAsync("ReceiveCallMessage", senderEmail, receiverEmail, message);
         }
 
         public async Task HangUp(string userId)
         {
-            await Clients.All.SendAsync("CallFinished");
+            await Clients.Group(userId).SendAsync("CallFinished");
             // TODO leave group
         }
     }

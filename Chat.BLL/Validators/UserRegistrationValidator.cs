@@ -8,26 +8,22 @@ namespace Chat.BLL.Validators
     {
         public UserRegistrationValidator()
         {
-            RuleFor(x => x.ConfirmPassword).NotNull()
-                .NotEmpty()
-                .Equal(x => x.Password)
-                .WithMessage("Passwords do not match");
+            RuleFor(x => x.ConfirmPassword)
+                .NotEmpty().WithMessage("{PropertyName} is required.")
+                .Equal(x => x.Password).WithMessage("Passwords do not match");
 
             RuleFor(x => x.FirstName)
-                 .NotNull().WithMessage("{PropertyName} is required.")
                  .NotEmpty().WithMessage("{PropertyName} must not be empty!!!!.")
                  .Length(2, 25).WithMessage("{PropertyName} must be between 2-25 characters.")
                  .Must(IsValidName).WithMessage("{PropertyName} should be all letters.");
 
             RuleFor(x => x.LastName)
-                .NotNull().WithMessage("{PropertyName} is required.")
-                .NotEmpty().WithMessage("{PropertyName} must not be empty.")
+                .NotEmpty().WithMessage("{PropertyName} is required.")
                 .Length(2, 25).WithMessage("{PropertyName} must be between 2-25 characters.")
                 .Must(IsValidName).WithMessage("{PropertyName} should be all letters.");
 
             RuleFor(x => x.Email)
-                .NotNull().WithMessage("{PropertyName} is required.")
-                .NotEmpty().WithMessage("{PropertyName} must not be empty.")
+                .NotEmpty().WithMessage("{PropertyName} is required.")
                 .EmailAddress().WithMessage("Please enter your e-mail");
 
             RuleFor(x => x.Nickname)
@@ -37,7 +33,6 @@ namespace Chat.BLL.Validators
             When(x => x.BirthDate != null, () => {
                 RuleFor(x => x.BirthDate)
                     .Must(BeValidMinAge).WithMessage("Your age must be more than 3")
-
                     .Must(BeValidMaxAge).WithMessage("Congrats if your age is right. Contact with our admin.");
             });
 

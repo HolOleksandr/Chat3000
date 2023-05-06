@@ -44,7 +44,6 @@ namespace Chat.DAL.Data
                 .WithMany(a => a.AdminInGroups)
                 .HasForeignKey(g => g.AdminId);
 
-
             modelBuilder.Entity<Group>()
                 .HasOne(c => c.GroupInfo)
                 .WithOne(ci => ci.Group)

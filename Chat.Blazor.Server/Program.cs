@@ -1,25 +1,20 @@
 using Blazored.LocalStorage;
 using Chat.Blazor.Server.Configurations;
-using Chat.Blazor.Server.Data;
 using Chat.Blazor.Server.Helpers.Interfaces;
 using Chat.Blazor.Server.Helpers.Realization;
 using Chat.Blazor.Server.Helpers.StateContainers;
 using Chat.Blazor.Server.Hubs;
 using Chat.Blazor.Server.Services.Interfaces;
 using Chat.Blazor.Server.Services.Realization;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Components.Web;
-using Microsoft.AspNetCore.SignalR;
 using MudBlazor;
 using MudBlazor.Services;
-using ServiceStack;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
-builder.Services.AddServerSideBlazor();
+builder.Services.AddServerSideBlazor().AddCircuitOptions(option => { option.DetailedErrors = true; });
 builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddAuthorizationCore();
 builder.Services.AddMudServices(c => { c.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.BottomRight; });
@@ -39,7 +34,6 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IGroupService, GroupService>();
 builder.Services.AddScoped<IChatMessageService, ChatMessageService>();
 
-builder.Services.AddSingleton<WeatherForecastService>();
 
 var app = builder.Build();
 

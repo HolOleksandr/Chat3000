@@ -37,7 +37,6 @@ namespace Chat.BLL.Validators
             When(x => x.BirthDate != null, () => {
                 RuleFor(x => x.BirthDate)
                     .Must(BeValidMinAge).WithMessage("Your age must be over 3 years old")
-                    
                     .Must(BeValidMaxAge).WithMessage("Congrats if your age is right. Contact with our admin.");
             });
 

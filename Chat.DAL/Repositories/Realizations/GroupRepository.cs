@@ -32,12 +32,7 @@ namespace Chat.DAL.Repositories.Realizations
                 .Include(u => u.Groups).ThenInclude(g => g.GroupInfo)
                 .FirstOrDefaultAsync(u => string.Equals(u.Id, userId));
 
-            //var user = await _dbContext.Users.Include(u => u.GroupsInfo)
-            //    .FirstOrDefaultAsync(u => string.Equals(u.Id, userId));
-
-            //var sortedGroupInfo = user.GroupsInfo.AsQueryable().SearchInGroupInfo(searchText);
             var sortedGroupInfo = user.Groups.AsQueryable().Select(g => g.GroupInfo).SearchInGroupInfo(searchText);
-
 
             return sortedGroupInfo.AsEnumerable();
         }

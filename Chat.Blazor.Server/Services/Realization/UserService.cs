@@ -1,15 +1,7 @@
-﻿using Chat.Blazor.Server.Data;
-using Chat.Blazor.Server.Helpers.Interfaces;
+﻿using Chat.Blazor.Server.Helpers.Interfaces;
 using Chat.Blazor.Server.Models;
 using Chat.Blazor.Server.Models.Paging;
 using Chat.Blazor.Server.Services.Interfaces;
-using Microsoft.AspNetCore.WebUtilities;
-using ServiceStack;
-using ServiceStack.Text;
-using System.IO;
-using System.Text.Json;
-using System.Text;
-using System.Text.Json.Serialization;
 using Chat.Blazor.Server.Models.DTO;
 
 namespace Chat.Blazor.Server.Services.Realization
