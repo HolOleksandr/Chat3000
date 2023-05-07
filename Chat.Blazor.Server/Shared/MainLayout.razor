@@ -41,6 +41,7 @@
 
     protected override async Task OnInitializedAsync()
     {
+
         hubConnection = new HubConnectionBuilder().WithUrl(Navigation.ToAbsoluteUri("/chatHub")).Build();
         await hubConnection.StartAsync();
         await SubscribeForChatNotifications();

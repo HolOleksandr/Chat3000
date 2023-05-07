@@ -3,7 +3,7 @@ using Chat.DAL.Entities;
 using Chat.DAL.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
-namespace Chat.DAL.Repositories.Realizations
+namespace Chat.DAL.Repositories.Implementation
 {
     public class MessageRepository : BaseRepository<Message>, IMessageRepository
     {
@@ -25,6 +25,5 @@ namespace Chat.DAL.Repositories.Realizations
 
             return messages.AsEnumerable();
         }
-
     }
 }

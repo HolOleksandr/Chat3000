@@ -9,7 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Chat.DAL.Repositories.Realizations
+namespace Chat.DAL.Repositories.Implementation
 {
     public class GroupRepository : BaseRepository<Group>, IGroupRepository
     {
@@ -36,11 +36,5 @@ namespace Chat.DAL.Repositories.Realizations
 
             return sortedGroupInfo.AsEnumerable();
         }
-
-
-
-
-
-
     }
 }

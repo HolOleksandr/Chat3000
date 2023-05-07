@@ -3,11 +3,11 @@ using Chat.BLL.DTO;
 using Chat.BLL.Services.Interfaces;
 using Chat.DAL.Entities;
 using Chat.DAL.Repositories.Interfaces;
-using Chat.DAL.Repositories.Realizations;
+using Chat.DAL.Repositories.Implementation;
 using Chat.DAL.UoW.Interface;
-using Chat.DAL.UoW.Realization;
+using Chat.DAL.UoW.Implementation;
 
-namespace Chat.BLL.Services.Realizations
+namespace Chat.BLL.Services.Implementation
 {
     public class MessageService : IMessageService
     {

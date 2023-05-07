@@ -6,20 +6,18 @@ using Chat.Blazor.Server.Models.Requests;
 using Chat.Blazor.Server.Services.Interfaces;
 using System.Text.Json;
 
-namespace Chat.Blazor.Server.Services.Realization
+namespace Chat.Blazor.Server.Services.Implementation
 {
     public class GroupService : IGroupService
     {
         private readonly string _baseUrl = "";
         private readonly IConfiguration _configuration;
         private readonly ICustomHttpClient _customHttpClient;
-
         public GroupService(ICustomHttpClient customHttpClient, IConfiguration configuration)
         {
             _customHttpClient = customHttpClient;
             _configuration = configuration;
             _baseUrl = _configuration["ApiUrls:ChatApi"];
-            
         }
 
         public async Task<GroupInfoViewDTO> GetGroupByIdAsync(int groupId)

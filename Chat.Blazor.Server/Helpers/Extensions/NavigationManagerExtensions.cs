@@ -19,12 +19,10 @@ namespace Chat.Blazor.Server.Helpers.Extensions
                 {
                     return (T)(object)result;
                 }
-
                 if (defaultValue != null)
                 {
                     return (T)defaultValue;
                 }
-
             }
 
             if (typeof(T).Equals(typeof(string)))
@@ -38,14 +36,8 @@ namespace Chat.Blazor.Server.Helpers.Extensions
                 {
                     return (T)(object)defaultValue.ToString();
                 }
-
             }
             return default;
-
         }
-
-
     }
-
-    
 }

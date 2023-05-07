@@ -10,7 +10,10 @@
             <Authorized>
                 <MudGrid>
                     <MudItem xs="12" sm="12" md="12" />
-                    
+                    <MudContainer MaxWidth="MaxWidth.Small" Class="d-flex align-content-start">
+                        <MudText Align="Align.Center" Typo="Typo.h2" Class="mt-4">Hello, @context.User.Identity!.Name!</MudText>
+
+                    </MudContainer>
                 </MudGrid>
             </Authorized>
             <NotAuthorized>
@@ -22,11 +25,3 @@
 </MudContainer>
 
 
-
-
-@code{
-    //<MudContainer MaxWidth="MaxWidth.Small" Class="d-flex align-content-start">
-    //    <MudText Align="Align.Center" Typo="Typo.h2" Class="mt-4">Hello, @context.User.Identity!.Name!</MudText>
-
-    //</MudContainer>
-}

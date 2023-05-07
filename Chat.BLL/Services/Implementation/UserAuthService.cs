@@ -11,7 +11,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace Chat.BLL.Services.Realizations
+namespace Chat.BLL.Services.Implementation
 {
     public class UserAuthService : IUserAuthService
     {
@@ -67,8 +67,6 @@ namespace Chat.BLL.Services.Realizations
             var result = await _userManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
             return result;
         }
-
-
 
         private SigningCredentials GetSigningCredentials()
         {

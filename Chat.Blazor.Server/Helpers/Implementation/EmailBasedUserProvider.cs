@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using System.Security.Claims;
 
-namespace Chat.Blazor.Server.Helpers.Realization
+namespace Chat.Blazor.Server.Helpers.Implementation
 {
     public class EmailBasedUserProvider : IUserIdProvider
     {

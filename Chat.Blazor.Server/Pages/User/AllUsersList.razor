@@ -92,14 +92,15 @@
     {
         if (firstRender)
         {
+
             InitTableWithQueryParams();
             BackUpTableState();
-
             _firstRenderTrigger = true;
             _userStateContainer.OnStateChange += StateHasChanged;
             StateHasChanged();
+
         }
-        base.OnAfterRender(firstRender);
+        //base.OnAfterRender(firstRender);
     }
 
 
@@ -125,13 +126,17 @@
 
         var queryStr = GetQueryStr(searchParameters);
         var data = await _userService.GetAllUsersWithSortAsync(queryStr);
-        Navigate(queryStr);
-        var table = new TableData<UserDTO> { TotalItems = data.TotalCount, Items = data.Data };
-        _firstRenderTrigger = false;
-        return table;
+        if (data != null)
+        {
+            Navigate(queryStr);
+            var table = new TableData<UserDTO> { TotalItems = data.TotalCount, Items = data.Data };
+            _firstRenderTrigger = false;
+            return table;
+        }
+        var table2 = new TableData<UserDTO>();
+        return table2;
+
     }
-
-
 
     private void OnSearch(string text)
     {
@@ -139,14 +144,10 @@
         _table.ReloadServerData();
     }
 
-
-
     private void Navigate(string query)
     {
         Navigation.NavigateTo(Navigation.BaseUri + "users" + query);
     }
-
-
 
     private void RowDoubleClickEvent(TableRowClickEventArgs<UserDTO> tableRowClickEventArgs)
     {
@@ -208,7 +209,6 @@
         }
     }
 
-
     private string GetQueryStr(SearchParameters searchParameters)
     {
         var queryStringParam = new Dictionary<string, string?>
@@ -224,11 +224,8 @@
         return queryParams;
     }
 
-
     public void Dispose()
     {
         _userStateContainer.OnStateChange -= StateHasChanged;
     }
-
-
 }

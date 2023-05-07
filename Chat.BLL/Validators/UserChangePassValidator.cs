@@ -21,8 +21,7 @@ namespace Chat.BLL.Validators
 
             RuleFor(u => u.NewPassword)
                 .NotEmpty().WithMessage("{PropertyName} is required.")
-                .MinimumLength(5).WithMessage("The minimum length of a new password is 5 characters."); ;
-
+                .MinimumLength(5).WithMessage("The minimum length of a new password is 5 characters.");
         }
     }
 }

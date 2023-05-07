@@ -3,14 +3,14 @@ using Chat.BLL.Automapper;
 using Chat.BLL.DTO;
 using Chat.BLL.Models.Requests;
 using Chat.BLL.Services.Interfaces;
-using Chat.BLL.Services.Realizations;
+using Chat.BLL.Services.Implementation;
 using Chat.BLL.Validators;
 using Chat.DAL.Data;
 using Chat.DAL.Entities;
 using Chat.DAL.Repositories.Interfaces;
-using Chat.DAL.Repositories.Realizations;
+using Chat.DAL.Repositories.Implementation;
 using Chat.DAL.UoW.Interface;
-using Chat.DAL.UoW.Realization;
+using Chat.DAL.UoW.Implementation;
 using FluentValidation;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.OpenApi.Models;
@@ -38,8 +38,6 @@ namespace ChatApp.API.Configurations
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IGroupRepository, GroupRepository>();
             services.AddScoped<IUserGroupRepository, UserGroupRepository>();
-
-
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IGroupService, GroupService>();
@@ -75,9 +73,6 @@ namespace ChatApp.API.Configurations
                 options.Password.RequiredLength = 6;
             });
         }
-
-
-
 
         public static void ConfigureValidators(this IServiceCollection services)
         {
@@ -123,8 +118,6 @@ namespace ChatApp.API.Configurations
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Chat300API.Api", Version = "v1" });
                 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-                //c.IncludeXmlComments(xmlPath);
-
             });
         }
 

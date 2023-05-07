@@ -10,6 +10,7 @@ namespace ChatApp.API.Controllers
         [HttpGet("")]
         public async Task<IActionResult> TestMethod()
         {
+            return Unauthorized();
             return Ok("This is a message from API");
         }
     }

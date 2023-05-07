@@ -1,10 +1,10 @@
 ﻿using Chat.DAL.Data;
 using Chat.DAL.Repositories.Interfaces;
-using Chat.DAL.Repositories.Realizations;
+using Chat.DAL.Repositories.Implementation;
 using Chat.DAL.UoW.Interface;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Chat.DAL.UoW.Realization
+namespace Chat.DAL.UoW.Implementation
 {
     public class UnitOfWork : IUnitOfWork
     {
@@ -26,7 +26,6 @@ namespace Chat.DAL.UoW.Realization
             {
                 T repository = _serviceProvider.GetService<T>() 
                     ?? throw new ArgumentNullException($"Repository {typeName} doesn't exist");
-                //repository.SetContext(_dbContext);
                 _repositories.Add(typeName, repository);
             }
             return (T)_repositories[typeName];

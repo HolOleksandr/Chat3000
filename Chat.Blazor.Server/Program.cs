@@ -1,11 +1,11 @@
 using Blazored.LocalStorage;
 using Chat.Blazor.Server.Configurations;
 using Chat.Blazor.Server.Helpers.Interfaces;
-using Chat.Blazor.Server.Helpers.Realization;
+using Chat.Blazor.Server.Helpers.Implementation;
 using Chat.Blazor.Server.Helpers.StateContainers;
 using Chat.Blazor.Server.Hubs;
 using Chat.Blazor.Server.Services.Interfaces;
-using Chat.Blazor.Server.Services.Realization;
+using Chat.Blazor.Server.Services.Implementation;
 using Microsoft.AspNetCore.Components.Authorization;
 using MudBlazor;
 using MudBlazor.Services;

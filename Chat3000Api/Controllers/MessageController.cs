@@ -1,10 +1,12 @@
 ﻿using Chat.BLL.DTO;
 using Chat.BLL.Services.Interfaces;
 using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ChatApp.API.Controllers
 {
+    [Authorize(Policy = "AllUsers")]
     [Route("api/[controller]")]
     [ApiController]
     public class MessageController : Controller

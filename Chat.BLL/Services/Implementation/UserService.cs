@@ -10,7 +10,7 @@ using Chat.DAL.UoW.Interface;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
-namespace Chat.BLL.Services.Realizations
+namespace Chat.BLL.Services.Implementation
 {
     public class UserService : IUserService
     {
@@ -25,12 +25,9 @@ namespace Chat.BLL.Services.Realizations
 
         public async Task<FilterResult<UserDTO>> GetAllUsersAsync(SearchParameters searchParameters)
         {
-
             var users = await _unitOfWork.GetRepository<IUserRepository>()
                 .GetAllUsersWithFilterAsync(searchParameters.FilterQuery);
             var mappedUsers = _mapper.Map<IEnumerable<UserDTO>>(users);
-
-
             return await FilterResult<UserDTO>.CreateAsync(
                  mappedUsers,
                  searchParameters.PageIndex,
@@ -45,17 +42,14 @@ namespace Chat.BLL.Services.Realizations
         {
             
             var user = await _unitOfWork.GetRepository<IUserRepository>().GetUserByStringIdAsync(userUpdateModel.Id);
-
             if (user == null)
             {
                 throw new ChatException("User is not exist");
             }
-
             if (!string.Equals(user.Email, userUpdateModel.Email, StringComparison.OrdinalIgnoreCase))
             {
                 await CheckUserEmailAsync(userUpdateModel.Email);
             }
-
             user.FirstName = userUpdateModel.FirstName;
             user.LastName = userUpdateModel.LastName;
             user.Email = userUpdateModel.Email;
@@ -90,20 +84,13 @@ namespace Chat.BLL.Services.Realizations
             return mappedInfo;
         }
 
-
         private async Task CheckUserEmailAsync(string email)
         {
-
             var isExist = await _unitOfWork.GetRepository<IUserRepository>().IsEmailExistsAsync(email);
             if (isExist)
             {
                 throw new ChatException("An account with this email address already exists");
             }
         }
-
-
-
     }
-
-   
 }

@@ -5,7 +5,7 @@ using System.Security.Claims;
 using System.Text.Json;
 
 
-namespace Chat.Blazor.Server.Helpers.Realization
+namespace Chat.Blazor.Server.Helpers.Implementation
 {
     public class CustomAuthStateProvider : AuthenticationStateProvider
     {
@@ -41,10 +41,7 @@ namespace Chat.Blazor.Server.Helpers.Realization
             catch (InvalidOperationException)
             {
                 return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
-
             }
-
-
         }
 
         public void MarkUserAsAuthenticated(string email)
@@ -107,7 +104,6 @@ namespace Chat.Blazor.Server.Helpers.Realization
             }
 
             claims.AddRange(keyValuePairs.Select(kvp => new Claim(kvp.Key, kvp.Value.ToString()!)));
-
             return claims;
         }
 

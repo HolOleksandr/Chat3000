@@ -12,7 +12,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Chat.DAL.Repositories.Realizations
+namespace Chat.DAL.Repositories.Implementation
 {
     public class UserRepository : BaseRepository<User>, IUserRepository
     {

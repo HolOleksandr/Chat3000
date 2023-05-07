@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Chat.DAL.Repositories.Realizations
+namespace Chat.DAL.Repositories.Implementation
 {
     public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : class
     {

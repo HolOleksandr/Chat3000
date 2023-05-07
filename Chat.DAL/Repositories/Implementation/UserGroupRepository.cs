@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Chat.DAL.Repositories.Realizations
+namespace Chat.DAL.Repositories.Implementation
 {
     public class UserGroupRepository : BaseRepository<UserGroup>, IUserGroupRepository
     {

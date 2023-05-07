@@ -15,7 +15,6 @@ namespace Chat.Blazor.Server.Validators
             RuleFor(x => x.Description)
                  .NotEmpty().WithMessage("Description is required")
                  .Length(5, 150).WithMessage("Description must be between 5-150 characters.");
-
         }
     }
 }

@@ -9,7 +9,7 @@ using Newtonsoft.Json;
 
 namespace ChatApp.API.Controllers
 {
-    //[Authorize(Policy = "AllUsers")]
+    [Authorize(Policy = "AllUsers")]
     [Route("api/[controller]")]
     [ApiController]
     public class UserController : Controller
@@ -50,7 +50,6 @@ namespace ChatApp.API.Controllers
             return Ok(users);
         }
 
-
         [HttpGet("id/{userId}")]
         public async Task<IActionResult> GetUserById( string userId)
         {
@@ -61,7 +60,6 @@ namespace ChatApp.API.Controllers
             }
             return Ok(user);
         }
-
 
         [HttpPost("update")]
         public async Task<IActionResult> UpdateUser([FromBody] UserDTO userUpdateModel)
@@ -74,8 +72,5 @@ namespace ChatApp.API.Controllers
            
             return Ok();
         }
-
-
-
     }
 }

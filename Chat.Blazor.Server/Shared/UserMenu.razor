@@ -31,8 +31,8 @@
     private UserDTO CurrentUser = new();
     protected override async Task OnInitializedAsync()
     {
-        await UpdateUserInfo();
         base.OnInitialized();
+        await UpdateUserInfo();
         _avatarStateContainer.OnAvatarChange += AvatarHandler;
 
     }

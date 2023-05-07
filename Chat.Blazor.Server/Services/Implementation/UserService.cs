@@ -3,22 +3,21 @@ using Chat.Blazor.Server.Models;
 using Chat.Blazor.Server.Models.Paging;
 using Chat.Blazor.Server.Services.Interfaces;
 using Chat.Blazor.Server.Models.DTO;
+using Microsoft.AspNetCore.Components;
 
-namespace Chat.Blazor.Server.Services.Realization
+namespace Chat.Blazor.Server.Services.Implementation
 {
     public class UserService : IUserService
     {
         private readonly string _baseUrl = "";
         private readonly IConfiguration _configuration;
         private readonly ICustomHttpClient _customHttpClient;
-        private readonly HttpClient _httpClient;
 
-        public UserService(ICustomHttpClient customHttpClient, IConfiguration configuration, HttpClient httpClient)
+        public UserService(ICustomHttpClient customHttpClient, IConfiguration configuration)
         {
             _customHttpClient = customHttpClient;
             _configuration = configuration;
             _baseUrl = _configuration["ApiUrls:ChatApi"];
-            _httpClient = httpClient;
         }
 
         public async Task<PagingResponse<UserDTO>> GetAllUsersWithSortAsync(string queryParams)
@@ -26,10 +25,8 @@ namespace Chat.Blazor.Server.Services.Realization
             using var response = await _customHttpClient
                 .GetWithTokenAsync((_baseUrl + "api/user/all" + queryParams));
 
-            response.EnsureSuccessStatusCode();
             var stream = await response.Content.ReadAsStreamAsync();
             var pagingResponse = await ServiceStack.Text.JsonSerializer.DeserializeFromStreamAsync<PagingResponse<UserDTO>>(stream);
-           
             return pagingResponse;
         }
 
@@ -37,11 +34,8 @@ namespace Chat.Blazor.Server.Services.Realization
         {
             using var response = await _customHttpClient
                 .GetWithTokenAsync((_baseUrl + "api/user/id/" + userId));
-
-            response.EnsureSuccessStatusCode();
             var stream = await response.Content.ReadAsStreamAsync();
             var userDto = await ServiceStack.Text.JsonSerializer.DeserializeFromStreamAsync<UserDTO>(stream);
-
             return userDto;
         }
 

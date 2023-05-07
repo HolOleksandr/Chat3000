@@ -117,7 +117,6 @@
         base.OnAfterRender(firstRender);
     }
 
-
     private async Task<TableData<GroupInfoViewDTO>> ServerReload(TableState state)
     {
         await GetUserClaims();
@@ -187,7 +186,6 @@
         _userId = _userState.User.Claims.FirstOrDefault(c => c.Type.Equals(ClaimTypes.NameIdentifier))?.Value;
     }
 
-
     private void BackUpTableState()
     {
         _backUpTableState.SortLabel = searchParameters.SortColumn;
@@ -227,7 +225,6 @@
         StateHasChanged();
     }
 
-
     private void ValidateQueryParams()
     {
         if (searchParameters.PageIndex < 0)
@@ -240,7 +237,6 @@
             searchParameters.SortColumn = _defaultSortColumn;
         }
     }
-
 
     private string GetQueryStr(SearchParameters searchParameters)
     {
@@ -257,8 +253,4 @@
         var queryParams = QueryHelpers.AddQueryString("", queryStringParam);
         return queryParams;
     }
-
-
-
-
 }

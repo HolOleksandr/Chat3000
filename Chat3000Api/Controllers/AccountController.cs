@@ -44,8 +44,6 @@ namespace ChatApp.API.Controllers
             return Accepted(new RegistrationResult { Success = true });
         }
 
-
-
         [HttpPost("login")]
         public async Task<IActionResult> Authenticate([FromBody] UserLoginModel user)
         {
@@ -70,15 +68,12 @@ namespace ChatApp.API.Controllers
             });
         }
 
-
-
         [HttpPost("changepass")]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordModel model)
         {
             var validation = await _changePassValidator.ValidateAsync(model);
             if (!validation.IsValid)
                 return BadRequest(new RegistrationResult { Success = false, Errors = validation.Errors.Select(e => e.ErrorMessage) });
-            
 
             var result = await _userAuthService.ChangePasswordAsync(model);
             if (!result.Succeeded)
@@ -87,9 +82,6 @@ namespace ChatApp.API.Controllers
                 return BadRequest(new RegistrationResult { Success = false, Errors = errors });
             }
             return Ok(new RegistrationResult { Success = true});
-            
         }
-
-
     }
 }

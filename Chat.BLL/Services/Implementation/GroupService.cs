@@ -19,7 +19,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace Chat.BLL.Services.Realizations
+namespace Chat.BLL.Services.Implementation
 {
     public class GroupService : IGroupService
     {
@@ -39,7 +39,6 @@ namespace Chat.BLL.Services.Realizations
             await _unitOfWork.GetRepository<IGroupRepository>().AddAsync(_newGroup);
             await _unitOfWork.SaveAsync();
 
-
             foreach (var member in groupRequest.Members)
             {
                 if (member != null)
@@ -50,7 +49,6 @@ namespace Chat.BLL.Services.Realizations
             await AddNewUserGroup(_newGroup.Id, _newGroup.AdminId);
             await _unitOfWork.SaveAsync();
         }
-
 
         private async Task AddNewUserGroup(int groupId, string userId) 
         {
@@ -64,16 +62,12 @@ namespace Chat.BLL.Services.Realizations
             await _userGroupRepo.AddAsync(newUserGroup);
         }
 
-
-
         public async Task<IEnumerable<GroupDTO>> GetGroupsAsync()
         {
             var groups = await _unitOfWork.GetRepository<IGroupRepository>().GetAllGroupsWithUsersAsync();
             var mappedGroups = _mapper.Map<IEnumerable<GroupDTO>>(groups);
             return mappedGroups;
         }
-
-
 
         public async Task<FilterResult<GroupInfoViewDTO>> GetGroupsByUserEmailAsync(string userEmail, SearchParameters searchParameters)
         {
@@ -92,16 +86,7 @@ namespace Chat.BLL.Services.Realizations
                 searchParameters.SortColumn,
                 searchParameters.SortOrder,
                 searchParameters.FilterQuery);
-
-            
             return result;
         }
-
-
-
-
-
-
-
-}
+    }
 }

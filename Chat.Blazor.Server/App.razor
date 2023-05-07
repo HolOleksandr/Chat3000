@@ -17,4 +17,15 @@
     </Router>
 </CascadingAuthenticationState>
 
+@inject AuthenticationStateProvider _authStateProvider
 
+@code{
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await _authStateProvider.GetAuthenticationStateAsync();
+            
+        }
+    }
+}

@@ -70,6 +70,7 @@ namespace Chat.Blazor.Server.Validators
             }
             return false;
         }
+
         private static bool BeValidMaxAge(DateTime? date)
         {
             if (date.HasValue)

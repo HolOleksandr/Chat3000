@@ -103,7 +103,6 @@
         await CheckHubConnection();
         await GetUserClaims();
 
-
         hubConnection.On<MessageDTO>("ReceiveMessage", async(message) =>
        {
            if (message.GroupId == _selectedGroup.Id)
@@ -112,11 +111,9 @@
                await _jsRuntime.InvokeAsync<string>("ScrollToBottom", "chatContainer");
                await InvokeAsync(StateHasChanged);
            }
-
        });
         await hubConnection.InvokeAsync("JoinGroup", _selectedGroup.Id.ToString());
         await LoadGroupChat(_selectedGroup.Id);
-
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -163,8 +160,6 @@
         };
     }
 
-
-
     private async Task CheckHubConnection()
     {
         if (hubConnection == null)
@@ -198,8 +193,6 @@
 
         CurrentUser = await _userService.GetUserByIdAsync(CurrentUserId);
     }
-
-    
 
     @implements IAsyncDisposable
 

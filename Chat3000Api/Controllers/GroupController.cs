@@ -3,20 +3,20 @@ using Chat.BLL.Models.Paging;
 using Chat.BLL.Models.Requests;
 using Chat.BLL.Services.Interfaces;
 using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ChatApp.API.Controllers
 {
 
 
-    //[Authorize(Policy = "AllUsers")]
+    [Authorize(Policy = "AllUsers")]
     [Route("api/[controller]")]
     [ApiController]
     public class GroupController : Controller
     {
         private readonly IGroupService _groupService;
         private readonly IValidator<CreateGroupRequest> _newGroupValidator;
-        
 
         public GroupController(IGroupService groupService, IValidator<CreateGroupRequest> validator)
         {

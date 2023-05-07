@@ -5,7 +5,7 @@ using Chat.Blazor.Server.Models.Paging;
 using Chat.Blazor.Server.Services.Interfaces;
 using System.Text.Json;
 
-namespace Chat.Blazor.Server.Services.Realization
+namespace Chat.Blazor.Server.Services.Implementation
 {
     public class ChatMessageService : IChatMessageService
     {
@@ -18,7 +18,6 @@ namespace Chat.Blazor.Server.Services.Realization
             _customHttpClient = customHttpClient;
             _configuration = configuration;
             _baseUrl = _configuration["ApiUrls:ChatApi"];
-
         }
 
         public async Task<IEnumerable<MessageDTO>> GetAllMessagesInGroupAsync(int groupId)
@@ -31,7 +30,6 @@ namespace Chat.Blazor.Server.Services.Realization
 
             return pagingResponse;
         }
-
 
         public async Task<RequestResult> SendMessageAsync(MessageDTO newMessage)
         {

@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 
-namespace Chat.Blazor.Server.Services.Realization
+namespace Chat.Blazor.Server.Services.Implementation
 {
     public class TestService : ITestService
     {
@@ -24,13 +24,10 @@ namespace Chat.Blazor.Server.Services.Realization
         public async Task<string> GetTestMessage()
         {
             //var _baseUrl = _configuration["ApiUrls:ChatApi"];
+            
             var result = await _customHttpClient.GetWithTokenAsync(_baseUrl + "api/test/");
 
-            if (result.IsSuccessStatusCode)
-            {
-                var message =  await result.Content.ReadAsStringAsync();
-                return "Welcome: " + message; 
-            }
+
             return "You are Unauthorized";
         }
 

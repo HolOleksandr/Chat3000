@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Components.Forms;
 using System.Drawing;
 
-namespace Chat.Blazor.Server.Services.Realization
+namespace Chat.Blazor.Server.Services.Implementation
 {
     public class ImageService : IImageService
     {

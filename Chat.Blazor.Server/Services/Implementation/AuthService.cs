@@ -5,10 +5,10 @@ using Microsoft.AspNetCore.Components.Authorization;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text;
-using Chat.Blazor.Server.Helpers.Realization;
+using Chat.Blazor.Server.Helpers.Implementation;
 using Chat.Blazor.Server.Models.Paging;
 
-namespace Chat.Blazor.Server.Services.Realization
+namespace Chat.Blazor.Server.Services.Implementation
 {
     public class AuthService : IAuthService
     {

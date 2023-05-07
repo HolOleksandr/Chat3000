@@ -1,5 +1,5 @@
 ﻿using Chat.DAL.Repositories.Interfaces;
-using Chat.DAL.Repositories.Realizations;
+using Chat.DAL.Repositories.Implementation;
 
 namespace Chat.DAL.UoW.Interface
 {
