@@ -1,12 +1,14 @@
 using Chat.DAL.Data;
 using Microsoft.EntityFrameworkCore;
 using ChatApp.API.Configurations;
+using ChatApp.API.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
 builder.Services.AddControllers();
+builder.Services.AddSignalR();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.ConfigureAuthorizationPolicies();
@@ -44,5 +46,5 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
+app.MapHub<ChatHub>("/chathub");
 app.Run();

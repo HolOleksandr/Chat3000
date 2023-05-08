@@ -3,6 +3,7 @@
 @using Microsoft.AspNetCore.SignalR.Client;
 @using Chat.Blazor.Server.Helpers.StateContainers;
 @using System.Security.Claims;
+@using Chat.Blazor.Server.Helpers.Interfaces;
 
 <h3>VideoCalls</h3>
 
@@ -42,6 +43,8 @@
 @inject NavigationManager Navigation
 @inject PeerIdStateContainer _peerIdStateContainer
 @inject AuthenticationStateProvider _authStateProvider
+@inject IConfiguration Configuration;
+@inject IHubConnectionService _hubConnectionService
 
 
 @code {
@@ -69,14 +72,9 @@
         }  
 
         await GetUserClaims();
-        await CheckHubConnection();
+        hubConnection = await _hubConnectionService.ConnectToHub();
 
-        hubConnection.On("CallFinished", async () =>
-        {
-            await _peerModule.InvokeVoidAsync("destroyPeer", peerId);
-            Navigation.NavigateTo($"{Navigation.BaseUri}calls/video");
-            OnCall = false;
-        } );
+        SubscribeForHungUpCalls();
         _peerIdStateContainer.OnPeerIdChange += AnswerCall; // IMPRTNT: subscribing on incoming call
         await InvokeAsync(StateHasChanged);
     }
@@ -104,7 +102,7 @@
     private async void AnswerCall(string peerId)
     {
         await GetUserClaims();
-        await CheckHubConnection();
+        hubConnection = await _hubConnectionService.ConnectToHub();
         //await hubConnection.SendAsync("JoinGroup", CurrentUserEmail);
         var id = await _peerModule.InvokeAsync<string>("createPeer");
         var stream = await _peerModule.InvokeAsync<IJSObjectReference>("startLocalStream");
@@ -114,20 +112,14 @@
         await InvokeAsync(StateHasChanged);
     }
 
-
-
-
-
-    private async Task CheckHubConnection()
+    private void SubscribeForHungUpCalls()
     {
-        if (hubConnection == null)
+        hubConnection.On("CallFinished", async() =>
         {
-            hubConnection = new HubConnectionBuilder().WithUrl(Navigation.ToAbsoluteUri("/chatHub")).Build();
-        }
-        if (hubConnection.State == HubConnectionState.Disconnected)
-        {
-            await hubConnection.StartAsync();
-        }
+            await _peerModule.InvokeVoidAsync("destroyPeer", peerId);
+        Navigation.NavigateTo($"{Navigation.BaseUri}calls/video");
+            OnCall = false;
+        } );
     }
 
     private async Task GetUserClaims()

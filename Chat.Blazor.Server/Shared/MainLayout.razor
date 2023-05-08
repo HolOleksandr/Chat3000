@@ -1,8 +1,10 @@
 ﻿@inherits LayoutComponentBase
 
+@using Blazored.LocalStorage;
 @using MudBlazor
 @using Microsoft.AspNetCore.SignalR.Client
 @using Chat.Blazor.Server.Helpers.StateContainers;
+@using Chat.Blazor.Server.Helpers.Interfaces;
 
 <MudThemeProvider />
 <MudSnackbarProvider />
@@ -33,25 +35,29 @@
 @inject NavigationManager Navigation
 @inject AuthenticationStateProvider _authStateProvider
 @inject PeerIdStateContainer _peerIdStateContainer
+@inject IHubConnectionService _hubConnectionService
 
 @code{
     private HubConnection hubConnection;
     public bool IsConnected => hubConnection.State == HubConnectionState.Connected;
     private string currentUserEmail;
 
+
     protected override async Task OnInitializedAsync()
     {
-
-        hubConnection = new HubConnectionBuilder().WithUrl(Navigation.ToAbsoluteUri("/chatHub")).Build();
-        await hubConnection.StartAsync();
-        await SubscribeForChatNotifications();
-        await SubscribeForCallNotifications();
+        hubConnection = await _hubConnectionService.ConnectToHub();
+        if (IsConnected)
+        {
+            await SubscribeForChatNotifications();
+            SubscribeForCallNotifications();
+        }
+        
         await GetCurrentUserEmail();
         //await hubConnection.SendAsync("SubscribeForMessages", currentUserEmail);
 
     }
 
-    private async Task SubscribeForCallNotifications()
+    private void SubscribeForCallNotifications()
     {
         hubConnection.On<string, string, string>("ReceiveCallMessage", (senderEmail, receiverEmail, peerId) =>
         {
@@ -79,7 +85,6 @@
         currentUserEmail = _userState.User.Identity.Name;
     }
     
-
 
     private async Task SubscribeForChatNotifications()
     {

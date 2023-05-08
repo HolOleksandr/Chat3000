@@ -84,8 +84,6 @@ export async function destroyPeer(peerId) {
     
 }
 
-
-
 let localStream;
 let remoteStream;
 

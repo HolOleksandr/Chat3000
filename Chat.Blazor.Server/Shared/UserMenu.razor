@@ -29,12 +29,27 @@
 
 @code {
     private UserDTO CurrentUser = new();
+
+    //protected override async Task OnAfterRenderAsync(bool firstRender)
+    //{
+    //    if (firstRender)
+    //    {
+    //        await UpdateUserInfo();
+    //    }
+    //    _avatarStateContainer.OnAvatarChange += AvatarHandler;
+        
+    //    //await base.OnAfterRenderAsync(firstRender);
+    //}
+
     protected override async Task OnInitializedAsync()
     {
         base.OnInitialized();
-        await UpdateUserInfo();
+        try
+        {
+            await UpdateUserInfo();
+        }
+        catch (Exception){}
         _avatarStateContainer.OnAvatarChange += AvatarHandler;
-
     }
 
     private async Task GetProfile()

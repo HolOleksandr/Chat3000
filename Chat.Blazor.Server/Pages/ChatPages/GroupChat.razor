@@ -6,6 +6,7 @@
 @using Chat.Blazor.Server.Services.Interfaces;
 @using Microsoft.AspNetCore.SignalR.Client;
 @using System.Security.Claims;
+@using Chat.Blazor.Server.Helpers.Interfaces;
 
 <h3>GroupChat</h3>
 
@@ -83,7 +84,9 @@
 @inject IUserService _userService
 @inject IChatMessageService _messageService
 @inject AuthenticationStateProvider _authStateProvider
+@inject IHubConnectionService _hubConnectionService
 
+        
 @code {
     [Parameter] public string GroupId { get; set; }
 
@@ -100,7 +103,7 @@
     {
         base.OnInitialized();
         await GetGroupFromQueryOrContainer();
-        await CheckHubConnection();
+        hubConnection = await _hubConnectionService.ConnectToHub();
         await GetUserClaims();
 
         hubConnection.On<MessageDTO>("ReceiveMessage", async(message) =>
@@ -158,18 +161,6 @@
             //await hubConnection.SendAsync("ChatNotificationAsync", GroupId); // TODO 
             CurrentMessage = string.Empty;
         };
-    }
-
-    private async Task CheckHubConnection()
-    {
-        if (hubConnection == null)
-        {
-            hubConnection = new HubConnectionBuilder().WithUrl(Navigation.ToAbsoluteUri("/chatHub")).Build();
-        }
-        if (hubConnection.State == HubConnectionState.Disconnected)
-        {
-            await hubConnection.StartAsync();
-        }
     }
 
     private async Task GetGroupFromQueryOrContainer()

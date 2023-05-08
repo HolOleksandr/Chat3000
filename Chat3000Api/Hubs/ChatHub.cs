@@ -1,9 +1,10 @@
-﻿using Chat.Blazor.Server.Models.DTO;
+﻿using Chat.BLL.DTO;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
-using ServiceStack.Blazor;
 
-namespace Chat.Blazor.Server.Hubs
+namespace ChatApp.API.Hubs
 {
+    [Authorize(Policy = "AllUsers")]
     public class ChatHub : Hub
     {
         private readonly Dictionary<string, string> Users = new Dictionary<string, string>();
@@ -12,7 +13,6 @@ namespace Chat.Blazor.Server.Hubs
         {
             Users.Add(userEmail, Context.ConnectionId);
         }
-
 
         public async Task SendMessageToGroupAsync(MessageDTO message, string groupName)
         {
@@ -33,6 +33,7 @@ namespace Chat.Blazor.Server.Hubs
         {
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
         }
+        //TODO: users must receive notification if they have new messages in their groups. 
 
 
 
@@ -41,12 +42,14 @@ namespace Chat.Blazor.Server.Hubs
 
         public async Task SendCallMessage(string senderEmail, string receiverEmail, string message)
         {
-            await Clients.Group(receiverEmail).SendAsync("ReceiveCallMessage", senderEmail, receiverEmail, message);
+            await Clients.AllExcept(Context.ConnectionId).SendAsync("ReceiveCallMessage", senderEmail, receiverEmail, message);
+            //Users.TryGetValue(receiverEmail, out var connectionId);
+            //await Clients.User(connectionId).SendAsync("ReceiveCallMessage", senderEmail, receiverEmail, message);
         }
 
         public async Task HangUp(string userId)
         {
-            await Clients.Group(userId).SendAsync("CallFinished");
+            await Clients.All.SendAsync("CallFinished");
             // TODO leave group
         }
     }

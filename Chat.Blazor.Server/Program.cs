@@ -3,7 +3,6 @@ using Chat.Blazor.Server.Configurations;
 using Chat.Blazor.Server.Helpers.Interfaces;
 using Chat.Blazor.Server.Helpers.Implementation;
 using Chat.Blazor.Server.Helpers.StateContainers;
-using Chat.Blazor.Server.Hubs;
 using Chat.Blazor.Server.Services.Interfaces;
 using Chat.Blazor.Server.Services.Implementation;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -19,7 +18,7 @@ builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddAuthorizationCore();
 builder.Services.AddMudServices(c => { c.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.BottomRight; });
 builder.Services.AddHttpClient();
-builder.Services.AddSignalR();
+//builder.Services.AddSignalR();
 builder.Services.AddSingleton<UserStateContainer>();
 builder.Services.AddSingleton<GroupInfoStateContainer>();
 builder.Services.AddSingleton<AvatarStateContainer>();
@@ -32,6 +31,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITestService, TestService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IGroupService, GroupService>();
+builder.Services.AddScoped<IHubConnectionService, HubConnectionService>();
 builder.Services.AddScoped<IChatMessageService, ChatMessageService>();
 
 
@@ -59,6 +59,5 @@ app.MapFallbackToPage("/_Host");
 app.UseEndpoints(endpoints =>
 {
     endpoints.MapControllers();
-    endpoints.MapHub<ChatHub>("/chatHub");
 });
 app.Run();

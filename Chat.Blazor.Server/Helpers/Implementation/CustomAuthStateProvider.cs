@@ -44,6 +44,19 @@ namespace Chat.Blazor.Server.Helpers.Implementation
             }
         }
 
+        public async Task<string> GetTokenAsync()
+        {
+            try
+            {
+                var savedToken = await _localStorage.GetItemAsync<string>("authToken");
+                return savedToken;
+            }
+            catch (InvalidOperationException)
+            {
+                return string.Empty;
+            }
+        }
+
         public void MarkUserAsAuthenticated(string email)
         {
             var authenticatedUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, email) }, "apiauth"));

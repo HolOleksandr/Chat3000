@@ -10,7 +10,6 @@ namespace Chat.Blazor.Server.Helpers.StateContainers
         {
             this.Value = value;
             NotifyStateChanged();
-
         }
 
         private void NotifyStateChanged() => OnStateChange?.Invoke();
