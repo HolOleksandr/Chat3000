@@ -11,7 +11,7 @@ namespace Chat.DAL.Entities
     {
         public int Id { get; set; }
         public string SenderId { get; set; } = null!;
-        public User Sender { get; set; } = null!;
+        public User? Sender { get; set; }
         public string? ReceiverId { get; set; }
         public User? Receiver { get; set; }
         public int GroupId { get; set; }

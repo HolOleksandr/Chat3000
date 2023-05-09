@@ -22,7 +22,7 @@ using System.Threading.Tasks;
 namespace Chat.Tests.Services.Tests
 {
     [TestFixture]
-    public class GroupServiceTest
+    public class GroupServiceTests
     {
         private Mock<IUnitOfWork> _mockUnitOfWork;
         private IGroupService _groupService;
