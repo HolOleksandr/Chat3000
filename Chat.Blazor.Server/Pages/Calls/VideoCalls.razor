@@ -127,7 +127,6 @@
         var _userState = await _authStateProvider.GetAuthenticationStateAsync();
         CurrentUserEmail = _userState.User.Identity.Name;
         CurrentUserId = _userState.User.Claims.FirstOrDefault(c => c.Type.Equals(ClaimTypes.NameIdentifier))?.Value;
-
     }
 
     public void Dispose()

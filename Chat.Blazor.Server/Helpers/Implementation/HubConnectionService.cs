@@ -34,10 +34,7 @@ namespace Chat.Blazor.Server.Helpers.Implementation
                     await hubConnection.StartAsync();
                 }
             }
-            catch (HttpRequestException ex)
-            {
-                var str = ex;
-            }
+            catch (HttpRequestException){}
             return hubConnection;
         }
     }

@@ -71,13 +71,12 @@ namespace Chat.BLL.Services.Implementation
 
         public async Task<FilterResult<GroupInfoViewDTO>> GetGroupsByUserEmailAsync(string userEmail, SearchParameters searchParameters)
         {
-            var user = await _unitOfWork.GetRepository<IUserRepository>().GetUserByEmailAsync(userEmail) 
-                ?? throw new ChatException("User was not found.");
-
             var _groupRepo = _unitOfWork.GetRepository<IGroupRepository>();
             
-                var groups = await _groupRepo.GetGroupsByUserIdAsync(user.Id, searchParameters.FilterQuery);
-                var mappedGroups = _mapper.Map<IEnumerable<GroupInfoViewDTO>>(groups);
+            var groups = await _groupRepo.GetGroupsByUserEmailAsync(userEmail, searchParameters.FilterQuery) 
+                ?? throw new ChatException("User was not found.");
+
+            var mappedGroups = _mapper.Map<IEnumerable<GroupInfoViewDTO>>(groups);
                 
             var result = await FilterResult<GroupInfoViewDTO>.CreateAsync(
                 mappedGroups,

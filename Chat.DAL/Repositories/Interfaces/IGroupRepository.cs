@@ -10,7 +10,7 @@ namespace Chat.DAL.Repositories.Interfaces
     public interface IGroupRepository : IBaseRepository<Group>
     {
         Task<IEnumerable<Group>> GetAllGroupsWithUsersAsync();
-        Task<IEnumerable<GroupInfoView>> GetGroupsByUserIdAsync(string userId, string searchText);
+        Task<IEnumerable<GroupInfoView>?> GetGroupsByUserEmailAsync(string userEmail, string searchText);
         
 
     }
