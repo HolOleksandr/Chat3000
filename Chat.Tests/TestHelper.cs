@@ -44,8 +44,6 @@ namespace Chat.Tests
             return new Mapper(configuration);
         }
 
-
-
         public static List<Group> GetfakeGroupList()
         {
             return new List<Group>()
@@ -76,7 +74,6 @@ namespace Chat.Tests
                 },
             };
         }
-
 
         public static List<User> GetfakeUserList() 
         {

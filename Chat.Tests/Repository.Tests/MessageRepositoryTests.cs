@@ -27,7 +27,6 @@ namespace Chat.Tests.Repository.Tests
             //Act
             var messages = await _messageRepository.GetAllByGroupIdAsync(1);
             var message2 = await _messageRepository.GetAllAsync();
-            var ms2 = message2.Count();
             //Assert
             Assert.That(messages.Count(), Is.EqualTo(3));
         }

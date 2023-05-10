@@ -64,6 +64,8 @@ namespace Chat.BLL.Services.Implementation
         public async Task<IdentityResult> ChangePasswordAsync(ChangePasswordModel model)
         {
             var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null)
+                throw new ChatException("User is not exist");
             var result = await _userManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
             return result;
         }

@@ -22,7 +22,7 @@ namespace Chat.Tests.BLL.Validators.Tests
         [TestCase("VeeeryLongNaaaaame", null, false)]
         [TestCase("Name", "d", false)]
         [TestCase("Name", "Normal description", true)]
-        public void CreateNewGropupValidator(string? name, string? description, bool isValid)
+        public void CreateNewGropupValidatorTest(string? name, string? description, bool isValid)
         {
             //arrange
             var _validator = new CreateGroupValidator();
@@ -50,7 +50,7 @@ namespace Chat.Tests.BLL.Validators.Tests
         [TestCase("email@email", null, "newPass", "newPass", false)]
         [TestCase("email@email", "pass", null, "newPass", false)]
         [TestCase("email@email", "pass", "newPass", null, false)]
-        public void UserChangePassValidator(string? email, string? oldPass, string? newPass, string? newPassConfirm, bool isValid)
+        public void UserChangePassValidatorTest(string? email, string? oldPass, string? newPass, string? newPassConfirm, bool isValid)
         {
             //arrange
             var _validator = new UserChangePassValidator();
@@ -85,7 +85,7 @@ namespace Chat.Tests.BLL.Validators.Tests
         [TestCase("Firstname", "LastName", "email@email", "Nickname", "2010-01-01", "+380993799092", true)]
         [TestCase("Firstname", "LastName", "email@email", "Nickname", "2023-01-01", "+380993799092", false)]
         [TestCase("Firstname", "LastName", "email@email", "Nickname", "1800-01-01", "+380993799092", false)]
-        public void UserDTOValidator(
+        public void UserDTOValidatorTest(
             string? firstName, 
             string? lastName, 
             string? email, 
@@ -120,7 +120,7 @@ namespace Chat.Tests.BLL.Validators.Tests
         [TestCase("notEmail", "pass", false)]
         [TestCase("email@email", "pass", true)]
 
-        public void UserLoginValidator(string? email, string? password, bool isValid)
+        public void UserLoginValidatorTest(string? email, string? password, bool isValid)
         {
             //arrange
             var _validator = new UserLoginValidator();
@@ -156,7 +156,7 @@ namespace Chat.Tests.BLL.Validators.Tests
         [TestCase("Firstname", "LastName", "email@email", "Nickname", "2010-01-01", "+380993799092", "password", "password", true)]
         [TestCase("Firstname", "LastName", "email@email", "Nickname", "2023-01-01", "+380993799092", "password", "password", false)]
         [TestCase("Firstname", "LastName", "email@email", "Nickname", "1800-01-01", "+380993799092", "password", "password", false)]
-        public void UserRegistrationValidator(
+        public void UserRegistrationValidatorTest(
             string? firstName,
             string? lastName,
             string? email,

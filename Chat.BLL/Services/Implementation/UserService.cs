@@ -40,7 +40,6 @@ namespace Chat.BLL.Services.Implementation
 
         public async Task UpdateUserInfoAsync(UserDTO userUpdateModel)
         {
-            
             var user = await _unitOfWork.GetRepository<IUserRepository>().GetUserByStringIdAsync(userUpdateModel.Id);
             if (user == null)
             {
@@ -60,7 +59,6 @@ namespace Chat.BLL.Services.Implementation
             user.BirthDate = userUpdateModel.BirthDate;
 
             await _unitOfWork.SaveAsync();
-
         }
 
         public async Task<UserDTO?> GetUserByIdAsync(string userId)

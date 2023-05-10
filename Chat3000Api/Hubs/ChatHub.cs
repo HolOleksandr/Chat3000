@@ -42,15 +42,13 @@ namespace ChatApp.API.Hubs
 
         public async Task SendCallMessage(string senderEmail, string receiverEmail, string message)
         {
-            await Clients.AllExcept(Context.ConnectionId).SendAsync("ReceiveCallMessage", senderEmail, receiverEmail, message);
-            //Users.TryGetValue(receiverEmail, out var connectionId);
-            //await Clients.User(connectionId).SendAsync("ReceiveCallMessage", senderEmail, receiverEmail, message);
+            Users.TryGetValue(receiverEmail, out var connectionId);
+            await Clients.User(connectionId).SendAsync("ReceiveCallMessage", senderEmail, receiverEmail, message);
         }
 
         public async Task HangUp(string userId)
         {
-            await Clients.All.SendAsync("CallFinished");
-            // TODO leave group
+            await Clients.Group(userId).SendAsync("CallFinished");
         }
     }
 }

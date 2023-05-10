@@ -52,10 +52,8 @@ namespace Chat.Tests.Repository.Tests
         {
             //Arrange
             var _groupRepository = GetGroupRepository();
-
             //Act
             var groups = await _groupRepository.GetAllAsync();
-
             //Assert
             Assert.That(groups, Is.Not.Null);
             Assert.That(groups.Count(), Is.EqualTo(3));
