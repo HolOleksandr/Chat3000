@@ -8,8 +8,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ChatApp.API.Controllers
 {
-
-
     [Authorize(Policy = "AllUsers")]
     [Route("api/[controller]")]
     [ApiController]

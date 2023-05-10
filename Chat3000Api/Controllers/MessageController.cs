@@ -38,7 +38,6 @@ namespace ChatApp.API.Controllers
                 return Ok("This group doesnt has messages yet");
             return Ok(messages);
         }
-
     }
 }
 
