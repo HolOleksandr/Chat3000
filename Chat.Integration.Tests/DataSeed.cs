@@ -1,83 +1,17 @@
-﻿using System;
+﻿using Chat.DAL.Entities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using AutoMapper;
-using Bogus;
-using Chat.BLL.Automapper;
-using Chat.DAL.Data;
-using Chat.DAL.Entities;
-using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
 
-namespace Chat.Tests
+namespace Chat.Integration.Tests
 {
-    public static class TestHelper
+    public static class DataSeed
     {
-        public static DbContextOptions<ChatDbContext> GetUnitTestDbOptions()
+        public static List<User> GetfakeUserList()
         {
-            var options = new DbContextOptionsBuilder<ChatDbContext>()
-                .UseInMemoryDatabase(Guid.NewGuid().ToString())
-                .Options;
-
-            using (var context = new ChatDbContext(options))
-            {
-                SeedData(context);
-                context.SaveChanges();
-            }
-            return options;
-        }
-
-        public static void SeedData(ChatDbContext context)
-        {
-            context.Groups.AddRange(GetfakeGroupList());
-            context.Users.AddRange(GetfakeUserList());
-            context.GroupsInfo.AddRange(GetfakeGroupInfoViewList());
-            context.UserGroup.AddRange(GetfakeUserGroupList());
-            context.Messages.AddRange(GetfakeMessageList());
-        }
-
-        public static IMapper CreateMapperProfile()
-        {
-            var myProfile = new AutomapperProfile();
-            var configuration = new MapperConfiguration(cfg => cfg.AddProfile(myProfile));
-
-            return new Mapper(configuration);
-        }
-
-        public static List<Group> GetfakeGroupList()
-        {
-            return new List<Group>()
-            {
-                new Group
-                {
-                    Id= 1,
-                    Name = "First Group",
-                    AdminId = "57f9b20f-3d14-4f48-be5f-90084218b437",
-                    CreationDate = DateTime.Parse("2023-04-24"),
-                    Description = "First group description",
-                },
-                new Group
-                {
-                    Id= 2,
-                    Name = "Second Group",
-                    AdminId = "57f9b20f-3d14-4f48-be5f-90084218b437",
-                    CreationDate = DateTime.Parse("2023-04-25"),
-                    Description = "Second group description",
-                },
-                new Group
-                {
-                    Id= 3,
-                    Name = "Third Group",
-                    AdminId = "361ca39f-a39e-46b1-921c-a38a9803fceb",
-                    CreationDate = DateTime.Parse("2023-04-25"),
-                    Description = "Third group description",
-                },
-            };
-        }
-
-        public static List<User> GetfakeUserList() 
-        {
-            return new List<User>() 
+            return new List<User>()
             {
                 new User
                 {
@@ -112,9 +46,40 @@ namespace Chat.Tests
             };
         }
 
-        public static List<UserGroup> GetfakeUserGroupList() 
+        public static List<Group> GetfakeGroupList()
         {
-            return new List<UserGroup>() 
+            return new List<Group>()
+            {
+                new Group
+                {
+                    Id = 1,
+                    Name = "First Group",
+                    AdminId = "57f9b20f-3d14-4f48-be5f-90084218b437",
+                    CreationDate = DateTime.Parse("2023-04-24"),
+                    Description = "First group description",
+                },
+                new Group
+                {
+                    Id = 2,
+                    Name = "Second Group",
+                    AdminId = "57f9b20f-3d14-4f48-be5f-90084218b437",
+                    CreationDate = DateTime.Parse("2023-04-25"),
+                    Description = "Second group description",
+                },
+                new Group
+                {
+                    Id = 3,
+                    Name = "Third Group",
+                    AdminId = "361ca39f-a39e-46b1-921c-a38a9803fceb",
+                    CreationDate = DateTime.Parse("2023-04-25"),
+                    Description = "Third group description",
+                },
+            };
+        }
+
+        public static List<UserGroup> GetfakeUserGroupList()
+        {
+            return new List<UserGroup>()
             {
                 new UserGroup {Id = 1, GroupId = 1, UserId = "57f9b20f-3d14-4f48-be5f-90084218b437", JoinDate = DateTime.Parse("2023-05-09")},
                 new UserGroup {Id = 2, GroupId = 1, UserId = "361ca39f-a39e-46b1-921c-a38a9803fceb", JoinDate = DateTime.Parse("2023-05-09")},
@@ -126,28 +91,24 @@ namespace Chat.Tests
             };
         }
 
-        public static List<Message> GetfakeMessageList() 
+        public static List<Message> GetfakeMesagesList()
         {
-            List<Message> messages = new List<Message>();
-            foreach (var user in GetfakeUserList())
+            return new List<Message>()
             {
-                var faker = new Faker<Message>()
-                    .RuleFor(m => m.GroupId, f => f.Random.Int(1,3))
-                    .RuleFor(m => m.SenderId, user.Id)
-                    .RuleFor(m => m.Text, f => f.Lorem.Sentence(1));
-
-                var newMessages = faker.Generate(10);
-
-                messages.AddRange(newMessages);
-            }
-            return messages;
+                new Message {Id = 1, GroupId = 1, Text = "First Message", SenderId = "57f9b20f-3d14-4f48-be5f-90084218b437", SendDate = DateTime.Parse("2023-05-01")},
+                new Message {Id = 2, GroupId = 1, Text = "Second Message", SenderId = "361ca39f-a39e-46b1-921c-a38a9803fceb", SendDate = DateTime.Parse("2023-05-02")},
+                new Message {Id = 3, GroupId = 1, Text = "Third Message", SenderId = "772aef6c-24fa-41f9-af4d-7aa907eb2356", SendDate = DateTime.Parse("2023-05-03")},
+                new Message {Id = 4, GroupId = 2, Text = "Fourth Message", SenderId = "57f9b20f-3d14-4f48-be5f-90084218b437", SendDate = DateTime.Parse("2023-05-04")},
+                new Message {Id = 5, GroupId = 2, Text = "Fifth Message", SenderId = "772aef6c-24fa-41f9-af4d-7aa907eb2356", SendDate = DateTime.Parse("2023-05-05")},
+                new Message {Id = 6, GroupId = 3, Text = "Sixth Message", SenderId = "361ca39f-a39e-46b1-921c-a38a9803fceb", SendDate = DateTime.Parse("2023-05-05")},
+                new Message {Id = 7, GroupId = 3, Text = "Seventh Message", SenderId = "57f9b20f-3d14-4f48-be5f-90084218b437", SendDate = DateTime.Parse("2023-05-05")},
+            };
         }
 
-
-        public static List<GroupInfoView> GetfakeGroupInfoViewList() 
-        { 
+        public static List<GroupInfoView> GetfakeGroupInfoViewList()
+        {
             return new List<GroupInfoView>()
-            { 
+            {
                 new GroupInfoView
                 {
                     Id= 1,

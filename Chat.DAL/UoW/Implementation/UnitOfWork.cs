@@ -19,6 +19,11 @@ namespace Chat.DAL.UoW.Implementation
             _serviceProvider = serviceProvider;
         }
 
+        public UnitOfWork SetUpDbContext(ChatDbContext newDbContext) 
+        {
+            return new UnitOfWork(newDbContext, _serviceProvider);
+        }
+
         T IUnitOfWork.GetRepository<T>()
         {
             var typeName = typeof(T).Name;
@@ -29,7 +34,6 @@ namespace Chat.DAL.UoW.Implementation
                 _repositories.Add(typeName, repository);
             }
             return (T)_repositories[typeName];
-
         }
 
         public async Task SaveAsync()
