@@ -33,7 +33,7 @@ namespace Chat.Tests
             context.Users.AddRange(GetfakeUserList());
             context.GroupsInfo.AddRange(GetfakeGroupInfoViewList());
             context.UserGroup.AddRange(GetfakeUserGroupList());
-            context.Messages.AddRange(GetfakeMessageListTry());
+            context.Messages.AddRange(GetfakeMessageList());
         }
 
         public static IMapper CreateMapperProfile()
@@ -126,32 +126,20 @@ namespace Chat.Tests
             };
         }
 
-        public static List<Message> GetfakeMessageListTry()
-        {
-            return new List<Message>()
-            {
-                new Message {Id = 1, GroupId = 1, SenderId = "57f9b20f-3d14-4f48-be5f-90084218b437", SendDate = DateTime.Parse("2023-05-09")},
-                new Message {Id = 2, GroupId = 1, SenderId = "361ca39f-a39e-46b1-921c-a38a9803fceb", SendDate = DateTime.Parse("2023-05-09")},
-                new Message {Id = 3, GroupId = 1, SenderId = "772aef6c-24fa-41f9-af4d-7aa907eb2356", SendDate = DateTime.Parse("2023-05-09")},
-                new Message {Id = 4, GroupId = 2, SenderId = "57f9b20f-3d14-4f48-be5f-90084218b437", SendDate = DateTime.Parse("2023-05-09")},
-                new Message {Id = 5, GroupId = 2, SenderId = "772aef6c-24fa-41f9-af4d-7aa907eb2356", SendDate = DateTime.Parse("2023-05-09")},
-                new Message {Id = 6, GroupId = 3, SenderId = "361ca39f-a39e-46b1-921c-a38a9803fceb", SendDate = DateTime.Parse("2023-05-09")},
-                new Message {Id = 7, GroupId = 3, SenderId = "57f9b20f-3d14-4f48-be5f-90084218b437", SendDate = DateTime.Parse("2023-05-09")},
-            };
-        }
-
         public static List<Message> GetfakeMessageList() 
         {
-            var ids = 1;
-            var groupId = 1;
-            var faker = new Faker<Message>()
-                .RuleFor(m => m.Id, f => ids++)
-                .RuleFor(m => m.SenderId, f => f.Random.Guid().ToString())
-                .RuleFor(m => m.GroupId, f => groupId)
-                .RuleFor(m => m.Text, f => f.Lorem.Sentence(1));
+            List<Message> messages = new List<Message>();
+            foreach (var user in GetfakeUserList())
+            {
+                var faker = new Faker<Message>()
+                    .RuleFor(m => m.GroupId, f => f.Random.Int(1,3))
+                    .RuleFor(m => m.SenderId, user.Id)
+                    .RuleFor(m => m.Text, f => f.Lorem.Sentence(1));
 
-            var messages = faker.Generate(10);
-            
+                var newMessages = faker.Generate(10);
+
+                messages.AddRange(newMessages);
+            }
             return messages;
         }
 

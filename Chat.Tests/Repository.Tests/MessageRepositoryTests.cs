@@ -24,11 +24,12 @@ namespace Chat.Tests.Repository.Tests
         public async Task GetAllMessagesByGroupId_ReturnsMessages()
         {
             //Arrange
+            int groupId = 1;
             //Act
-            var messages = await _messageRepository.GetAllByGroupIdAsync(1);
-            var message2 = await _messageRepository.GetAllAsync();
+            var messages = await _messageRepository.GetAllByGroupIdAsync(groupId);
+            var expected = (await _messageRepository.GetAllAsync()).Where(m => m.GroupId== groupId).ToList();
             //Assert
-            Assert.That(messages.Count(), Is.EqualTo(3));
+            Assert.That(messages.Count, Is.EqualTo(expected.Count));
         }
     }
 }
