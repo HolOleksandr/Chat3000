@@ -26,7 +26,6 @@ namespace Chat.BLL.Services.Implementation
             message.Sender = null;
             var messageEntity = _mapper.Map<Message>(message);
             await _unitOfWork.GetRepository<IMessageRepository>().AddAsync(messageEntity);
-
             await _unitOfWork.SaveAsync();
         }
 

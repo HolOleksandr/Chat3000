@@ -17,11 +17,14 @@ namespace Chat.Integration.Tests
                 {
                     Id = "57f9b20f-3d14-4f48-be5f-90084218b437",
                     Email = "admin@example.com",
+                    NormalizedEmail = "ADMIN@EXAMPLE.COM",
                     FirstName = "Admin",
                     LastName = "Admin",
                     PhoneNumber = "+380993899092",
                     UserName = "admin@example.com",
-                    BirthDate = DateTime.Parse("1993-04-25")
+                    NormalizedUserName = "ADMIN@EXAMPLE.COM",
+                    BirthDate = DateTime.Parse("1993-04-25"),
+                    PasswordHash ="AQAAAAEAACcQAAAAEP66WnkvznniTm9z6U8yfcl/FR5psDTSR9qY6AtqFLOibeNEz0t2Iz6pAEbgTZR7Ew=="
                 },
                 new User
                 {
@@ -31,7 +34,8 @@ namespace Chat.Integration.Tests
                     LastName = "User",
                     PhoneNumber = "+380993899093",
                     UserName = "test2@example.com",
-                    BirthDate = DateTime.Parse("1994-04-25")
+                    BirthDate = DateTime.Parse("1994-04-25"),
+                    PasswordHash ="AQAAAAEAACcQAAAAEP66WnkvznniTm9z6U8yfcl/FR5psDTSR9qY6AtqFLOibeNEz0t2Iz6pAEbgTZR7Ew=="
                 },
                 new User
                 {
@@ -41,7 +45,8 @@ namespace Chat.Integration.Tests
                     LastName = "User",
                     PhoneNumber = "+380993899092",
                     UserName = "test22@example.com",
-                    BirthDate = DateTime.Parse("1993-04-25")
+                    BirthDate = DateTime.Parse("1993-04-25"),
+                    PasswordHash ="AQAAAAEAACcQAAAAEP66WnkvznniTm9z6U8yfcl/FR5psDTSR9qY6AtqFLOibeNEz0t2Iz6pAEbgTZR7Ew=="
                 },
             };
         }

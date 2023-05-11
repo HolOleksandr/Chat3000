@@ -20,10 +20,6 @@ builder.Services.ConfigureSwagger();
 builder.Services.ConfigureValidators();
 builder.Services.RegisterDependencies();
 
-
-
-
-
 var connectionString = builder.Configuration.GetConnectionString("Default");
 builder.Services.AddDbContext<ChatDbContext>(options =>
 {

@@ -111,7 +111,8 @@ namespace Chat.Integration.Tests.Services.Tests
         public async Task UpdateUserInfoAsync_UpdateInfoSuccessfully()
         {
             //arrange
-            var newUserInfo = new UserDTO() {
+            var newUserInfo = new UserDTO()
+            {
                 Id = "57f9b20f-3d14-4f48-be5f-90084218b437",
                 Email = "adminNew@example.com",
                 FirstName = "NewAdminName",
@@ -170,6 +171,7 @@ namespace Chat.Integration.Tests.Services.Tests
             var ex = Assert.ThrowsAsync<ChatException>(() => act());
             Assert.That(ex.Message, Is.EqualTo("An account with this email address already exists"));
         }
+
         
     }
 }

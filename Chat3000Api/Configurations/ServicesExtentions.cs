@@ -44,7 +44,6 @@ namespace ChatApp.API.Configurations
             services.AddScoped<IMessageService, MessageService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IUserAuthService, UserAuthService>();
-
         }
 
         public static void ConfigureMapping(this IServiceCollection services)

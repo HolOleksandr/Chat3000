@@ -16,6 +16,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chat.Tests", "..\Chat.Tests\Chat.Tests.csproj", "{61E9F59C-24F1-4457-808B-CCED7F659299}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chat.Integration.Tests", "..\Chat.Integration.Tests\Chat.Integration.Tests.csproj", "{176B191C-B230-404D-8EBD-657644D06894}"
+	ProjectSection(ProjectDependencies) = postProject
+		{FF6B6285-0F12-4A26-8445-9DEE21BA9793} = {FF6B6285-0F12-4A26-8445-9DEE21BA9793}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
