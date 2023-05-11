@@ -155,13 +155,9 @@ namespace Chat.Integration.Tests
                 config.AddDebug();
                 config.AddConsole();
             });
-            //_serviceCollection.AddScoped<ILogger<UserManager<User>>, Logger<UserManager<User>>>();
-            // _serviceCollection.AddScoped<ILoggerFactory, LoggerFactory>();
-
             _serviceCollection.AddScoped<IUnitOfWork, UnitOfWork>();
             _serviceCollection.AddScoped(_ => _chatDbContext);
             var serviceProviderFactory = new DefaultServiceProviderFactory();
-            //_serviceProvider = _serviceCollection.BuildServiceProvider();
             _serviceProvider = serviceProviderFactory.CreateServiceProvider(_serviceCollection);
         }
 
@@ -171,21 +167,6 @@ namespace Chat.Integration.Tests
             var configuration = new MapperConfiguration(cfg => cfg.AddProfile(myProfile));
 
             return new Mapper(configuration);
-        }
-        public static void ConfigureIdentity(IServiceCollection services)
-        {
-            
-
-
-            services.Configure<IdentityOptions>(options =>
-            {
-                options.User.RequireUniqueEmail = true;
-                options.Password.RequireDigit = true;
-                options.Password.RequireLowercase = true;
-                options.Password.RequireNonAlphanumeric = true;
-                options.Password.RequireUppercase = true;
-                options.Password.RequiredLength = 6;
-            });
         }
 
         public virtual void Dispose()
