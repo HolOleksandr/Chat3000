@@ -35,7 +35,6 @@ namespace Chat.Integration.Tests
 
         public IUserAuthService GetUserAuthService()
         {
-
             var _UoW = InitUnitOfWorkWithContext();
             var config = GetConfiguration();
             _userManager = _serviceProvider.GetService<UserManager<User>>();
@@ -49,6 +48,7 @@ namespace Chat.Integration.Tests
             IMessageService _messageService = new MessageService(_UoW, CreateMapperProfile());
             return _messageService;
         }
+
         public IUserService GetUserService()
         {
             var _UoW = InitUnitOfWorkWithContext();
@@ -76,6 +76,7 @@ namespace Chat.Integration.Tests
             IUnitOfWork _unitOfWork = new UnitOfWork(_chatDbContext, _serviceProvider);
             return _unitOfWork;
         }
+
         private ChatDbContext GetDbContext()
         {
             _options = new DbContextOptionsBuilder<ChatDbContext>()

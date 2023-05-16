@@ -47,7 +47,7 @@ namespace Chat.Integration.Tests.Services.Tests
             // act
             var authResult = await _userAuthService.ValidateUserAsync(model);
             var token = await _userAuthService.CreateTokenAsync();
-            var tokenParts = token.Trim().Split('.').Count();
+            var tokenParts = token.Trim().Split('.').Length;
 
             // assert
             Assert.Multiple(() =>

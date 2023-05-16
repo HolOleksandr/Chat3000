@@ -36,7 +36,7 @@ namespace Chat.Integration.Tests.Services.Tests
         public async Task GetAllUsersAsync_ReturnsAllUsers()
         {
             //arrange
-            var searchParams = new SearchParameters() {PageIndex = 0, PageSize = 5 };
+            var searchParams = new SearchParameters() { PageIndex = 0, PageSize = 5 };
             //act
             var users = await _userService.GetAllUsersAsync(searchParams);
             //assert
