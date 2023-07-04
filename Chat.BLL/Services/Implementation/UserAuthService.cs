@@ -6,10 +6,12 @@ using Chat.BLL.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using System.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Chat.BLL.Models.Requests;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 
 namespace Chat.BLL.Services.Implementation
 {
@@ -17,17 +19,20 @@ namespace Chat.BLL.Services.Implementation
     {
         private readonly UserManager<User> _userManager;
         private readonly IConfiguration _configuration;
+        private readonly IWebHostEnvironment _environment;
         private readonly IMapper _mapper;
         private User? _user;
 
         public UserAuthService(
             UserManager<User> userManager, 
             IConfiguration configuration, 
-            IMapper mapper) 
+            IMapper mapper,
+            IWebHostEnvironment environment) 
         {
             _userManager = userManager;
             _configuration = configuration;
             _mapper = mapper;
+            _environment = environment;
         }
 
         public async Task<string> CreateTokenAsync()
@@ -72,7 +77,7 @@ namespace Chat.BLL.Services.Implementation
 
         private SigningCredentials GetSigningCredentials()
         {
-            var key = _configuration["Jwt:Key"];
+            var key = GetJwtKey();
             var secret = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
             return new SigningCredentials(secret, SecurityAlgorithms.HmacSha256);
         }
@@ -99,12 +104,48 @@ namespace Chat.BLL.Services.Implementation
                 _configuration["Jwt:ExpirationTimeInMinutes"]));
 
             var token = new JwtSecurityToken(
-                issuer: _configuration["Jwt:Issuer"],
-                audience: _configuration["Jwt:Audience"],
+                issuer: GetJwtIssuer(),
+                audience: GetJwtAudience(),
                 claims: claims,
                 expires: expiration,
                 signingCredentials: signingCredentials);
             return token;
+        }
+
+        private string GetJwtKey()
+        {
+            if (_environment.IsDevelopment())
+            {
+                return _configuration["Jwt:Key"];
+            }
+            else
+            {
+                return _configuration["ProdJwt:Key"];
+            }
+        }
+
+        private string GetJwtIssuer()
+        {
+            if (_environment.IsDevelopment())
+            {
+                return _configuration["Jwt:Issuer"];
+            }
+            else
+            {
+                return _configuration["ProdJwt:Issuer"];
+            }
+        }
+
+        private string GetJwtAudience()
+        {
+            if (_environment.IsDevelopment())
+            {
+                return _configuration["Jwt:Audience"];
+            }
+            else
+            {
+                return _configuration["ProdJwt:Audience"];
+            }
         }
     }
 }

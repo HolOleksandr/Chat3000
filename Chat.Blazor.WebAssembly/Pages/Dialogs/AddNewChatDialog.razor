@@ -1,0 +1,105 @@
+﻿@using Chat.Blazor.WebAssembly.Models.Requests;
+@using Chat.Blazor.WebAssembly.Services.Interfaces;
+@using Chat.Blazor.WebAssembly.Models.Paging;
+@using Chat.Blazor.WebAssembly.Models.DTO;
+@using Microsoft.AspNetCore.Authorization;
+@using Microsoft.AspNetCore.Components.Authorization;
+@using MudBlazor;
+
+<MudDialog>
+    <DialogContent>
+        <EditForm Model="_newGroupRequest">
+            <FluentValidationValidator @ref="_fluentValidationValidator" />
+            <div class="form-group">
+                <label for="groupname">Group Name</label>
+                <InputText Id="groupname" class="form-control" @bind-Value="_newGroupRequest.Name" />
+                <ValidationMessage For="@(() => _newGroupRequest.Name)" />
+            </div>
+            <div class="form-group">
+                <label for="description">Description</label>
+                <InputText Id="description" class="form-control" @bind-Value="_newGroupRequest.Description" />
+                <ValidationMessage For="@(() => _newGroupRequest.Description)" />
+            </div>
+        </EditForm>
+
+        @foreach (var user in options)
+        {
+            <MudChip Color="Color.Default" Value="@user" OnClose="RemoveUser">@user.FirstName @user.LastName</MudChip>
+        }
+        <MudSelect 
+            MultiSelectionTextFunc="@(new Func<List<string>, string>(GetMultiSelectionText))"
+                   MultiSelection="true" 
+                   SelectAll="true" 
+                   SelectAllText="Select all users"
+                   @bind-Value="value" 
+                   @bind-SelectedValues="options"
+                   T="UserShortInfoDTO"
+                   Label="Users" 
+                   AdornmentIcon="@Icons.Material.Filled.AddCircle" 
+                   AnchorOrigin="Origin.BottomCenter">
+            @foreach (var user in usersInfoList)
+            {
+                <MudSelectItem T="UserShortInfoDTO" Value="@(user)">@user.FirstName @user.LastName (@user.Email)</MudSelectItem>
+            }
+        </MudSelect>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary"  OnClick="Submit">Ok</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@inject IUserService _userService
+@inject IGroupService _groupService
+@inject NavigationManager Navigation
+
+@code {
+    [Parameter]
+    public string CreatorEmail { get; set; }
+    [Parameter]
+    public string CreatorId { get; set; }
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    private FluentValidationValidator? _fluentValidationValidator;
+    private CreateGroupRequest _newGroupRequest = new();
+    private UserShortInfoDTO value { get; set; } 
+    private IEnumerable<UserShortInfoDTO> options { get; set; } = new List<UserShortInfoDTO>();
+    private IEnumerable<UserShortInfoDTO> usersInfoList = new List<UserShortInfoDTO>();
+
+    protected override async void OnInitialized()
+    {
+        this.usersInfoList = await _userService.GetUsersShortInfoExceptMaker(CreatorEmail);
+        _newGroupRequest.AdminId = CreatorId;
+        base.OnInitialized();
+    }
+
+    private void RemoveUser(MudChip chip)
+    {
+        var user = (UserShortInfoDTO)chip.Value;
+        var users = this.options.ToList();
+        users.Remove(user);
+        this.options = users.AsEnumerable();
+    }
+
+    private string GetMultiSelectionText(List<string> selectedValues)
+    {
+        if (!selectedValues.Any())
+            return "Select users";
+
+        return $"Selected user{(selectedValues.Count > 1 ? "s" : "")}({selectedValues.Count}): {string.Join(", ", this.options.Select(x => x.FirstName + " " + x.LastName))}";
+    }
+
+    private async Task Submit()
+    {
+        if (await _fluentValidationValidator!.ValidateAsync())
+        {
+            _newGroupRequest.Members = this.options;
+            var result = await _groupService.CreateNewGroup(_newGroupRequest);
+            if (result.Success)
+            {
+                MudDialog.Close(DialogResult.Ok(true));
+            }
+        }
+    }
+
+    void Cancel() => MudDialog.Cancel();
+}

@@ -17,7 +17,6 @@
           OnRowClick="RowDoubleClickEvent"
           T="UserDTO"
           Hover=false>
-          
     <ToolBarContent>
         <MudText Typo="Typo.h6">Users list</MudText>
         <MudSpacer />
@@ -32,7 +31,6 @@
         </MudTextField>
     </ToolBarContent>
     <HeaderContent>
-        @*<MudTh>Nr</MudTh>*@
         <MudTh>Avatar</MudTh>
         <MudTh><MudTableSortLabel SortLabel="Id" T="UserDTO">Id</MudTableSortLabel></MudTh>
         <MudTh><MudTableSortLabel SortLabel="FirstName" T="UserDTO">First Name</MudTableSortLabel></MudTh>
@@ -44,7 +42,18 @@
 
     <RowTemplate >
         <MudTd DataLabel="Avatar">
-            <MudAvatar Color="Color.Transparent" Size="Size.Large" Image="@context.Avatar" />
+            @if (string.IsNullOrEmpty(@context.Avatar))
+            {
+                <div>
+                    <MudAvatar Color="Color.Transparent" Size="Size.Large"><MudImage Src="/Images/defaultavatar.jpg"></MudImage></MudAvatar>
+                </div>
+            }
+            else
+            {
+                <div>
+                    <MudAvatar Color="Color.Transparent" Size="Size.Large"><MudImage Src="@context.Avatar"></MudImage></MudAvatar>
+                </div>
+            }
         </MudTd>
         <MudTd DataLabel="Id">@context.Id</MudTd>
         <MudTd DataLabel="First Name">@context.FirstName</MudTd>
@@ -92,7 +101,6 @@
     {
         if (firstRender)
         {
-
             InitTableWithQueryParams();
             BackUpTableState();
             _firstRenderTrigger = true;
@@ -100,9 +108,7 @@
             StateHasChanged();
 
         }
-        //base.OnAfterRender(firstRender);
     }
-
 
     private async Task<TableData<UserDTO>> ServerReload(TableState state)
     {
@@ -191,7 +197,7 @@
         ValidateQueryParams();
 
         _table.CurrentPage = searchParameters.PageIndex;
-        _table.SortLabel = searchParameters.SortColumn;  // for Example
+        _table.SortLabel = searchParameters.SortColumn;
         _table.SetRowsPerPage(searchParameters.PageSize);
         StateHasChanged();
     }

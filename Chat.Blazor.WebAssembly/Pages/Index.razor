@@ -1,0 +1,22 @@
+﻿@page "/"
+
+<PageTitle>Index</PageTitle>
+<MudContainer Style="display: inline-block; position: fixed; top: 0; bottom: 0; left: 0; right: 0; width: 900px; height: 300px; margin: auto; ">
+    <CascadingAuthenticationState>
+        <AuthorizeView>
+            <Authorized>
+                <MudGrid>
+                    <MudItem xs="12" sm="12" md="12" />
+                    <MudContainer MaxWidth="MaxWidth.Small" Class="d-flex align-content-start">
+                        <MudText Align="Align.Center" Typo="Typo.h2" Class="mt-4">Hello, @context.User.Identity!.Name!</MudText>
+
+                    </MudContainer>
+                </MudGrid>
+            </Authorized>
+            <NotAuthorized>
+                <MudText Align="Align.Center" Typo="Typo.h2" Class="mt-4">Welcome to Chat3000</MudText>
+                <MudText Align="Align.Center" Typo="Typo.subtitle1" Class="smaller"> You can <a href="Register">Register</a> or <a href="Login">Log in</a> </MudText>
+            </NotAuthorized>
+        </AuthorizeView>
+    </CascadingAuthenticationState>
+</MudContainer>

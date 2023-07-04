@@ -1,16 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Chat.Blazor.Server.Models
+﻿namespace Chat.Blazor.Server.Models
 {
     public class Error
     {
         public int StatusCode { get; set; }
-
         public string? Message { get; set; }
-
     }
 }

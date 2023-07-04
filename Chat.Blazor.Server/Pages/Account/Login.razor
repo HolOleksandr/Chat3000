@@ -1,8 +1,8 @@
 ﻿@page "/login"
 @using Chat.Blazor.Server.Models;
 @using Chat.Blazor.Server.Services.Interfaces;
-@inject IAuthService AuthService
-@inject NavigationManager NavigationManager
+@using Chat.Blazor.Server.Helpers.StateContainers;
+@using Chat.Blazor.Server.Models.Requests;
 
 <h1>Login</h1>
 
@@ -35,8 +35,11 @@
     </div>
 </div>
 
-@code {
+@inject IAuthService AuthService
+@inject NavigationManager NavigationManager
+@inject VideoCallsSubStateContainer _callsSubStateContainer
 
+@code {
     private UserLoginModel loginModel = new UserLoginModel();
     private bool ShowErrors;
     private string Error = "";
@@ -44,12 +47,11 @@
     private async Task HandleLogin()
     {
         ShowErrors = false;
-
         var result = await AuthService.Login(loginModel);
 
         if (result.Success)
         {
-            NavigationManager.NavigateTo("/");
+            NavigationManager.NavigateTo("/", forceLoad: true);
         }
         else
         {
@@ -57,5 +59,4 @@
             ShowErrors = true;
         }
     }
-
 }

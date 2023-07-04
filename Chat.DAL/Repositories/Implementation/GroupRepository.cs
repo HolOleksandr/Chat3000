@@ -3,11 +3,6 @@ using Chat.DAL.Entities;
 using Chat.DAL.Repositories.Extensions;
 using Chat.DAL.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Chat.DAL.Repositories.Implementation
 {
@@ -24,6 +19,13 @@ namespace Chat.DAL.Repositories.Implementation
         {
             var groups = await _dbContext.Groups.Include(g => g.Users).Include(g=> g.Admin).AsQueryable().ToListAsync();
             return groups;
+        }
+
+        public async Task<GroupInfoView?> GetGroupViewById(int groupId)
+        {
+            var groupInfo = await _dbContext.GroupsInfo.FirstOrDefaultAsync(g => g.Id == groupId);
+
+            return groupInfo;
         }
 
         public async Task<IEnumerable<GroupInfoView>?> GetGroupsByUserEmailAsync(string userEmail, string searchText)

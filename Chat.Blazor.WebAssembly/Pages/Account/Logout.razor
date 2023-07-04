@@ -1,0 +1,21 @@
+﻿@page "/logout"
+@using Chat.Blazor.WebAssembly.Helpers.Interfaces;
+@using Chat.Blazor.WebAssembly.Helpers.StateContainers.Hubs;
+@using Chat.Blazor.WebAssembly.Services.Interfaces;
+@using Microsoft.AspNetCore.SignalR.Client
+
+@inject IAuthService _authService
+@inject NavigationManager NavigationManager
+@inject VideoCallHubStateContainer _videoCallHubStateContainer;
+@inject IHubConnectionService _hubConnectionService
+
+@code {
+    private HubConnection? videoHubConnection;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await _authService.Logout();
+        await _hubConnectionService.DisconnectFromHubsAsync();
+        NavigationManager.NavigateTo("/");
+    }
+}

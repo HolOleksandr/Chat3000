@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using AutoMapper.Execution;
 using Chat.BLL.DTO;
 using Chat.BLL.Exceptions;
 using Chat.BLL.Helpers;
@@ -9,15 +8,6 @@ using Chat.BLL.Services.Interfaces;
 using Chat.DAL.Entities;
 using Chat.DAL.Repositories.Interfaces;
 using Chat.DAL.UoW.Interface;
-using Microsoft.AspNetCore.Identity;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.Metrics;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace Chat.BLL.Services.Implementation
 {
@@ -34,7 +24,7 @@ namespace Chat.BLL.Services.Implementation
 
         public async Task CreateNewGroup(CreateGroupRequest groupRequest)
         {
-            var _newGroup = _mapper.Map<DAL.Entities.Group>(groupRequest);
+            var _newGroup = _mapper.Map<Group>(groupRequest);
             _newGroup.CreationDate = DateTime.Now;
             await _unitOfWork.GetRepository<IGroupRepository>().AddAsync(_newGroup);
             await _unitOfWork.SaveAsync();
@@ -67,6 +57,16 @@ namespace Chat.BLL.Services.Implementation
             var groups = await _unitOfWork.GetRepository<IGroupRepository>().GetAllGroupsWithUsersAsync();
             var mappedGroups = _mapper.Map<IEnumerable<GroupDTO>>(groups);
             return mappedGroups;
+        }
+
+        public async Task<GroupInfoViewDTO> GetGroupViewByIdAsync(string groupId)
+        {
+            var success = int.TryParse(groupId, out var groupIdInt);
+            if (!success)
+                throw new ChatException("Wrong group id.");
+            var group = await _unitOfWork.GetRepository<IGroupRepository>().GetGroupViewById(groupIdInt);
+            var mappedGroup = _mapper.Map<GroupInfoViewDTO>(group);
+            return mappedGroup;
         }
 
         public async Task<FilterResult<GroupInfoViewDTO>> GetGroupsByUserEmailAsync(string userEmail, SearchParameters searchParameters)

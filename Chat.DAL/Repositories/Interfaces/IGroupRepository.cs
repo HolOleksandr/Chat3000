@@ -1,9 +1,4 @@
 ﻿using Chat.DAL.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Chat.DAL.Repositories.Interfaces
 {
@@ -11,7 +6,6 @@ namespace Chat.DAL.Repositories.Interfaces
     {
         Task<IEnumerable<Group>> GetAllGroupsWithUsersAsync();
         Task<IEnumerable<GroupInfoView>?> GetGroupsByUserEmailAsync(string userEmail, string searchText);
-        
-
+        Task<GroupInfoView?> GetGroupViewById(int groupId);
     }
 }

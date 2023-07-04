@@ -1,0 +1,241 @@
+﻿@page "/calls/video/"
+@attribute [Authorize]
+@using Chat.Blazor.WebAssembly.Services.Interfaces;
+@using Microsoft.AspNetCore.SignalR.Client;
+@using Chat.Blazor.WebAssembly.Helpers.StateContainers;
+@using System.Security.Claims;
+@using Chat.Blazor.WebAssembly.Helpers.Interfaces;
+@using Chat.Blazor.WebAssembly.Models.DTO;
+@using Chat.Blazor.WebAssembly.Models;
+@using Microsoft.AspNetCore.Authorization;
+@using Microsoft.AspNetCore.Components.Authorization;
+@using MudBlazor;
+
+@implements IDisposable
+
+<MudPaper Class="d-flex flex-column flex-grow-1 gap-1" Elevation="0">
+    <MudPaper Class="d-flex align-center justify-center mud-width-full py-1" Elevation="0">
+        <h3>VideoCalls</h3>
+    </MudPaper>
+    <MudPaper Class="d-flex align-center justify-center mud-width-full py-1" Elevation="0">
+        @if (ShowSelectingError)
+        {
+            <div class="alert alert-danger" role="alert">
+                <p>Select User</p>
+            </div>
+        }
+        @if (callIsDeclined)  
+        {
+            <div class="alert alert-danger" role="alert">
+                <p>Call was declined</p>
+            </div>
+        }
+    </MudPaper>
+    <MudPaper Class="d-flex align-center justify-center py-1 w-20;" Elevation="0">
+        <MudContainer MaxWidth="MaxWidth.Small">
+            @if (!OnCall)
+            {
+                @if (usersInfoList.Count() > 0)
+                {
+                    <MudAutocomplete T="UserShortInfoDTO"
+                             CoerceValue="true"
+                             ToStringFunc="@(u => ItemDisplay(u))"
+                             Label="Select User"
+                             @bind-Value="SelectedUser"
+                             SearchFunc="@SearchInUsersInfo"
+                             Variant="Variant.Outlined"
+                             Strict="false" />
+                }
+                else
+                {
+                    <div> Loading ...</div>
+                }
+            }
+            else
+            {
+                <MudText>Calling ... @SelectedUser.FirstName @SelectedUser.LastName</MudText>
+            }
+        </MudContainer>
+    </MudPaper>
+    <MudPaper Class="d-flex align-center justify-center mud-width-full py-1" Elevation="0">
+        <MudButton Class="mx-1" Disabled="OnCall" @onclick="StartCall" Variant="Variant.Filled" EndIcon="@Icons.Material.Filled.Call" Color="Color.Primary">Call</MudButton>
+        <MudButton Class="mx-1" Disabled="!OnCall" @onclick="HangUp" Variant="Variant.Filled" EndIcon="@Icons.Material.Filled.CallEnd" Color="Color.Secondary">Hang Up</MudButton>
+    </MudPaper>
+    <MudPaper Class="d-flex align-center justify-center mud-width-full py-1" Elevation="0">
+        <div style="position: relative; height: 400px; width: 600px; margin-top: 20px">
+            <div style="position: absolute; top: 0; left: 0; height: 100%; width: 100%; background-color: black;">
+                <video id="remoteVideo" style="height: 100%; width: 100%;"></video>
+            </div>
+            <div style="position: absolute; bottom: 10px; right: 10px; height: 120px; width: 160px; background-color: black;">
+                <video muted id="localVideo" style="height: 100%; width: 100%;"></video>
+            </div>
+        </div>
+    </MudPaper>
+</MudPaper>
+
+@inject NavigationManager Navigation
+@inject PeerIdStateContainer _peerIdStateContainer
+@inject AuthenticationStateProvider _authStateProvider
+@inject IConfiguration Configuration;
+@inject IHubConnectionService _hubConnectionService
+@inject IUserService _userService
+@inject CallParamsStateContainer _callStateContainer
+
+@code {
+    private CallParamsModel _callParams;
+    private bool OnCall = false;
+    private bool ShowSelectingError = false;
+    private bool ShowCameraError = false;
+    private bool callIsDeclined = false;
+
+    public HubConnection _videoHubConnection { get; set; }
+    private readonly List<IDisposable> _hubSubscriptions = new();
+    private ElementReference localVideo;
+    private ElementReference remoteVideo;
+    private string _currentPeerId;
+    private string _peerToCallId;
+    private IJSObjectReference _peerModule;
+    [Parameter] public string CurrentUserEmail { get; set; }
+    [Parameter] public string CurrentUserId { get; set; }
+    private UserDTO CurrentUser;
+    private IEnumerable<UserShortInfoDTO> usersInfoList = new List<UserShortInfoDTO>();
+    private UserShortInfoDTO? SelectedUser;
+    private IJSObjectReference _localStream = null!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetUserInfo();
+        await GetUsersList();
+        _peerModule = await _jsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/peerjs-service.js");
+
+        if (_callStateContainer.Value != null)
+        {
+            _peerToCallId = _callStateContainer.Value.PeerId;
+            _callParams = _callStateContainer.Value;
+            _videoHubConnection = await _hubConnectionService.ConnectToVideoCallHub(CurrentUserId);
+            SelectedUser = new() { Id = _callParams.CallingUserId, FirstName = _callParams.CallingUserName , LastName = ""};
+            await AnswerCall();
+            await InvokeAsync(StateHasChanged);
+        }
+        else
+        {
+            _videoHubConnection = await _hubConnectionService.ConnectToVideoCallHub(CurrentUserId);
+        }
+
+        InitializeHubSubscriptions();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task StartCall()
+    {
+        ShowSelectingError = false;
+        if (SelectedUser == null)
+        {
+            ShowSelectingError = true;
+            return;
+        }
+        await InitLocalPeerAsync();
+        await _videoHubConnection.SendAsync("Call", CurrentUserId, $"{CurrentUser.FirstName} {CurrentUser.LastName}", SelectedUser.Id, _currentPeerId);
+        OnCall = true;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task AnswerCall()
+    {
+        await InitLocalPeerAsync();
+        await _peerModule.InvokeVoidAsync("callToPeer", _localStream, _callParams.PeerId);
+        OnCall = true;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task InitLocalPeerAsync()
+    {
+        _currentPeerId = await _peerModule.InvokeAsync<string>("createNewPeer");
+        _localStream = await _peerModule.InvokeAsync<IJSObjectReference>("setLocalStream");
+        await _peerModule.InvokeVoidAsync("subscribePeerToCalls");
+    }
+
+    private void InitializeHubSubscriptions()
+    {
+        _hubSubscriptions.Add(_videoHubConnection.On("CallTerminated", async () => { await EndCall(); }));
+        _hubSubscriptions.Add(_videoHubConnection.On("CallDeclined", async () => { await EndCall(); await CallDeclined(); }));
+    }
+
+    private async Task HangUp()
+    {
+        await _videoHubConnection.SendAsync("HangUp", SelectedUser.Id);
+        await EndCall();
+    }
+
+    private async Task EndCall()
+    {
+        await _peerModule.InvokeVoidAsync("endCall");
+        OnCall = false;
+        SelectedUser = null;
+        _callStateContainer.SetValue(null);
+        await InvokeAsync(StateHasChanged);
+        await CheckCameraStatus();
+    }
+
+    private async Task CheckCameraStatus()
+    {
+        await Task.Delay(1000);
+        var isInUse = await _peerModule.InvokeAsync<bool>("isCameraInUse");
+        if (isInUse)
+        {
+            Navigation.NavigateTo("/calls/video/", forceLoad: true);
+        }
+    }
+
+    private async Task CallDeclined()
+    {
+        callIsDeclined = true;
+        await InvokeAsync(StateHasChanged);
+        await Task.Delay(5000);
+        callIsDeclined = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task GetUserInfo()
+    {
+        var _userState = await _authStateProvider.GetAuthenticationStateAsync();
+        CurrentUserEmail = _userState.User.Identity.Name;
+        CurrentUserId = _userState.User.Claims.FirstOrDefault(c => c.Type.Equals(ClaimTypes.NameIdentifier))?.Value;
+        CurrentUser = await _userService.GetUserByIdAsync(CurrentUserId);
+    }
+
+    private async Task<IEnumerable<UserShortInfoDTO>> SearchInUsersInfo(string value)
+    {
+        await Task.Delay(1);
+        if (string.IsNullOrEmpty(value))
+            return usersInfoList;
+        return usersInfoList.Where(x => x.Email.Contains(value, StringComparison.InvariantCultureIgnoreCase)
+            || x.FirstName.Contains(value, StringComparison.InvariantCultureIgnoreCase)
+            || x.LastName.Contains(value, StringComparison.InvariantCultureIgnoreCase));
+    }
+
+    private string ItemDisplay(UserShortInfoDTO user)
+    {
+        return user == null ? "" : $"{user.FirstName} {user.LastName} [ {user.Email} ]";
+    }
+
+    private async Task GetUsersList()
+    {
+        this.usersInfoList = await _userService.GetUsersShortInfoExceptMaker(CurrentUserEmail);
+    }
+
+    private void HideError()
+    {
+        ShowSelectingError = false;
+    }
+
+    public void Dispose()
+    {
+        InvokeAsync(async () => await _peerModule.InvokeVoidAsync("endCall"));
+        if(SelectedUser != null)
+        {
+            InvokeAsync(async () => await _videoHubConnection.SendAsync("HangUp", SelectedUser.Id));
+        }
+        _hubSubscriptions.ForEach(x => x.Dispose());
+    }
+}

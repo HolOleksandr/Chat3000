@@ -6,6 +6,6 @@ namespace Chat.Blazor.Server.Services.Interfaces
     public interface IImageService
     {
         Task<string> SaveImageInBase64(IBrowserFile file);
-        //Image GetImageFromBase64(string base64String);
+        Task<IFormFile> ResizeImageAsync(IBrowserFile file, int width, int height);
     }
 }

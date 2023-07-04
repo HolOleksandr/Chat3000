@@ -1,0 +1,147 @@
+
+trigger:
+- main
+
+variables:
+ testDbName: 'ChatTestDb'
+ unitTestDir: 'Chat.Tests'
+ solutionDir: 'Chat3000Api/*.sln'
+ dbProjectDir: 'Chat3000.Database/Chat3000.Database.sqlproj'
+ apiConfigFile: 'Chat3000Api'
+ apiProjectDir: 'Chat3000Api/ChatApp.API.csproj'
+ funcProjectDir: 'Chat.AzureFunc.TextFileTransform\Chat.AzureFunc.TextFileTransform.csproj'
+ blazorProjectDir: 'Chat.Blazor.Server/Chat.Blazor.Server.csproj'
+ dacpacFileLocation: '$(build.artifactStagingDirectory)/dacpacs/Chat3000.Database.dacpac'
+ integrationTestsDir: 'Chat.Integration.Tests'
+ testDbConnectionString: 'Server=(localdb)\MSSQLLocalDB;Integrated Security=true;Database=ChatTestDb'
+
+pool: default
+  #vmImage: 'windows-latest'
+
+steps:
+
+- task: BicepInstall@0
+  inputs:
+    version: 0.10.13
+
+- task: BicepBuild@0
+  inputs:
+    process: 'single'
+    sourceFile: 'Chat.Infrastructure.Azure/main.bicep'
+    outputProcess: 'outFile'
+    outputFile: '$(build.artifactStagingDirectory)/Infrastructure/Infrastructure.json'
+
+- task: DotNetCoreCLI@2
+  name: 'BuildAzureFunc'
+  displayName: 'Build Azure Function Project'
+  inputs:
+    command: 'build'
+    projects: '$(funcProjectDir)'
+
+- task: DotNetCoreCLI@2
+  name: 'BuildApi'
+  displayName: 'Build API Project'
+  inputs:
+    command: 'build'
+    projects: '$(apiProjectDir)'
+
+- task: DotNetCoreCLI@2
+  name: 'BuildBlazorServer'
+  displayName: 'Build Blazor.Server Project'
+  inputs:
+    command: 'build'
+    projects: '$(blazorProjectDir)'
+    
+- task: MSBuild@1
+  displayName: Build Database Project
+  inputs:
+    solution: '$(dbProjectDir)'
+
+- task: CopyFiles@2
+  displayName: Copy dacpac file
+  inputs:
+   Contents: '**\*.dacpac'
+   TargetFolder: '$(build.artifactStagingDirectory)/dacpacs'
+   flattenFolders: true
+
+- task: CmdLine@2
+  displayName: Starting MSSQLLocalDB
+  inputs:
+    script: |
+      sqllocaldb  start MSSQLLocalDB
+      sqllocaldb  info MSSQLLocalDB
+
+- task: SqlDacpacDeploymentOnMachineGroup@0
+  displayName: Publishing Db Project for Tests
+  inputs:
+    TaskType: 'dacpac'
+    DacpacFile: '$(dacpacFileLocation)'
+    TargetMethod: 'connectionString'
+    ConnectionString: '$(testDbConnectionString)'
+
+- task: DotNetCoreCLI@2
+  displayName: Run Unit tests
+  inputs:
+    command: 'test'
+    workingDirectory: '$(unitTestDir)'
+
+- task: DotNetCoreCLI@2
+  displayName: Run Integration tests
+  inputs:
+    command: 'test'
+    workingDirectory: '$(integrationTestsDir)'
+
+- task: DotNetCoreCLI@2
+  name: 'PublishFunc'
+  displayName: 'Publish Azure Func'
+  inputs:
+    command: 'publish'
+    publishWebProjects: false
+    projects: '$(funcProjectDir)'
+    arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)'
+    zipAfterPublish: true
+ 
+- task: PublishBuildArtifacts@1
+  name: 'PublishFuncBuildArtifacts'
+  displayName: 'Publish Azure Func artifacts'
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'FuncProject'
+    publishLocation: 'Container'    
+
+- task: DotNetCoreCLI@2
+  name: 'Publish'
+  displayName: 'Publish API'
+  inputs:
+    command: 'publish'
+    publishWebProjects: false
+    projects: '$(apiProjectDir)'
+    arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)'
+    zipAfterPublish: true
+ 
+- task: PublishBuildArtifacts@1
+  name: 'PublishBuildArtifacts'
+  displayName: 'Publish API build artifacts'
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'API project'
+    publishLocation: 'Container'
+
+- task: DotNetCoreCLI@2
+  name: 'PublishBlazor'
+  displayName: 'Publish Blazor Server'
+  inputs:
+    command: 'publish'
+    publishWebProjects: false
+    projects: '$(blazorProjectDir)'
+    arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)/blazorServer'
+    zipAfterPublish: true
+ 
+- task: PublishBuildArtifacts@1
+  name: 'PublishBlazorBuildArtifacts'
+  displayName: 'Publish Blazor build artifacts'
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)/blazorServer'
+    ArtifactName: 'Blazor project'
+    publishLocation: 'Container'
+

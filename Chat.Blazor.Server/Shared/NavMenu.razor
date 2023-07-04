@@ -10,6 +10,8 @@
 <CascadingAuthenticationState>
     <AuthorizeView>
         <Authorized>
+            <CallHubProvider></CallHubProvider>
+
             <div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
                 <nav class="flex-column">
                     <div class="nav-item px-3">
@@ -33,6 +35,11 @@
                             <span class="oi oi-video" aria-hidden="true"></span> Calls
                         </NavLink>
                     </div>
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="/contracts/">
+                            <span class="oi oi-video" aria-hidden="true"></span> Contracts
+                        </NavLink>
+                    </div>
                 </nav>
             </div>
         </Authorized>
@@ -42,15 +49,10 @@
                     <span class="oi oi-list-rich" aria-hidden="true"></span> AboutUs
                 </NavLink>
             </div>
-        
-    
 </CascadingAuthenticationState>
-
-
 
 @code {
     private bool collapseNavMenu = true;
-
     private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
 
     private void ToggleNavMenu()

@@ -1,0 +1,15 @@
+﻿@page "/test"
+@using Chat.Blazor.WebAssembly.Services.Interfaces;
+<h3>Test</h3>
+
+@inject ITestService _testService
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var str = await _testService.GetTestMessage();
+        await base.OnInitializedAsync();
+        }
+    }
+}

@@ -1,0 +1,216 @@
+﻿@using Blazored.FluentValidation;
+@using Chat.Blazor.WebAssembly.Models.Requests;
+@using Chat.Blazor.WebAssembly.Services.Interfaces;
+@using Chat.Blazor.WebAssembly.Models.Paging;
+@using Chat.Blazor.WebAssembly.Models.DTO;
+@using MudBlazor;
+@using Syncfusion.Blazor.PdfViewerServer
+@using Microsoft.AspNetCore.SignalR.Client;
+@using Chat.Blazor.WebAssembly.Helpers.Interfaces;
+
+<MudDialog>
+    <DialogContent>
+        <MudFileUpload Accept=".pdf" T="IBrowserFile" OnFilesChanged="UploadPdfFileSyncF">
+            <ButtonTemplate Context="fileContext">
+                <MudButton Class="mt-3" HtmlTag="label"
+                           Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.CloudUpload"
+                           for="@fileContext">
+                    Choose Pdf File (Sfusion)
+                </MudButton>
+            </ButtonTemplate>
+        </MudFileUpload>
+        <MudFileUpload Accept=".pdf" T="IBrowserFile" OnFilesChanged="UploadPdfFilePsPdf">
+            <ButtonTemplate Context="file2Context">
+                <MudButton Class="mt-3" HtmlTag="label"
+                           Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.CloudUpload"
+                           for="@file2Context">
+                    Choose Pdf File (PsPdf)
+                </MudButton>
+            </ButtonTemplate>
+        </MudFileUpload>
+        @if (isSyncF || isPsPdf)
+        {
+            @if (isSyncF)
+            {
+                <MudButton OnClick="SaveSyncFPdf" Class="mt-3" HtmlTag="label"
+                   Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.CloudUpload">
+                    Save SyncF File
+                </MudButton>
+            }
+            @if (isPsPdf)
+            {
+                <MudButton OnClick="SavePsPdf" Class="mt-3" HtmlTag="label"
+                   Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.CloudUpload">
+                    Save PsPdf File
+                </MudButton>
+            }
+        }
+        <MudContainer MaxWidth="MaxWidth.Small">
+            @if (usersInfoList.Count() > 0)
+            {
+                <MudAutocomplete T="UserShortInfoDTO"
+                             CoerceValue="true"
+                             ToStringFunc="@(u => ItemDisplay(u))"
+                             Label="Select User"
+                             @bind-Value="SelectedUser"
+                             SearchFunc="@SearchInUsersInfo"
+                             Variant="Variant.Outlined"
+                             Strict="false" />
+            }
+            else
+            {
+                <div> Loading ...</div>
+            }
+        </MudContainer>
+        @if (isSyncF)
+        {
+            <SfPdfViewerServer DocumentPath="@DocumentPath" @ref="viewer" Height="800px" Width="1060px"></SfPdfViewerServer>
+        }
+        @if (isPsPdf)
+        {
+            <div id='container' style='background: gray; width: 100vw; height: 100vh; margin: 0 auto;'></div>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@inject IUserService _userService
+@inject IGroupService _groupService
+@inject NavigationManager Navigation
+@inject IPdfContractService _pdfContractService
+@inject IHubConnectionService _hubConnectionService
+
+@code {
+    [Parameter]
+    public string CreatorEmail { get; set; }
+    [Parameter]
+    public string CreatorId { get; set; }
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    private FluentValidationValidator? _fluentValidationValidator;
+    private IEnumerable<UserShortInfoDTO> usersInfoList = new List<UserShortInfoDTO>();
+    private UserDTO _currentUser = new();
+    private UserShortInfoDTO? SelectedUser;
+    private PdfContractDTO? _pdfContractInfo;
+    private IJSObjectReference _pdfModule;
+    private string DocumentPath { get; set; }
+    private string SelectedFileName { get; set; }
+    private string SelectedFileUrl{ get; set; }
+    private bool isSyncF = false;
+    private bool isPsPdf = false;
+    SfPdfViewerServer viewer;
+    public HubConnection _hubConnection { get; set; }
+
+    protected override async void OnInitialized()
+    {
+        await GetUsersList();
+        _currentUser = await _userService.GetUserByIdAsync(CreatorId);
+        _pdfModule = await _jsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/pspdf-service.js");
+        _hubConnection = await _hubConnectionService.ConnectToVideoCallHub(CreatorId);
+        base.OnInitialized();
+    }
+
+    private async Task UploadPdfFileSyncF(InputFileChangeEventArgs e)
+    {
+        isSyncF = true;
+        var file = e.File;
+
+        if (file != null)
+        {
+            SelectedFileName = file.Name;
+            var request = new PdfContractUploadReq() { UserDTO = _currentUser, File = file };
+            _pdfContractInfo = await _pdfContractService.UploadPdfContractAsync(request);
+            _pdfContractInfo.IsSyncF = true;
+            var httpClient = new HttpClient();
+            HttpResponseMessage response = await httpClient.GetAsync(_pdfContractInfo.FileUrl);
+            response.EnsureSuccessStatusCode();
+            byte[] byteArray = await response.Content.ReadAsByteArrayAsync();
+            DocumentPath = "data:application/pdf;base64," + Convert.ToBase64String(byteArray);
+        }
+    }
+
+    private async Task UploadPdfFilePsPdf(InputFileChangeEventArgs e)
+    {
+        isPsPdf = true;
+        var file = e.File;
+
+        if (file != null)
+        {
+            SelectedFileName = file.Name;
+            var request = new PdfContractUploadReq() { UserDTO = _currentUser, File = file };
+            _pdfContractInfo = await _pdfContractService.UploadPdfContractAsync(request);
+            _pdfContractInfo.IsPsPdf = true;
+            await _pdfModule.InvokeVoidAsync("loadPDF", "#container", _pdfContractInfo.FileUrl);
+        }
+    }
+
+    private async Task SaveSyncFPdf(MouseEventArgs args)
+    {
+        byte[] data = await viewer.GetDocumentAsync();
+        await SaveFile(data);
+    }
+
+    private async Task SavePsPdf()
+    {
+        string pdfBase64 = await _pdfModule.InvokeAsync<string>("getPDFbytes");
+        var pdfBytes = Convert.FromBase64String(pdfBase64);
+        await SaveFile(pdfBytes);
+    }
+
+    private async Task SaveFile(byte[] bytes)
+    {
+        if (SelectedUser != null && SelectedUser.Id != null && _pdfContractInfo != null)
+        {
+            _pdfContractInfo.ReceiverId = SelectedUser.Id;
+            var result = await _pdfContractService.SendContractForSignAsync(_pdfContractInfo, bytes, SelectedFileName);
+            if (result.Success)
+            {
+                await NotifyUserAboutUpload();
+                MudDialog.Close(DialogResult.Ok(true));
+            }
+        }
+    }
+
+    private async Task NotifyUserAboutUpload()
+    {
+        await _hubConnection.SendAsync
+            (
+                "UploadPdfFile",
+                CreatorId,
+                $"{_currentUser.FirstName} {_currentUser.LastName}",
+                SelectedUser.Id,
+                _pdfContractInfo.Id
+            );
+    }
+
+    private async Task<IEnumerable<UserShortInfoDTO>> SearchInUsersInfo(string value)
+    {
+        await Task.Delay(1);
+        if (string.IsNullOrEmpty(value))
+            return usersInfoList;
+        return usersInfoList.Where(x => x.Email.Contains(value, StringComparison.InvariantCultureIgnoreCase)
+            || x.FirstName.Contains(value, StringComparison.InvariantCultureIgnoreCase)
+            || x.LastName.Contains(value, StringComparison.InvariantCultureIgnoreCase));
+    }
+
+    private string ItemDisplay(UserShortInfoDTO user)
+    {
+        return user == null ? "" : $"{user.FirstName} {user.LastName} [ {user.Email} ]";
+    }
+
+    private async Task GetUsersList()
+    {
+        this.usersInfoList = await _userService.GetUsersShortInfoExceptMaker(CreatorEmail);
+    }
+
+    void Cancel() => MudDialog.Cancel();
+}

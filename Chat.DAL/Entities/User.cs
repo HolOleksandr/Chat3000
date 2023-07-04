@@ -1,9 +1,4 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Chat.DAL.Entities
 {
@@ -14,10 +9,10 @@ namespace Chat.DAL.Entities
         public DateTime? BirthDate { get; set; }
         public string? Nickname { get; set; }
         public string? Avatar {get; set;}
-
-        //public IList<UserGroup> UserGroups { get; set; }
         public IEnumerable<Group> Groups { get; set; }
         public IEnumerable<GroupInfoView> GroupsInfo { get; set; }
         public IEnumerable<Group> AdminInGroups { get; set; }
+        public IEnumerable<PdfContract>? UploadedPdfContracts { get; set; }
+        public IEnumerable<PdfContract>? ReceivedPdfContracts { get; set; }
     }
 }

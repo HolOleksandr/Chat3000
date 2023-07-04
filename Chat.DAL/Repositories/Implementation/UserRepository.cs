@@ -1,16 +1,8 @@
-﻿
-using Chat.DAL.Data;
+﻿using Chat.DAL.Data;
 using Chat.DAL.Entities;
 using Chat.DAL.Repositories.Extensions;
 using Chat.DAL.Repositories.Interfaces;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Chat.DAL.Repositories.Implementation
 {
@@ -73,7 +65,5 @@ namespace Chat.DAL.Repositories.Implementation
 
             return users.AsEnumerable();
         }
-
-
     }
 }

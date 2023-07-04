@@ -1,14 +1,7 @@
 ﻿using Chat.BLL.Exceptions;
 using Chat.BLL.Models;
+using Chat.BLL.Models.Requests;
 using Chat.BLL.Services.Interfaces;
-using Chat.DAL.Entities;
-using Microsoft.AspNetCore.Identity;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Chat.Integration.Tests.Services.Tests
 {

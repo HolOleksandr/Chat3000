@@ -1,0 +1,7 @@
+﻿CREATE TABLE [dbo].[DocFileText]
+(
+	[Id] INT NOT NULL IDENTITY(1,1) PRIMARY KEY, 
+    [UploaderId] NVARCHAR(50) NOT NULL, 
+    [Text] NVARCHAR(MAX) NOT NULL, 
+    [FileName] NVARCHAR(MAX) NOT NULL
+)

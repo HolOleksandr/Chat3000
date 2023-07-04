@@ -1,21 +1,9 @@
 ﻿using Chat.BLL.DTO;
 using Chat.BLL.Exceptions;
 using Chat.BLL.Models.Paging;
-using Chat.BLL.Services.Implementation;
+using Chat.BLL.Models.Requests;
 using Chat.BLL.Services.Interfaces;
-using Chat.DAL.Data;
 using Chat.DAL.Entities;
-using Chat.DAL.Repositories.Implementation;
-using Chat.DAL.Repositories.Interfaces;
-using Chat.DAL.UoW.Implementation;
-using Chat.DAL.UoW.Interface;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Chat.Integration.Tests.Services.Tests
 {
@@ -118,9 +106,10 @@ namespace Chat.Integration.Tests.Services.Tests
                 FirstName = "NewAdminName",
                 LastName = "NewAdmin",
             };
+            var userUpdateRequest = new UserUpdateRequest() { UserDTO = newUserInfo, File = null };
 
             //act
-            await _userService.UpdateUserInfoAsync(newUserInfo);
+            await _userService.UpdateUserInfoAsync(userUpdateRequest);
             var updatedUser = await _userService.GetUserByIdAsync(newUserInfo.Id);
 
             //assert
@@ -143,9 +132,10 @@ namespace Chat.Integration.Tests.Services.Tests
                 FirstName = "NewAdminName",
                 LastName = "NewAdmin",
             };
+            var userUpdateRequest = new UserUpdateRequest() { UserDTO = newUserInfo, File = null };
 
             //act
-            async Task act() => await _userService.UpdateUserInfoAsync(newUserInfo);
+            async Task act() => await _userService.UpdateUserInfoAsync(userUpdateRequest);
 
             //assert
             var ex = Assert.ThrowsAsync<ChatException>(() => act());
@@ -163,15 +153,14 @@ namespace Chat.Integration.Tests.Services.Tests
                 FirstName = "NewAdminName",
                 LastName = "NewAdmin",
             };
+            var userUpdateRequest = new UserUpdateRequest() { UserDTO = newUserInfo, File = null };
 
             //act
-            async Task act() => await _userService.UpdateUserInfoAsync(newUserInfo);
+            async Task act() => await _userService.UpdateUserInfoAsync(userUpdateRequest);
 
             //assert
             var ex = Assert.ThrowsAsync<ChatException>(() => act());
             Assert.That(ex.Message, Is.EqualTo("An account with this email address already exists"));
         }
-
-        
     }
 }

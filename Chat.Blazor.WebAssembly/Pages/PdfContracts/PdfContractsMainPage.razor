@@ -1,0 +1,51 @@
+﻿@page "/contracts"
+@attribute [Authorize]
+
+@using Chat.Blazor.WebAssembly.Models.DTO;
+@using Chat.Blazor.WebAssembly.Models.Paging;
+@using Chat.Blazor.WebAssembly.Services.Interfaces;
+@using System.Security.Claims;
+@using Syncfusion.Blazor.PdfViewerServer
+
+<MudTabs Elevation="2" Position=Position.Left Rounded="true" Border="true" ApplyEffectsToContainer="true" PanelClass="pa-6">
+    <MudTabPanel Icon="@Icons.Material.Filled.UploadFile" Text="Uploaded" BadgeColor="Color.Info">
+        <ChildContent>
+            <UploadedContracts></UploadedContracts>
+        </ChildContent>
+    </MudTabPanel>
+    <MudTabPanel Icon="@Icons.Material.Filled.DriveFileRenameOutline" Text="Received" BadgeData="@unsignedContractsQty">
+        <ChildContent>
+            <ReceivedContracts></ReceivedContracts>
+        </ChildContent>
+    </MudTabPanel>
+</MudTabs>
+
+@inject AuthenticationStateProvider _authStateProvider
+@inject IPdfContractService _pdfContractService
+
+@code {
+    private string _userId = string.Empty;
+    private int unsignedContractsQty = 0;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await GetUserClaims();
+            await GetUnsignedContractsQty();
+            StateHasChanged();
+        }
+        base.OnAfterRender(firstRender);
+    }
+
+    private async Task GetUnsignedContractsQty()
+    {
+        unsignedContractsQty = await _pdfContractService.GetUnsignedContractsQty(_userId);
+    }
+
+    private async Task GetUserClaims()
+    {
+        var _userState = await _authStateProvider.GetAuthenticationStateAsync();
+        _userId = _userState.User.Claims.FirstOrDefault(c => c.Type.Equals(ClaimTypes.NameIdentifier))?.Value;
+    }
+}

@@ -1,4 +1,5 @@
-﻿using Chat.Blazor.Server.Models;
+﻿using Chat.Blazor.Server.Models.Requests;
+using Chat.Blazor.Server.Models.Responses;
 
 namespace Chat.Blazor.Server.Services.Interfaces
 {
@@ -7,7 +8,6 @@ namespace Chat.Blazor.Server.Services.Interfaces
         Task<RegistrationResult> Register(UserRegistrationModel registrationModel);
         Task<LoginResult> Login(UserLoginModel loginModel);
         Task<RegistrationResult> ChangePassword(ChangePasswordModel changePassModel);
-
         Task Logout();
     }
 }

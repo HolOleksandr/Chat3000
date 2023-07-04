@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Chat.Blazor.Server.Models.DTO
+﻿namespace Chat.Blazor.Server.Models.DTO
 {
     public class GroupDTO
     {
@@ -14,9 +8,7 @@ namespace Chat.Blazor.Server.Models.DTO
         public string AdminId { get; set; }
         public UserDTO Admin { get; set; }
         public DateTime CreationDate { get; set; }
-        //public IList<UserGroup> UserGroups { get; set; }
         public IList<UserDTO> Users { get; set; }
         public int UsersCount { get; set; }
-
     }
 }

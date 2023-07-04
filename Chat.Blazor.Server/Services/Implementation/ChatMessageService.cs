@@ -1,7 +1,7 @@
 ﻿using Chat.Blazor.Server.Helpers.Interfaces;
 using Chat.Blazor.Server.Models;
 using Chat.Blazor.Server.Models.DTO;
-using Chat.Blazor.Server.Models.Paging;
+using Chat.Blazor.Server.Models.Responses;
 using Chat.Blazor.Server.Services.Interfaces;
 using System.Text.Json;
 
@@ -17,14 +17,13 @@ namespace Chat.Blazor.Server.Services.Implementation
         {
             _customHttpClient = customHttpClient;
             _configuration = configuration;
-            _baseUrl = _configuration["ApiUrls:ChatApi"];
+            _baseUrl = _configuration.GetSection("ChatApi").Value;
         }
 
         public async Task<IEnumerable<MessageDTO>> GetAllMessagesInGroupAsync(int groupId)
         {
             using var response = await _customHttpClient
                 .GetWithTokenAsync((_baseUrl + "api/message/" + groupId));
-            response.EnsureSuccessStatusCode();
             var stream = await response.Content.ReadAsStreamAsync();
             var pagingResponse = await ServiceStack.Text.JsonSerializer.DeserializeFromStreamAsync<IEnumerable<MessageDTO>>(stream);
 

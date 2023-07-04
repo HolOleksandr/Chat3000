@@ -1,0 +1,58 @@
+﻿@using Chat.Blazor.WebAssembly.Models.Requests;
+@using Chat.Blazor.WebAssembly.Services.Interfaces;
+@using Chat.Blazor.WebAssembly.Models.Paging;
+@using Chat.Blazor.WebAssembly.Models.DTO;
+@using Syncfusion.Blazor.PdfViewerServer
+@using Chat.Blazor.WebAssembly.Helpers.Interfaces;
+@using Microsoft.AspNetCore.SignalR.Client;
+
+<MudDialog>
+    <DialogContent>
+        @if (@_pdfContractInfo != null)
+        {
+            <MudText>Are you sure you want to delete <b>@_pdfContractInfo.FileName</b>?</MudText>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Close</MudButton>
+        <MudButton Color="Color.Primary" OnClick="DeleteFile">Submit</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@inject IUserService _userService
+@inject IGroupService _groupService
+@inject NavigationManager Navigation
+@inject IPdfContractService _pdfContractService
+@inject IHubConnectionService _hubConnectionService
+
+@code {
+    [Parameter]
+    public string PdfFileId { get; set; }
+    [Parameter]
+    public string CreatorId { get; set; }
+
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    private FluentValidationValidator? _fluentValidationValidator;
+    private UserDTO _currentUser = new();
+    private PdfContractDTO? _pdfContractInfo;
+
+    protected override async void OnInitialized()
+    {
+        _currentUser = await _userService.GetUserByIdAsync(CreatorId);
+        _pdfContractInfo = await _pdfContractService.GetPdfContractInfoById(PdfFileId);
+        await InvokeAsync(StateHasChanged);
+        base.OnInitialized();
+    }
+
+    private async Task DeleteFile()
+    {
+        var result = await _pdfContractService.DeleteContractAsync(PdfFileId);
+        if (result.Success)
+        {
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+    }
+
+    void Cancel() => MudDialog.Cancel();
+}

@@ -4,22 +4,27 @@
 @using System.Security.Claims;
 @using Chat.Blazor.Server.Services.Interfaces;
 
-
-
 <div>
     <MudMenu>
         <ActivatorContent>
-            <MudAvatar><MudImage Src="@CurrentUser.Avatar"></MudImage></MudAvatar>
+            <MudAvatar>
+                @if (string.IsNullOrEmpty(@CurrentUser.Avatar))
+                {
+                    <MudImage Src="/Images/defaultavatar.jpg"></MudImage>
+                }
+                else
+                {
+                    <MudImage Src="@CurrentUser.Avatar"></MudImage>
+                }
+            </MudAvatar>
         </ActivatorContent>
         <ChildContent>
             <MudMenuItem OnClick="GetProfile">Profile</MudMenuItem>
             <MudMenuItem OnClick="ChangePass">Change Password</MudMenuItem>
             <MudMenuItem OnClick="SignOut">Sign Out</MudMenuItem>
         </ChildContent>
-           
     </MudMenu>
 </div>
-            
 
 @inject AvatarStateContainer _avatarStateContainer
 @inject NavigationManager NavManager
@@ -30,17 +35,6 @@
 @code {
     private UserDTO CurrentUser = new();
 
-    //protected override async Task OnAfterRenderAsync(bool firstRender)
-    //{
-    //    if (firstRender)
-    //    {
-    //        await UpdateUserInfo();
-    //    }
-    //    _avatarStateContainer.OnAvatarChange += AvatarHandler;
-        
-    //    //await base.OnAfterRenderAsync(firstRender);
-    //}
-
     protected override async Task OnInitializedAsync()
     {
         base.OnInitialized();
@@ -49,7 +43,7 @@
             await UpdateUserInfo();
         }
         catch (Exception){}
-        _avatarStateContainer.OnAvatarChange += AvatarHandler;
+        _avatarStateContainer.OnAvatarChange += UpdateUserInfo;
     }
 
     private async Task GetProfile()
@@ -68,10 +62,10 @@
         NavManager.NavigateTo("/LogOut");
     }
 
-    private void AvatarHandler(string message)
+    private async Task AvatarHandler(string message)
     {
         CurrentUser.Avatar = message;
-        StateHasChanged();
+        await InvokeAsync(StateHasChanged);
     }
 
     public async Task UpdateUserInfo()
@@ -79,15 +73,12 @@
         var _userState = await _authStateProvider.GetAuthenticationStateAsync();
         var id = _userState.User.Claims.FirstOrDefault(c => c.Type.Equals(ClaimTypes.NameIdentifier))?.Value;
         this.CurrentUser = await _userService.GetUserByIdAsync(id);
+        await InvokeAsync(StateHasChanged);
     }
-    
-
 
     public void Dispose()
     {
-        _avatarStateContainer.OnAvatarChange -= AvatarHandler;
+        _avatarStateContainer.OnAvatarChange -= UpdateUserInfo;
     }
-
-   
 }
 

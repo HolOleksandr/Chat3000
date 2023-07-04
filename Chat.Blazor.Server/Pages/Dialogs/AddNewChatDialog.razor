@@ -3,10 +3,8 @@
 @using Chat.Blazor.Server.Models.Paging;
 @using Chat.Blazor.Server.Models.DTO;
 
-
 <MudDialog>
     <DialogContent>
-        
         <EditForm Model="_newGroupRequest">
             <FluentValidationValidator @ref="_fluentValidationValidator" />
 
@@ -42,53 +40,6 @@
                 <MudSelectItem T="UserShortInfoDTO" Value="@(user)">@user.FirstName @user.LastName (@user.Email)</MudSelectItem>
             }
         </MudSelect>
-        
-
-
-        @foreach (var user in selectedItems)
-        {
-            <MudChip Color="Color.Default" Value="@user" OnClose="RemoveUser">@user.FirstName @user.LastName</MudChip>
-        }
-        
-
-        @if (isHidden)
-        {
-            <MudTextField T="string"
-                      Placeholder="Search"
-                      Adornment="Adornment.Start"
-                      AdornmentIcon="@Icons.Material.Filled.Search"
-                      IconSize="Size.Medium"
-                      Class="mt-0"
-                      OnBlur="HideTable"
-                      onclick="@LoadData">
-            </MudTextField>
-            @if (!isHidden)
-            {
-                <MudTable Items="usersInfoList"
-                      Height="350px"
-                      @ref="_table"
-                      Breakpoint="Breakpoint.Sm"
-                      @bind-SelectedItems="selectedItems"
-                      FixedHeader="true"
-                      MultiSelection="true">
-                    <HeaderContent>
-                        <MudTd>
-                            Select all users:
-                        </MudTd>
-                        <MudTd>
-                        </MudTd>
-                    </HeaderContent>
-                    <RowTemplate>
-                        <MudTd DataLabel="Column1">@context.FirstName @context.LastName</MudTd>
-                        <MudTd DataLabel="Column2">@context.Email</MudTd>
-
-                    </RowTemplate>
-                </MudTable>
-            }
-        }
-
-        
-        
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="Cancel">Cancel</MudButton>
@@ -107,7 +58,6 @@
     public string CreatorId { get; set; }
 
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }
-
     private FluentValidationValidator? _fluentValidationValidator;
     private CreateGroupRequest _newGroupRequest = new();
     private UserShortInfoDTO value { get; set; } 
@@ -149,45 +99,6 @@
                 MudDialog.Close(DialogResult.Ok(true));
             }
         }
-
     }
-
     void Cancel() => MudDialog.Cancel();
-
-
-
-
-
-    //Table -------------
-
-    private MudTable<UserShortInfoDTO> _table = new();
-    private bool isHidden = true;
-
-    private async Task LoadData()
-    {
-        //_table.ReloadServerData();
-        this.usersInfoList = await _userService.GetUsersShortInfoExceptMaker(CreatorEmail);
-        this.isHidden = false;
-        StateHasChanged();
-    }
-
-    private async Task HideTable()
-    {
-        this.isHidden = true;
-    }
-
-    private void HandleFocus()
-    {
-        this.isHidden = false;
-    }
-
-    private async Task GetUserList()
-    {
-        this.isHidden = false;
-        await Task.Delay(100);
-        // refresh user list with search string
-    }
-    //Table -------------
-
-
 }

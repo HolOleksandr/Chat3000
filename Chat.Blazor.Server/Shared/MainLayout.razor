@@ -1,11 +1,5 @@
 ﻿@inherits LayoutComponentBase
 
-@using Blazored.LocalStorage;
-@using MudBlazor
-@using Microsoft.AspNetCore.SignalR.Client
-@using Chat.Blazor.Server.Helpers.StateContainers;
-@using Chat.Blazor.Server.Helpers.Interfaces;
-
 <MudThemeProvider />
 <MudSnackbarProvider />
 <MudDialogProvider />
@@ -15,94 +9,18 @@
 <div class="page">
     <div class="sidebar">
         <NavMenu />
-        
     </div>
 
     <main>
         <div class="top-row px-4">
             <LoginDisplay />
-            
         </div>
 
         <article class="content px-4">
-            <CascadingValue Value="hubConnection">
             @Body
-            </CascadingValue>
         </article>
     </main>
 </div>
 
-@inject NavigationManager Navigation
-@inject AuthenticationStateProvider _authStateProvider
-@inject PeerIdStateContainer _peerIdStateContainer
-@inject IHubConnectionService _hubConnectionService
-
 @code{
-    private HubConnection hubConnection;
-    public bool IsConnected => hubConnection.State == HubConnectionState.Connected;
-    private string currentUserEmail;
-
-
-    protected override async Task OnInitializedAsync()
-    {
-        hubConnection = await _hubConnectionService.ConnectToHub();
-        if (IsConnected)
-        {
-            await SubscribeForChatNotifications();
-            SubscribeForCallNotifications();
-        }
-        
-        await GetCurrentUserEmail();
-        //await hubConnection.SendAsync("SubscribeForMessages", currentUserEmail);
-
-    }
-
-    private void SubscribeForCallNotifications()
-    {
-        hubConnection.On<string, string, string>("ReceiveCallMessage", (senderEmail, receiverEmail, peerId) =>
-        {
-            if(currentUserEmail == receiverEmail){
-                _snackBar.Add($"{senderEmail} calling you", Severity.Info, config =>
-                {
-                    config.VisibleStateDuration = 10000;
-                    config.HideTransitionDuration = 500;
-                    config.ShowTransitionDuration = 500;
-                    config.Action = "Answer?";
-                    config.ActionColor = Color.Info;
-                    config.Onclick = snackbar =>
-                    {
-                        Navigation.NavigateTo($"/calls/video?p={peerId}");
-                        _peerIdStateContainer.SetupPeerId(peerId);
-                        return Task.CompletedTask;
-                    };
-                });
-            }
-            
-        });
-    }
-    private async Task GetCurrentUserEmail(){
-        var _userState = await _authStateProvider.GetAuthenticationStateAsync();
-        currentUserEmail = _userState.User.Identity.Name;
-    }
-    
-
-    private async Task SubscribeForChatNotifications()
-    {
-        hubConnection.On("ReceiveChatNotification", () =>
-        {
-            _snackBar.Add("Message", Severity.Info, config =>
-                {
-                    config.VisibleStateDuration = 10000;
-                    config.HideTransitionDuration = 500;
-                    config.ShowTransitionDuration = 500;
-                    config.Action = "Open chat";
-                    config.ActionColor = Color.Info;
-                    config.Onclick = snackbar =>
-                    {
-                        Navigation.NavigateTo($"chat/");
-                        return Task.CompletedTask;
-                    };
-                });
-        });
-    }
 }

@@ -2,11 +2,14 @@
 {
     public class AvatarStateContainer
     {
-        public event Action<string>? OnAvatarChange;
+        public event Func<Task>? OnAvatarChange;
 
-        public void ChangeAvatar(string avatar)
+        public async Task ChangeAvatar()
         {
-            OnAvatarChange?.Invoke(avatar);
+            if (OnAvatarChange != null)
+            {
+                await OnAvatarChange.Invoke();
+            }
         }
     }
 }

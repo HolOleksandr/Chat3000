@@ -1,0 +1,156 @@
+﻿@using Chat.Blazor.WebAssembly.Models.Requests;
+@using Chat.Blazor.WebAssembly.Services.Interfaces;
+@using Chat.Blazor.WebAssembly.Models.Paging;
+@using Chat.Blazor.WebAssembly.Models.DTO;
+@using Syncfusion.Blazor.PdfViewerServer
+@using Chat.Blazor.WebAssembly.Helpers.Interfaces;
+@using Microsoft.AspNetCore.SignalR.Client;
+
+<MudDialog>
+    <DialogContent>
+        @if (isSyncF || isPsPdf)
+        {
+            @if (isSyncF)
+            {
+                <MudButton OnClick="SaveSyncFPdf" Class="mt-3" HtmlTag="label"
+                   Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.CloudUpload">
+                    Save SyncF File
+                </MudButton>
+            }
+            @if (isPsPdf)
+            {
+                <MudButton OnClick="SavePsPdf" Class="mt-3" HtmlTag="label"
+                   Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.CloudUpload">
+                    Save PsPdf File
+                </MudButton>
+            }
+        }
+        @if (isSyncF)
+        {
+            <SfPdfViewerServer DocumentPath="@DocumentPath" @ref="viewer" Height="800px" Width="1060px"></SfPdfViewerServer>
+        }
+        @if (isPsPdf)
+        {
+            <div id='container' style='background: gray; width: 100vw; height: 100vh; margin: 0 auto;'></div>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@inject IUserService _userService
+@inject IGroupService _groupService
+@inject NavigationManager Navigation
+@inject IPdfContractService _pdfContractService
+@inject IHubConnectionService _hubConnectionService
+
+@code {
+    [Parameter]
+    public string PdfFileId { get; set; }
+    [Parameter]
+    public string CreatorId { get; set; }
+    [Parameter]
+    public bool IsForSign { get; set; }
+
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    private FluentValidationValidator? _fluentValidationValidator;
+    private UserDTO _currentUser = new();
+    private PdfContractDTO? _pdfContractInfo;
+    private IJSObjectReference _pdfModule;
+    private string DocumentPath { get; set; }
+    private string SelectedFileName { get; set; }
+    private string SelectedFileUrl { get; set; }
+    private bool isSyncF = false;
+    private bool isPsPdf = false;
+    SfPdfViewerServer viewer;
+    public HubConnection _hubConnection { get; set; }
+
+    protected override async void OnInitialized()
+    {
+        _currentUser = await _userService.GetUserByIdAsync(CreatorId);
+        _pdfContractInfo = await _pdfContractService.GetPdfContractInfoById(PdfFileId);
+        _hubConnection = await _hubConnectionService.ConnectToVideoCallHub(CreatorId);
+        if (_pdfContractInfo.IsPsPdf)
+        {
+            isPsPdf = true;
+            await InvokeAsync(StateHasChanged);
+            _pdfModule = await _jsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/pspdf-service.js");
+            await GetPdfFilePsPdf(_pdfContractInfo);
+        }
+        if (_pdfContractInfo.IsSyncF)
+        {
+            isSyncF = true;
+            await InvokeAsync(StateHasChanged);
+            await GetPdfFileSyncF(_pdfContractInfo);
+        }
+        base.OnInitialized();
+    }
+
+    private async Task GetPdfFileSyncF(PdfContractDTO pdfContract)
+    {
+        SelectedFileName = pdfContract.FileName;
+        var httpClient = new HttpClient();
+        HttpResponseMessage response = await httpClient.GetAsync(_pdfContractInfo.FileUrl);
+        response.EnsureSuccessStatusCode();
+        byte[] byteArray = await response.Content.ReadAsByteArrayAsync();
+        DocumentPath = "data:application/pdf;base64," + Convert.ToBase64String(byteArray);
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task GetPdfFilePsPdf(PdfContractDTO pdfContract)
+    {
+        SelectedFileName = pdfContract.FileName;
+        await _pdfModule.InvokeVoidAsync("loadPDF", "#container", pdfContract.FileUrl);
+
+    }
+
+    private async Task SaveSyncFPdf(MouseEventArgs args)
+    {
+        byte[] data = await viewer.GetDocumentAsync();
+        await SaveFile(data);
+    }
+
+    private async Task SavePsPdf()
+    {
+        string pdfBase64 = await _pdfModule.InvokeAsync<string>("getPDFbytes");
+        var pdfBytes = Convert.FromBase64String(pdfBase64);
+        await SaveFile(pdfBytes);
+    }
+
+    private async Task SaveFile(byte[] bytes)
+    {
+        if (_pdfContractInfo != null)
+        {
+            _pdfContractInfo.IsSigned = IsForSign;
+            if (IsForSign)
+            {
+                _pdfContractInfo.SignDate = DateTime.Now;
+                await NotifySenderAboutSign();
+            }
+            var result = await _pdfContractService.SendContractForSignAsync(_pdfContractInfo, bytes, SelectedFileName);
+            if (result.Success)
+            {
+                MudDialog.Close(DialogResult.Ok(true));
+            }
+        }
+    }
+
+    private async Task NotifySenderAboutSign()
+    {
+        await _hubConnection.SendAsync
+                    (
+                        "SignPdfFile",
+                        _pdfContractInfo.FileName,
+                        $"{_currentUser.FirstName} {_currentUser.LastName}",
+                        _pdfContractInfo.UploaderId,
+                        _pdfContractInfo.Id
+                    );
+    }
+
+    void Cancel() => MudDialog.Cancel();
+}

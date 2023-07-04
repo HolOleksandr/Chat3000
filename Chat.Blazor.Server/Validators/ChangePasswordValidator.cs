@@ -1,4 +1,4 @@
-﻿using Chat.Blazor.Server.Models;
+﻿using Chat.Blazor.Server.Models.Requests;
 using FluentValidation;
 using System.Text.RegularExpressions;
 
@@ -22,6 +22,5 @@ namespace Chat.Blazor.Server.Validators
              .NotEmpty().WithMessage("Password confirmation is required.")
              .Equal(x => x.NewPassword).WithMessage("New passwords do not match");
         }
-    
     }
 }

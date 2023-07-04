@@ -1,0 +1,62 @@
+﻿@page "/login"
+@using Chat.Blazor.WebAssembly.Models;
+@using Chat.Blazor.WebAssembly.Services.Interfaces;
+@using Chat.Blazor.WebAssembly.Helpers.StateContainers;
+@using Chat.Blazor.WebAssembly.Models.Requests;
+
+<h1>Login</h1>
+
+@if (ShowErrors)
+{
+    <div class="alert alert-danger" role="alert">
+        <p>@Error</p>
+    </div>
+}
+
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title">Please enter your details</h5>
+        <EditForm Model="loginModel" OnValidSubmit="HandleLogin">
+            <FluentValidationValidator />
+            <ValidationSummary />
+            <div class="form-group">
+                <label for="email">Email address</label>
+                <InputText Id="email" Class="form-control" @bind-Value="loginModel.Email" />
+                <ValidationMessage For="@(() => loginModel.Email)" />
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <InputText Id="password" type="password" Class="form-control" @bind-Value="loginModel.Password" />
+                <ValidationMessage For="@(() => loginModel.Password)" />
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </EditForm>
+    </div>
+</div>
+
+@inject IAuthService AuthService
+@inject NavigationManager NavigationManager
+@inject VideoCallsSubStateContainer _callsSubStateContainer
+
+@code {
+
+    private UserLoginModel loginModel = new UserLoginModel();
+    private bool ShowErrors;
+    private string Error = "";
+
+    private async Task HandleLogin()
+    {
+        ShowErrors = false;
+        var result = await AuthService.Login(loginModel);
+
+        if (result.Success)
+        {
+            NavigationManager.NavigateTo("/", forceLoad: true);
+        }
+        else
+        {
+            Error = result.Message!;
+            ShowErrors = true;
+        }
+    }
+}

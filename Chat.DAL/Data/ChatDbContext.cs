@@ -2,11 +2,6 @@
 using Chat.DAL.Entities;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Chat.DAL.Data
 {
@@ -20,14 +15,13 @@ namespace Chat.DAL.Data
         public DbSet<Group> Groups { get; set; }
         public DbSet<UserGroup> UserGroup { get; set; }
         public DbSet<GroupInfoView> GroupsInfo { get; set; }
+        public DbSet<PdfContract> PdfContract { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-
             new GroupInfoViewConfiguration().Configure(modelBuilder.Entity<GroupInfoView>());
-
 
             modelBuilder.Entity<Group>()
                 .HasMany(g => g.Users)
@@ -49,6 +43,15 @@ namespace Chat.DAL.Data
                 .WithOne(ci => ci.Group)
                 .HasForeignKey<GroupInfoView>(ci => ci.Id);
 
+            modelBuilder.Entity<PdfContract>()
+                .HasOne(g => g.Uploader)
+                .WithMany(m => m.UploadedPdfContracts)
+                .HasForeignKey(m => m.UploaderId);
+
+            modelBuilder.Entity<PdfContract>()
+                .HasOne(g => g.Receiver)
+                .WithMany(m => m.ReceivedPdfContracts)
+                .HasForeignKey(m => m.ReceiverId);
         }
     }
 }

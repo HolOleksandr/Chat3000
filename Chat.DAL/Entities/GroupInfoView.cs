@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Chat.DAL.Entities
+﻿namespace Chat.DAL.Entities
 {
     public class GroupInfoView
     {
@@ -17,7 +11,6 @@ namespace Chat.DAL.Entities
         public int TotalMessages { get; set; }
         public int Members { get; set; }
         public IList<User> Users { get; set; } = null!;
-
         public Group Group { get; set; }
     }
 }

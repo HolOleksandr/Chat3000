@@ -8,19 +8,12 @@ using Chat.DAL.Repositories.Implementation;
 using Chat.DAL.Repositories.Interfaces;
 using Chat.DAL.UoW.Implementation;
 using Chat.DAL.UoW.Interface;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting.Internal;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Chat.Integration.Tests
 {
@@ -32,13 +25,17 @@ namespace Chat.Integration.Tests
         private static ChatDbContext _chatDbContext;
         private DbContextOptions<ChatDbContext> _options;
         private UserManager<User> _userManager;
+        private IBlobManager _blobManager;
+        private IWebHostEnvironment _webHostEnvironment;
 
         public IUserAuthService GetUserAuthService()
         {
             var _UoW = InitUnitOfWorkWithContext();
             var config = GetConfiguration();
+            _webHostEnvironment = _serviceProvider.GetRequiredService<IWebHostEnvironment>();
             _userManager = _serviceProvider.GetService<UserManager<User>>();
-            IUserAuthService _userService = new UserAuthService(_userManager, config, CreateMapperProfile());
+            _blobManager = _serviceProvider.GetService<IBlobManager>();
+            IUserAuthService _userService = new UserAuthService(_userManager, config, CreateMapperProfile(), _webHostEnvironment);
             return _userService;
         }
 
@@ -52,7 +49,7 @@ namespace Chat.Integration.Tests
         public IUserService GetUserService()
         {
             var _UoW = InitUnitOfWorkWithContext();
-            IUserService _userService = new UserService(_UoW, CreateMapperProfile());
+            IUserService _userService = new UserService(_UoW, _blobManager, CreateMapperProfile());
             return _userService;
         }
 
@@ -84,13 +81,7 @@ namespace Chat.Integration.Tests
                 .Options;
             return new ChatDbContext(_options);
         }
-
-        public static IConfiguration GetConfiguration() =>
-            new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.tests.json", true, true)
-                .Build();
-
+                
         public static void ResetUserTable()
         {
             using var transaction = _chatDbContext.Database.BeginTransaction();
@@ -143,28 +134,42 @@ namespace Chat.Integration.Tests
 
         private static void SetUpServices()
         {
+            var configuration = GetConfiguration();
             _serviceCollection = new ServiceCollection();
+
+            _serviceCollection.AddSingleton<IConfiguration>(configuration);
             _serviceCollection.AddScoped<IUserRepository, UserRepository>();
             _serviceCollection.AddScoped<IGroupRepository, GroupRepository>();
             _serviceCollection.AddScoped<IUserGroupRepository, UserGroupRepository>();
             _serviceCollection.AddScoped<IMessageRepository, MessageRepository>();
+            _serviceCollection.AddScoped<IBlobManager, BlobManager>();
             _serviceCollection.AddIdentity<User, IdentityRole>()
                 .AddEntityFrameworkStores<ChatDbContext>()
                 .AddDefaultTokenProviders();
+
             _serviceCollection.AddLogging(config =>
             {
                 config.AddDebug();
                 config.AddConsole();
             });
+            _serviceCollection.AddSingleton<IWebHostEnvironment>(new TestWebHostEnvironment());
+            
             _serviceCollection.AddScoped<IUnitOfWork, UnitOfWork>();
             _serviceCollection.AddScoped(_ => _chatDbContext);
             var serviceProviderFactory = new DefaultServiceProviderFactory();
             _serviceProvider = serviceProviderFactory.CreateServiceProvider(_serviceCollection);
+            
         }
+
+        public static IConfiguration GetConfiguration() =>
+            new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.tests.json", true, true)
+                .Build();
 
         private static IMapper CreateMapperProfile()
         {
-            var myProfile = new AutomapperProfile();
+            var myProfile = new AutomapperProfile(_serviceProvider.GetService<IBlobManager>());
             var configuration = new MapperConfiguration(cfg => cfg.AddProfile(myProfile));
 
             return new Mapper(configuration);
@@ -174,6 +179,5 @@ namespace Chat.Integration.Tests
         {
             _chatDbContext.Dispose();
         }
-
     }
 }

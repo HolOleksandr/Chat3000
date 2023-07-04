@@ -1,12 +1,12 @@
 ﻿using Blazored.LocalStorage;
-using Chat.Blazor.Server.Models;
 using Chat.Blazor.Server.Services.Interfaces;
 using Microsoft.AspNetCore.Components.Authorization;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text;
 using Chat.Blazor.Server.Helpers.Implementation;
-using Chat.Blazor.Server.Models.Paging;
+using Chat.Blazor.Server.Models.Responses;
+using Chat.Blazor.Server.Models.Requests;
 
 namespace Chat.Blazor.Server.Services.Implementation
 {
@@ -27,7 +27,7 @@ namespace Chat.Blazor.Server.Services.Implementation
             _httpClient = httpClient;
             _authenticationStateProvider = authenticationStateProvider;
             _localStorage = localStorage;
-            _baseUrl = _configuration["ApiUrls:ChatApi"];
+            _baseUrl = _configuration.GetSection("ChatApi").Value;
         }
 
         public async Task<RegistrationResult> Register(UserRegistrationModel registerModel)

@@ -1,6 +1,4 @@
 ﻿using Chat.DAL.Data;
-using Chat.DAL.Repositories.Interfaces;
-using Chat.DAL.Repositories.Implementation;
 using Chat.DAL.UoW.Interface;
 using Microsoft.Extensions.DependencyInjection;
 

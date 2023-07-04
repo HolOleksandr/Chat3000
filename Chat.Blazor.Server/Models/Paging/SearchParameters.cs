@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Components;
-using System.Xml.Linq;
 
 namespace Chat.Blazor.Server.Models.Paging
 {

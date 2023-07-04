@@ -1,4 +1,4 @@
-﻿using Chat.Blazor.Server.Models;
+﻿using Chat.Blazor.Server.Models.Requests;
 using FluentValidation;
 
 namespace Chat.Blazor.Server.Validators

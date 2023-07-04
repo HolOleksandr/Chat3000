@@ -1,11 +1,10 @@
-﻿using Blazored.LocalStorage;
-using Chat.Blazor.Server.Helpers.Interfaces;
+﻿using Chat.Blazor.Server.Helpers.Interfaces;
 using Chat.Blazor.Server.Services.Interfaces;
-using Chat.Blazor.Server.Services.Implementation;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Components.Routing;
 using System.Net.Http.Headers;
+using System.Text;
+using System.Text.Json;
 
 namespace Chat.Blazor.Server.Helpers.Implementation
 {
@@ -30,16 +29,35 @@ namespace Chat.Blazor.Server.Helpers.Implementation
 
         public async Task<HttpResponseMessage> GetWithTokenAsync(string url)
         {
-            using var client = await GetClientWithTokenAsync();
-            var response = await client.GetAsync(url);
-            await InterceptResponse(response);
-            return response;
+            return await SendRequestWithTokenAsync(url, HttpMethod.Get);
         }
 
         public async Task<HttpResponseMessage> PostWithTokenAsync<T>(string url, T content) where T : class
         {
+            var serializedContent = new StringContent(JsonSerializer.Serialize(content), Encoding.UTF8, "application/json");
+            return await SendRequestWithTokenAsync(url, HttpMethod.Post, serializedContent);
+        }
+
+        public async Task<HttpResponseMessage> DeleteWithTokenAsync(string url)
+        {
+            return await SendRequestWithTokenAsync(url, HttpMethod.Delete);
+        }
+
+        public async Task<HttpResponseMessage> PostContentWithTokenAsync(string url, MultipartFormDataContent content)
+        {
+            return await SendRequestWithTokenAsync(url, HttpMethod.Post, content);
+        }
+
+        private async Task<HttpResponseMessage> SendRequestWithTokenAsync(string url, HttpMethod method, HttpContent? content = null)
+        {
             using var client = await GetClientWithTokenAsync();
-            var response = await client.PostAsJsonAsync(url, content);
+            HttpResponseMessage response = method.Method.ToUpper() switch
+            {
+                "GET" => await client.GetAsync(url),
+                "POST" => await client.PostAsync(url, content),
+                "DELETE" => await client.DeleteAsync(url),
+                _ => throw new ArgumentException($"Unsupported HTTP method: {method.Method}"),
+            };
             await InterceptResponse(response);
             return response;
         }
@@ -60,6 +78,8 @@ namespace Chat.Blazor.Server.Helpers.Implementation
 
                 switch (statusCode)
                 {
+                    case System.Net.HttpStatusCode.BadRequest:
+                        break;
                     case System.Net.HttpStatusCode.Unauthorized:
                         _navigationManager.NavigateTo("/login");
                         await _authService.Logout();

@@ -1,12 +1,9 @@
-﻿
-
-namespace Chat.Blazor.Server.Models.DTO
+﻿namespace Chat.Blazor.Server.Models.DTO
 {
     public class MessageDTO
     {
         public int Id { get; set; }
         public string SenderId { get; set; } = null!;
-        //public string SenderName { get; set; } = null!;
         public UserDTO? Sender { get; set; } = null!;
         public string? ReceiverId { get; set; }
         public UserDTO? Receiver { get; set; }

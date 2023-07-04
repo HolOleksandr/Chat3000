@@ -4,6 +4,8 @@ namespace Chat.Blazor.Server.Helpers.Interfaces
 {
     public interface IHubConnectionService
     {
-        Task<HubConnection> ConnectToHub();
+        Task<HubConnection> ConnectToChatHub(string chatId);
+        Task<HubConnection> ConnectToVideoCallHub(string userId);
+        Task DisconnectFromHubsAsync();
     }
 }

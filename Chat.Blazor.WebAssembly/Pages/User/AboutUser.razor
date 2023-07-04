@@ -1,0 +1,210 @@
+﻿@page "/user/about/{userId}"
+@attribute [Authorize]
+
+@using Chat.Blazor.WebAssembly.Helpers.Implementation;
+@using Chat.Blazor.WebAssembly.Helpers.StateContainers;
+@using Chat.Blazor.WebAssembly.Models;
+@using Chat.Blazor.WebAssembly.Models.Requests;
+@using Chat.Blazor.WebAssembly.Services.Interfaces;
+@using Chat.Blazor.WebAssembly.Models.DTO;
+@using System.Net.Http.Headers;
+@using Microsoft.AspNetCore.Components.Forms
+
+<MudCard>
+    <MudCardContent>
+        <h3>User Information:</h3>
+
+        @if (ShowErrors)
+        {
+            <div class="alert alert-danger" role="alert">
+                @foreach (var error in Errors!)
+                {
+                    <p>@error</p>
+                }
+            </div>
+        }
+        <EditForm Model="@_selectedUser" OnValidSubmit="@SubmitForm">
+            <FluentValidationValidator />
+            <ValidationSummary />
+            <div class="d-flex flex-wrap mt-3">
+                <fieldset disabled="@isReadOnly" class="col-md-6">
+
+                    <MudTextField T="string" ReadOnly=true Label="Id" Value="@_selectedUser.Id" />
+                    <div class="form-group">
+                        <label for="firstname">First Name</label>
+                        <InputText Id="firstname" class="form-control" @bind-Value="_selectedUser.FirstName" />
+                        <ValidationMessage For="@(() => _selectedUser.FirstName)" />
+                    </div>
+                    <div class="form-group">
+                        <label for="lastname">Last Name</label>
+                        <InputText Id="lastname" class="form-control" @bind-Value="_selectedUser.LastName" />
+                        <ValidationMessage For="@(() => _selectedUser.LastName)" />
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email address</label>
+                        <InputText Id="email" class="form-control" @bind-Value="_selectedUser.Email" />
+                        <ValidationMessage For="@(() => _selectedUser.Email)" />
+                    </div>
+                    <div class="form-group">
+                        <label for="nickname">Nickname</label>
+                        <InputText Id="nickname" class="form-control" @bind-Value="_selectedUser.Nickname" />
+                        <ValidationMessage For="@(() => _selectedUser.Nickname)" />
+                    </div>
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <InputText Id="username" class="form-control" @bind-Value="_selectedUser.UserName" />
+                        <ValidationMessage For="@(() => _selectedUser.UserName)" />
+                    </div>
+                    <div class="form-group">
+                        <label for="phonenumber">Phone Number</label>
+                        <InputText Id="phonenumber" class="form-control" @bind-Value="_selectedUser.PhoneNumber" />
+                        <ValidationMessage For="@(() => _selectedUser.PhoneNumber)" />
+                    </div>
+                    <div class="form-group">
+                        <MudDatePicker ReadOnly="@isReadOnly" Label="Date of Birth" @bind-Date="_selectedUser.BirthDate" DisableToolbar="true" />
+                        <ValidationMessage For="@(() => _selectedUser.BirthDate)" />
+                    </div>
+                </fieldset>
+            
+                <div class="col-md-6 d-flex flex-column align-items-center">
+                    @if (newAvatar)
+                    {
+                        <div>
+                            <MudAvatar Style="height:250px; width:250px;"><MudImage Src="@_avatarFileBase64"></MudImage></MudAvatar>
+                        </div>
+                    }
+                    else
+                    {
+                        @if (string.IsNullOrEmpty(_selectedUser.Avatar))
+                        {
+                            <div>
+                                <MudAvatar Style="height:250px; width:250px;"><MudImage Src="/Images/defaultavatar.jpg"></MudImage></MudAvatar>
+                            </div>
+                        }
+                        else
+                        {
+                            <div>
+                                <MudAvatar Style="height:250px; width:250px;" @bind-Value="_selectedUser.Avatar"><MudImage Src="@_selectedUser.Avatar"></MudImage></MudAvatar>
+                            </div>
+                        }
+                    }
+                    <div>
+                        @if (!isReadOnly)
+                        {
+                            <MudFileUpload Accept="image/*" T="IBrowserFile" FilesChanged="UploadImage">
+                                <ButtonTemplate Context="imageContext">
+                                    <MudButton Class="mt-3" HtmlTag="label"
+                                           Variant="Variant.Filled"
+                                           Color="Color.Primary"
+                                           StartIcon="@Icons.Material.Filled.CloudUpload"
+                                               for="@imageContext">
+                                        Choose avatar
+                                    </MudButton>
+                                </ButtonTemplate>
+                            </MudFileUpload>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex justify-content-center">
+                @if (!isReadOnly)
+                {
+                    <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           Class="ml-auto m-2"
+                           ButtonType=ButtonType.Submit
+                           Disabled="@(!context.Validate() || !context.IsModified() && !newAvatar && !dateChanged)">Update Account</MudButton>
+                }
+            </div>
+        </EditForm>
+    </MudCardContent>
+</MudCard>
+
+@inject IUserService _userService
+@inject IImageService _imageService
+@inject UserStateContainer _userStateContainer
+@inject AvatarStateContainer _avatarStateContainer
+@inject AuthenticationStateProvider _authStateProvider
+@inject NavigationManager Navigation
+
+@code {
+    [Parameter]
+    public string? UserId { get; set; }
+    private UserDTO _selectedUser = new();
+    private bool isReadOnly = true;
+    private bool newAvatar = false;
+    private bool dateChanged = false;
+    private bool ShowErrors;
+    private IEnumerable<string>? Errors;
+    private IBrowserFile _newAvatarFile;
+    private string _avatarFileBase64;
+
+    protected override async void OnInitialized()
+    {
+        base.OnInitialized();
+        await GetUserFromQueryOrContainer();
+        await IsOwnerOfData(_selectedUser);
+        StateHasChanged();
+    }
+
+    private async Task GetUserFromQueryOrContainer()
+    {
+        if (_userStateContainer.Value == null)
+        {
+            _selectedUser = await _userService.GetUserByIdAsync(UserId);
+        }
+        else
+        {
+            _selectedUser = _userStateContainer.Value;
+        }
+        _userStateContainer.Value = null;
+    }
+
+    private async Task SubmitForm()
+    {
+        ShowErrors = false;
+        var result = await _userService.UpdateUserAsync(new UserUpdateRequest() { UserDTO = _selectedUser, File = _newAvatarFile });
+        if (result.Success)
+        {
+            await _avatarStateContainer.ChangeAvatar(); 
+            await InvokeAsync(StateHasChanged);
+            Navigation.NavigateTo("/users");
+        }
+        else
+        {
+            Errors = result.Errors;
+            ShowErrors = true;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task IsOwnerOfData(UserDTO selectedUser)
+    {
+        if (selectedUser != null)
+        {
+            var userState = await _authStateProvider.GetAuthenticationStateAsync();
+            if (string.Equals(selectedUser.Email, userState.User.Identity.Name))
+            {
+                isReadOnly = false;
+            }
+        }
+        else
+        {
+            Navigation.NavigateTo("/");
+        }
+    }
+
+    private string ImageUrl = "";
+    private async Task UploadImage(IBrowserFile file)
+    {
+        _newAvatarFile = file;
+        _avatarFileBase64 = await _imageService.SaveImageInBase64(file);
+        this.newAvatar = true;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void MarkDateAsChanged()
+    {
+        this.dateChanged = true;
+    }
+}

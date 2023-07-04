@@ -1,6 +1,5 @@
 ﻿using Chat.BLL.DTO;
 using Chat.BLL.Exceptions;
-using Chat.BLL.Helpers;
 using Chat.BLL.Models.Paging;
 using Chat.BLL.Models.Requests;
 using Chat.BLL.Services.Interfaces;

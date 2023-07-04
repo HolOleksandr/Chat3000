@@ -2,12 +2,6 @@
 using Chat.BLL.Helpers;
 using Chat.BLL.Models.Paging;
 using Chat.BLL.Models.Requests;
-using Chat.DAL.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Chat.BLL.Services.Interfaces
 {
@@ -15,7 +9,7 @@ namespace Chat.BLL.Services.Interfaces
     {
         Task<IEnumerable<GroupDTO>> GetGroupsAsync();
         Task<FilterResult<GroupInfoViewDTO>> GetGroupsByUserEmailAsync(string userEmail, SearchParameters searchParameters);
-
+        Task<GroupInfoViewDTO> GetGroupViewByIdAsync(string groupId);
         Task CreateNewGroup(CreateGroupRequest groupRequest);
     }
 }

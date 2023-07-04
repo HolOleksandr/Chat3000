@@ -1,0 +1,205 @@
+﻿@using Blazored.LocalStorage;
+@using Chat.Blazor.WebAssembly.Models;
+@using MudBlazor
+@using Microsoft.AspNetCore.SignalR.Client
+@using Chat.Blazor.WebAssembly.Helpers.StateContainers;
+@using Chat.Blazor.WebAssembly.Helpers.StateContainers.Hubs;
+@using Chat.Blazor.WebAssembly.Helpers.Interfaces;
+@using System.Security.Claims;
+@using Chat.Blazor.WebAssembly.Pages.Dialogs;
+
+
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider _authStateProvider
+@inject PeerIdStateContainer _peerIdStateContainer
+@inject VideoCallsSubStateContainer _callsSubStateContainer
+@inject IHubConnectionService _hubConnectionService
+@inject VideoCallHubStateContainer _videoCallHubStateContainer;
+@inject CallParamsStateContainer _callParamsContainer
+@inject IDialogService _dialogService
+
+@code {
+    private HubConnection? videoHubConnection;
+    private List<IDisposable> _hubSubscriptions = new();
+    public bool IsConnected => videoHubConnection.State == HubConnectionState.Connected;
+    private string currentUserEmail = null!;
+    private string currentUserId = null!;
+    private Snackbar snackBar;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetCurrentUserInfo();
+
+        videoHubConnection = await _hubConnectionService.ConnectToVideoCallHub(currentUserId);
+        _hubSubscriptions.Add(SubscribeForCallNotifications());
+        _hubSubscriptions.Add(SubscribeForNewPdfContractsReceiving());
+        _hubSubscriptions.Add(SubscribeForPdfSignNotification());
+        _callParamsContainer.OnStateChange += async () =>
+        {
+           await InvokeAsync(StateHasChanged);
+        };
+    }
+
+    private IDisposable SubscribeForCallNotifications()
+    {
+        return videoHubConnection.On<string, string, string>("IncomingCall", (callingUserId, callingUserName, peerId) =>
+        {
+            snackBar = _snackBar.Add
+            (
+                @<MudContainer Class="d-flex flex-column flex-grow-1 gap-1">
+                    <h5>@callingUserName is calling</h5>
+                    <MudContainer Class="d-flex align-center justify-center mud-width-full py-1">
+                        <MudButton Class="mx-1" Variant="Variant.Filled" Color="Color.Success" OnClick="() => AcceptCall(callingUserId, callingUserName, peerId)">
+                            Accept
+                        </MudButton>
+                        <MudButton Class="mx-1" Variant="Variant.Filled" Color="Color.Error" OnClick="() => DeclineCall(callingUserId)">
+                            Decline
+                        </MudButton>
+                    </MudContainer>
+                </MudContainer>,
+        Severity.Info,
+            config =>
+            {
+                config.SnackbarVariant = Variant.Outlined;
+                config.VisibleStateDuration = 15000;
+                config.HideTransitionDuration = 500;
+                config.ShowTransitionDuration = 500;
+                config.DuplicatesBehavior = SnackbarDuplicatesBehavior.Prevent;
+                config.ActionColor = Color.Info;
+                config.ShowCloseIcon = false;
+                config.HideIcon = true;
+                config.CloseAfterNavigation = true;
+            });
+        });
+    }
+
+    private void AcceptCall(string callingUserId, string callingUserName, string peerId)
+    {
+        _callParamsContainer.SetValue(
+            new CallParamsModel()
+                {
+                    CallingUserId = callingUserId,
+                    CallingUserName = callingUserName,
+                    HubConnection = videoHubConnection,
+                    PeerId = peerId
+                }
+        );
+        Navigation.NavigateTo("/calls/video/", forceLoad: true);
+        if (snackBar is null) return;
+        _snackBar.Remove(snackBar);
+    }
+
+    private async Task DeclineCall(string callingUserId)
+    {
+        await videoHubConnection.InvokeAsync("DeclineCall", callingUserId);
+
+        if (snackBar is null) return;
+        _snackBar.Remove(snackBar);
+    }
+
+    private async Task GetCurrentUserInfo()
+    {
+        var _userState = await _authStateProvider.GetAuthenticationStateAsync();
+        currentUserEmail = _userState.User.Identity.Name!;
+        currentUserId = _userState.User.Claims.FirstOrDefault(c => c.Type.Equals(ClaimTypes.NameIdentifier))?.Value!;
+    }
+
+    private IDisposable SubscribeForNewPdfContractsReceiving()
+    {
+        return videoHubConnection.On<string, string, string>("NewPdfContract", (uploaderId, uploaderName, fileId) =>
+    {
+        snackBar = _snackBar.Add
+        (
+    @<MudContainer Class="d-flex flex-column flex-grow-1 gap-1">
+        <h5>@uploaderName sent you a new file</h5>
+        <MudContainer Class="d-flex align-center justify-center mud-width-full py-1">
+            <MudButton Class="mx-1" Variant="Variant.Filled" Color="Color.Success" OnClick="() => OpenFile(currentUserId, fileId, true)">
+                Open File
+            </MudButton>
+                <MudButton Class="mx-1" Variant="Variant.Filled" Color="Color.Error" OnClick="() => _snackBar.Remove(snackBar)">
+                Close
+            </MudButton>
+        </MudContainer>
+    </MudContainer>,
+        Severity.Info,
+    config =>
+    {
+        config.SnackbarVariant = Variant.Outlined;
+        config.VisibleStateDuration = 15000;
+        config.HideTransitionDuration = 500;
+        config.ShowTransitionDuration = 500;
+        config.DuplicatesBehavior = SnackbarDuplicatesBehavior.Prevent;
+        config.ActionColor = Color.Info;
+        config.ShowCloseIcon = false;
+        config.HideIcon = true;
+        config.CloseAfterNavigation = true;
+    });
+    });
+    }
+
+    private IDisposable SubscribeForPdfSignNotification()
+    {
+        return videoHubConnection.On<string, string, string>("ContractIsSigned", (fileName, senderName, fileId) =>
+        {
+    snackBar = _snackBar.Add
+    (
+    @<MudContainer Class="d-flex flex-column flex-grow-1 gap-1">
+        <h5>@senderName signed your file: @fileName</h5>
+        <MudContainer Class="d-flex align-center justify-center mud-width-full py-1">
+            <MudButton Class="mx-1" Variant="Variant.Filled" Color="Color.Success" OnClick="() => OpenFile(currentUserId, fileId, false)">
+                Open File
+            </MudButton>
+            <MudButton Class="mx-1" Variant="Variant.Filled" Color="Color.Error" OnClick="() => _snackBar.Remove(snackBar)">
+                Close
+            </MudButton>
+        </MudContainer>
+            </MudContainer>
+        ,
+                        Severity.Info,
+                    config =>
+                    {
+                    config.SnackbarVariant = Variant.Outlined;
+                    config.VisibleStateDuration = 15000;
+                    config.HideTransitionDuration = 500;
+                    config.ShowTransitionDuration = 500;
+                    config.DuplicatesBehavior = SnackbarDuplicatesBehavior.Prevent;
+                    config.ActionColor = Color.Info;
+                    config.ShowCloseIcon = false;
+                    config.HideIcon = true;
+                    config.CloseAfterNavigation = true;
+                });
+        });
+    }
+
+    private void OpenFile(string currentUserId, string fileId, bool isForSign)
+    {
+        var parameters = new DialogParameters { ["PdfFileId"] = fileId, ["CreatorId"] = currentUserId, ["IsForSign"] = isForSign };
+        var options = new DialogOptions() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraLarge, FullWidth = true };
+
+        var dialogMessage = "";
+        if(isForSign)
+        {
+            dialogMessage = "Sign contract";
+        }
+        else
+        {
+            dialogMessage = "Edit file";
+        }
+
+        var dialog = _dialogService.Show<EditPdfContractDialog>(dialogMessage, parameters, options);
+
+        if (snackBar is null) return;
+        _snackBar.Remove(snackBar);
+    }
+    
+
+    public void Dispose()
+    {
+        _callParamsContainer.OnStateChange -= StateHasChanged;
+        _hubSubscriptions.ForEach(x => x.Dispose());
+        if (videoHubConnection != null)
+        {
+            InvokeAsync(async () => await videoHubConnection.StopAsync());
+        }
+    }
+}

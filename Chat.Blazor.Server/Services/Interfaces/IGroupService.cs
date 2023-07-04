@@ -1,7 +1,7 @@
-﻿using Chat.Blazor.Server.Models;
-using Chat.Blazor.Server.Models.DTO;
+﻿using Chat.Blazor.Server.Models.DTO;
 using Chat.Blazor.Server.Models.Paging;
 using Chat.Blazor.Server.Models.Requests;
+using Chat.Blazor.Server.Models.Responses;
 
 namespace Chat.Blazor.Server.Services.Interfaces
 {

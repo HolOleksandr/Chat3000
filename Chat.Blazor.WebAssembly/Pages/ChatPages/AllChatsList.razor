@@ -1,0 +1,251 @@
+﻿@page "/chats"
+@attribute [Authorize]
+
+@using System.Security.Claims;
+@using Chat.Blazor.WebAssembly.Helpers.Extensions;
+@using Chat.Blazor.WebAssembly.Helpers.StateContainers;
+@using Chat.Blazor.WebAssembly.Models;
+@using System.Net.Http.Json;
+@using Chat.Blazor.WebAssembly.Models.DTO;
+@using Chat.Blazor.WebAssembly.Models.Paging;
+@using Chat.Blazor.WebAssembly.Pages.Dialogs;
+@using Chat.Blazor.WebAssembly.Services.Interfaces;
+@using System.Text.Json;
+@using Microsoft.AspNetCore.Authorization;
+@using Microsoft.AspNetCore.Components.Authorization;
+@using MudBlazor;
+
+<MudText Typo="Typo.h6">Groups list</MudText>
+
+<MudTable @ref="_table"
+          Items="@Groups"
+          ServerData="@(new Func<TableState, Task<TableData<GroupInfoViewDTO>>>(ServerReload))"
+          CurrentPage="searchParameters.PageIndex"
+          SortLabel="searchParameters.SortColumn"
+          Loading=false
+          OnRowClick="RowDoubleClickEvent"
+          T="GroupInfoViewDTO"
+          Hover=false>
+
+    <ToolBarContent>
+        <MudButton @onclick="OpenAddChatDialog"
+                   Variant="Variant.Filled"
+                   StartIcon="@Icons.Material.Filled.AddComment"
+                   Color="Color.Primary">
+            New Chat
+        </MudButton>
+        <MudSpacer />
+        <MudTextField T="string"
+                      Value="@searchParameters.FilterQuery"
+                      ValueChanged="@(s=>OnSearch(s))"
+                      Placeholder="Search"
+                      Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Search"
+                      IconSize="Size.Medium"
+                      Class="mt-0">
+        </MudTextField>
+    </ToolBarContent>
+    <HeaderContent>
+        
+        <MudTh><MudTableSortLabel SortLabel="Id" T="GroupInfoViewDTO">Id</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortLabel="Name" T="GroupInfoViewDTO">Name</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortLabel="AdminEmail" T="GroupInfoViewDTO">Admin</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortLabel="CreationDate" T="GroupInfoViewDTO">Creation Date</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortLabel="Members" T="GroupInfoViewDTO">Members</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortLabel="TotalMessages" T="GroupInfoViewDTO">Total Messages</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortLabel="Description" T="GroupInfoViewDTO">Description</MudTableSortLabel></MudTh>
+    </HeaderContent>
+
+    <RowTemplate>
+        <MudTd DataLabel="Id">@context.Id</MudTd>
+        <MudTd DataLabel="Name">@context.Name</MudTd>
+        <MudTd DataLabel="Admin">@context.AdminEmail</MudTd>
+        <MudTd DataLabel="CreationDate">@context.CreationDate</MudTd>
+        <MudTd DataLabel="Members">@context.Members</MudTd>
+        <MudTd DataLabel="TotalMessages">@context.TotalMessages</MudTd>
+        <MudTd DataLabel="Description">@context.Description</MudTd>
+    </RowTemplate>
+
+    <NoRecordsContent>
+        <MudText>No matching records found</MudText>
+    </NoRecordsContent>
+    <LoadingContent>
+        <MudText>Loading...</MudText>
+    </LoadingContent>
+    <PagerContent>
+        <MudTablePager PageSizeOptions="@_pageSizes" />
+    </PagerContent>
+</MudTable>
+
+@inject IGroupService _groupService
+@inject IDialogService _dialogService
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider _authStateProvider
+@inject GroupInfoStateContainer _groupStateContainer
+
+@code {
+    private int rowIndex = 1;
+    private List<GroupInfoViewDTO> Groups = new();
+    private MudTable<GroupInfoViewDTO> _table = null!;
+    private TableState _backUpTableState = new();
+    private SearchParameters searchParameters = new();
+    private int[] _pageSizes = new int[] { 3, 5, 10, 25, 50 };
+    private string _queryParams = string.Empty;
+    private string _userEmail = string.Empty;
+    private string _userId = string.Empty;
+    private readonly string _sortColumns = "Id, Name, Admin, CreationDate, Members, TotalMessages, Description";
+    private int _defaultPageIndex = 0;
+    private int _defaultPageSize = 5;
+    private string _defaultSortColumn = "id";
+    private string _defaultSortOrder = "asc";
+    private bool _firstRenderTrigger = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            InitTableWithQueryParams();
+            BackUpTableState();
+
+            _firstRenderTrigger = true;
+            _groupStateContainer.OnStateChange += StateHasChanged;
+            StateHasChanged();
+        }
+        base.OnAfterRender(firstRender);
+    }
+
+    private async Task<TableData<GroupInfoViewDTO>> ServerReload(TableState state)
+    {
+        await GetUserClaims();
+        if (_firstRenderTrigger)
+        {
+            SetTableState(_backUpTableState);
+            _groupStateContainer.OnStateChange -= StateHasChanged;
+        }
+        else
+        {
+            if (state.SortLabel == null)
+            {
+                state.SortLabel = _backUpTableState.SortLabel;
+            }
+            if (state.SortDirection == SortDirection.None)
+            {
+                state.SortDirection = _backUpTableState.SortDirection;
+            }
+            SetTableState(state);
+        }
+
+        var queryStr = GetQueryStr(searchParameters);
+        var data = await _groupService.GetAllUserGroupsWithSortAsync(_userEmail, queryStr);
+        Navigate(queryStr);
+        var table = new TableData<GroupInfoViewDTO> { TotalItems = data.TotalCount, Items = data.Data };
+        _firstRenderTrigger = false;
+        return table;
+    }
+
+    private void OnSearch(string text)
+    {
+        searchParameters.FilterQuery = text;
+        _table.ReloadServerData();
+    }
+
+    private void Navigate(string query)
+    {
+        Navigation.NavigateTo($"{Navigation.BaseUri}chats/{query}");
+    }
+
+    private async Task OpenAddChatDialog(MouseEventArgs args)
+    {
+        var parameters = new DialogParameters { ["CreatorEmail"] = _userEmail, ["CreatorId"] = _userId };
+        var options = new DialogOptions() { CloseOnEscapeKey = true, MaxWidth=MaxWidth.Medium, FullWidth = true };
+
+        var dialog = _dialogService.Show<AddNewChatDialog>("Create new chat", parameters, options);
+        var result = await dialog.Result;
+        if (!result.Canceled)
+        {
+            await _table.ReloadServerData();
+        }    
+    }
+
+    private void RowDoubleClickEvent(TableRowClickEventArgs<GroupInfoViewDTO> tableRowClickEventArgs)
+    {
+        if (tableRowClickEventArgs.MouseEventArgs.Detail == 2)
+        {
+            _groupStateContainer.SetValue(tableRowClickEventArgs.Item);
+            Navigation.NavigateTo("/chats/" + tableRowClickEventArgs.Item.Id);
+        }
+    }
+
+    private async Task GetUserClaims()
+    {
+        var _userState = await _authStateProvider.GetAuthenticationStateAsync();
+        _userEmail = _userState.User.Identity.Name;
+        _userId = _userState.User.Claims.FirstOrDefault(c => c.Type.Equals(ClaimTypes.NameIdentifier))?.Value;
+    }
+
+    private void BackUpTableState()
+    {
+        _backUpTableState.SortLabel = searchParameters.SortColumn;
+        _backUpTableState.Page = searchParameters.PageIndex;
+        _backUpTableState.PageSize = searchParameters.PageSize;
+        if (string.Equals(searchParameters.SortOrder, "asc"))
+        {
+            _backUpTableState.SortDirection = SortDirection.Ascending;
+        }
+        else
+        {
+            _backUpTableState.SortDirection = SortDirection.Descending;
+        }
+    }
+
+    private void SetTableState(TableState tableState)
+    {
+        searchParameters.PageSize = tableState.PageSize;
+        searchParameters.PageIndex = tableState.Page;
+        searchParameters.SortColumn = tableState.SortLabel;
+        searchParameters.SortOrder = tableState.SortDirection == SortDirection.Descending ? "desc" : "asc";
+    }
+
+    private void InitTableWithQueryParams()
+    {
+        searchParameters.PageIndex = Navigation.ExtractQueryValueOrSetDefault<int>("pageIndex", _defaultPageIndex);
+        searchParameters.PageSize = Navigation.ExtractQueryValueOrSetDefault<int>("pageSize", _defaultPageSize);
+        searchParameters.SortColumn = Navigation.ExtractQueryValueOrSetDefault<string>("sortColumn", _defaultSortColumn);
+        searchParameters.SortOrder = Navigation.ExtractQueryValueOrSetDefault<string>("sortOrder", _defaultSortOrder);
+        searchParameters.FilterQuery = Navigation.ExtractQueryValueOrSetDefault<string>("filterQuery");
+        this._userEmail = Navigation.ExtractQueryValueOrSetDefault<string>("filterQuery");
+        ValidateQueryParams();
+
+        _table.CurrentPage = searchParameters.PageIndex;
+        _table.SetRowsPerPage(searchParameters.PageSize);
+        StateHasChanged();
+    }
+
+    private void ValidateQueryParams()
+    {
+        if (searchParameters.PageIndex < 0)
+            searchParameters.PageIndex = _defaultPageIndex;
+        if (searchParameters.PageSize < 0)
+            searchParameters.PageSize = _defaultPageSize;
+
+        if (!_sortColumns.Contains(searchParameters.SortColumn, StringComparison.OrdinalIgnoreCase))
+        {
+            searchParameters.SortColumn = _defaultSortColumn;
+        }
+    }
+
+    private string GetQueryStr(SearchParameters searchParameters)
+    {
+        var queryStringParam = new Dictionary<string, string?>
+            {
+                ["pageIndex"] = searchParameters.PageIndex.ToString(),
+                ["pageSize"] = searchParameters.PageSize.ToString(),
+                ["sortColumn"] = searchParameters.SortColumn,
+                ["sortOrder"] = searchParameters.SortOrder,
+                ["filterQuery"] = searchParameters.FilterQuery ?? ""
+            };
+
+        var queryParams = QueryHelpers.AddQueryString("", queryStringParam);
+        return queryParams;
+    }
+}

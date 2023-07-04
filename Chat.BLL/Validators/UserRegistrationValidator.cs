@@ -1,4 +1,4 @@
-﻿using Chat.BLL.Models;
+﻿using Chat.BLL.Models.Requests;
 using FluentValidation;
 using System.Text.RegularExpressions;
 
@@ -37,8 +37,7 @@ namespace Chat.BLL.Validators
             });
 
             RuleFor(x => x.PhoneNumber)
-                .NotEmpty().WithMessage("{PropertyName} must not be empty.")
-                .NotNull().WithMessage("{PropertyName} is required.")
+                .NotEmpty().WithMessage("{PropertyName}  is required.")
                 .Matches(new Regex(@"^\+?3?8?(0[5-9][0-9]\d{7})$")).WithMessage("{PropertyName} is not valid");
         }
 

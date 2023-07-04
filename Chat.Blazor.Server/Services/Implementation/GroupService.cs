@@ -3,6 +3,7 @@ using Chat.Blazor.Server.Models;
 using Chat.Blazor.Server.Models.DTO;
 using Chat.Blazor.Server.Models.Paging;
 using Chat.Blazor.Server.Models.Requests;
+using Chat.Blazor.Server.Models.Responses;
 using Chat.Blazor.Server.Services.Interfaces;
 using System.Text.Json;
 
@@ -17,14 +18,13 @@ namespace Chat.Blazor.Server.Services.Implementation
         {
             _customHttpClient = customHttpClient;
             _configuration = configuration;
-            _baseUrl = _configuration["ApiUrls:ChatApi"];
+            _baseUrl = _configuration["ChatApi"];
         }
 
         public async Task<GroupInfoViewDTO> GetGroupByIdAsync(int groupId)
         {
             using var response = await _customHttpClient
-                .GetWithTokenAsync((_baseUrl + "api/group/" + groupId));
-            response.EnsureSuccessStatusCode();
+                .GetWithTokenAsync((_baseUrl + "api/group/info/" + groupId));
             var stream = await response.Content.ReadAsStreamAsync();
             var requestResult = await ServiceStack.Text.JsonSerializer.DeserializeFromStreamAsync<GroupInfoViewDTO>(stream);
 
@@ -35,7 +35,6 @@ namespace Chat.Blazor.Server.Services.Implementation
         {
             using var response = await _customHttpClient
                 .GetWithTokenAsync((_baseUrl + "api/group/user/" + userEmail + queryParams));
-            response.EnsureSuccessStatusCode();
             var stream = await response.Content.ReadAsStreamAsync();
             var pagingResponse = await ServiceStack.Text.JsonSerializer.DeserializeFromStreamAsync<PagingResponse<GroupInfoViewDTO>>(stream);
 

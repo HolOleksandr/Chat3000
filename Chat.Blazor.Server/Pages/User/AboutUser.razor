@@ -4,9 +4,11 @@
 @using Chat.Blazor.Server.Helpers.Implementation;
 @using Chat.Blazor.Server.Helpers.StateContainers;
 @using Chat.Blazor.Server.Models;
+@using Chat.Blazor.Server.Models.Requests;
 @using Chat.Blazor.Server.Services.Interfaces;
 @using Chat.Blazor.Server.Models.DTO;
-
+@using System.Net.Http.Headers;
+@using Microsoft.AspNetCore.Components.Forms
 
 <MudCard>
     <MudCardContent>
@@ -15,7 +17,10 @@
         @if (ShowErrors)
         {
             <div class="alert alert-danger" role="alert">
-                <p>@Error</p>
+                @foreach (var error in Errors!)
+                {
+                    <p>@error</p>
+                }
             </div>
         }
         <EditForm Model="@_selectedUser" OnValidSubmit="@SubmitForm">
@@ -62,9 +67,27 @@
                 </fieldset>
             
                 <div class="col-md-6 d-flex flex-column align-items-center">
-                    <div>
-                        <MudAvatar Style="height:250px; width:250px;" @bind-Value="_selectedUser.Avatar"><MudImage Src="@_selectedUser.Avatar"></MudImage></MudAvatar>
-                    </div>
+                    @if (newAvatar)
+                    {
+                        <div>
+                            <MudAvatar Style="height:250px; width:250px;"><MudImage Src="@_avatarFileBase64"></MudImage></MudAvatar>
+                        </div>
+                    }
+                    else
+                    {
+                        @if (string.IsNullOrEmpty(_selectedUser.Avatar))
+                        {
+                            <div>
+                                <MudAvatar Style="height:250px; width:250px;"><MudImage Src="/Images/defaultavatar.jpg"></MudImage></MudAvatar>
+                            </div>
+                        }
+                        else
+                        {
+                            <div>
+                                <MudAvatar Style="height:250px; width:250px;" @bind-Value="_selectedUser.Avatar"><MudImage Src="@_selectedUser.Avatar"></MudImage></MudAvatar>
+                            </div>
+                        }
+                    }
                     <div>
                         @if (!isReadOnly)
                         {
@@ -97,7 +120,6 @@
     </MudCardContent>
 </MudCard>
 
-
 @inject IUserService _userService
 @inject IImageService _imageService
 @inject UserStateContainer _userStateContainer
@@ -113,17 +135,17 @@
     private bool newAvatar = false;
     private bool dateChanged = false;
     private bool ShowErrors;
-    private string Error = "";
-
+    private IEnumerable<string>? Errors;
+    private IBrowserFile _newAvatarFile;
+    private string _avatarFileBase64;
 
     protected override async void OnInitialized()
     {
         base.OnInitialized();
         await GetUserFromQueryOrContainer();
-        await IsOwnerOfData(_selectedUser.Email);
+        await IsOwnerOfData(_selectedUser);
         StateHasChanged();
     }
-
 
     private async Task GetUserFromQueryOrContainer()
     {
@@ -141,44 +163,48 @@
     private async Task SubmitForm()
     {
         ShowErrors = false;
-        var result = await _userService.UpdateUserAsync(_selectedUser);
+        var result = await _userService.UpdateUserAsync(new UserUpdateRequest() { UserDTO = _selectedUser, File = _newAvatarFile });
         if (result.Success)
         {
-            StateHasChanged();
-            _avatarStateContainer.ChangeAvatar(_selectedUser.Avatar); 
+            await _avatarStateContainer.ChangeAvatar(); 
+            await InvokeAsync(StateHasChanged);
             Navigation.NavigateTo("/users");
         }
         else
         {
-            Error = result.Errors.First();
+            Errors = result.Errors;
             ShowErrors = true;
+            await InvokeAsync(StateHasChanged);
         }
     }
 
-    private async Task IsOwnerOfData(string userEmail)
+    private async Task IsOwnerOfData(UserDTO selectedUser)
     {
-        var userState = await _authStateProvider.GetAuthenticationStateAsync();
-        if (string.Equals(userEmail, userState.User.Identity.Name))
+        if (selectedUser != null)
         {
-            isReadOnly = false;
+            var userState = await _authStateProvider.GetAuthenticationStateAsync();
+            if (string.Equals(selectedUser.Email, userState.User.Identity.Name))
+            {
+                isReadOnly = false;
+            }
+        }
+        else
+        {
+            Navigation.NavigateTo("/");
         }
     }
 
     private string ImageUrl = "";
     private async Task UploadImage(IBrowserFile file)
     {
-        _selectedUser.Avatar = await _imageService.SaveImageInBase64(file);
+        _newAvatarFile = file;
+        _avatarFileBase64 = await _imageService.SaveImageInBase64(file);
         this.newAvatar = true;
-        StateHasChanged();
+        await InvokeAsync(StateHasChanged);
     }
 
     private void MarkDateAsChanged()
     {
         this.dateChanged = true;
-    }
-
-    public void Dispose()
-    {
-        _userStateContainer.OnStateChange -= StateHasChanged;
     }
 }

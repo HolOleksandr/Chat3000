@@ -1,0 +1,18 @@
+﻿@using MudBlazor
+
+<CascadingAuthenticationState>
+    <AuthorizeView>
+        <Authorized>
+            @context.User.Identity!.Name :
+            <UserMenu />
+        </Authorized>
+        <NotAuthorized>
+            <a href="Register">Register</a>
+            <a href="Login">Log in</a>
+        </NotAuthorized>
+    </AuthorizeView>
+</CascadingAuthenticationState>
+
+
+@code {
+}

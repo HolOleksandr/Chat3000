@@ -1,0 +1,183 @@
+﻿@using Chat.Blazor.WebAssembly.Models.DTO;
+@using Chat.Blazor.WebAssembly.Models.Paging;
+@using Chat.Blazor.WebAssembly.Pages.Dialogs;
+@using Chat.Blazor.WebAssembly.Services.Interfaces;
+@using System.Security.Claims;
+@using MudBlazor;
+
+<MudTable @ref="_table"
+          Items="@Contracts"
+          ServerData="@(new Func<TableState, Task<TableData<PdfContractDTO>>>(ServerReload))"
+          CurrentPage="searchParameters.PageIndex"
+          SortLabel="searchParameters.SortColumn"
+          Loading=false
+          T="PdfContractDTO"
+          Hover=false>
+    <ToolBarContent>
+        <MudTextField T="string"
+                      Value="@searchParameters.FilterQuery"
+                      ValueChanged="@(s=>OnSearch(s))"
+                      Placeholder="Search"
+                      Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Search"
+                      IconSize="Size.Medium"
+                      Class="mt-0">
+        </MudTextField>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh><MudTableSortLabel SortLabel="Id" T="PdfContractDTO">Id</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortLabel="Name" T="PdfContractDTO">File Name</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel T="PdfContractDTO">Sender Email</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortLabel="IsSigned" T="PdfContractDTO">Status</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortLabel="UploadDate" T="PdfContractDTO">Upload Date</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortLabel="SignDate" T="PdfContractDTO">Sign Date</MudTableSortLabel></MudTh>
+        <MudTh>Actions</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Id">@context.Id</MudTd>
+        <MudTd DataLabel="Name">@context.FileName</MudTd>
+        <MudTd DataLabel="SenderEmail">
+            @if (context.Uploader != null)
+            {
+                @context.Uploader.Email
+            }
+            else
+            {
+                <div>"Not selected"</div>
+            }
+        </MudTd>
+        <MudTd DataLabel="IsSigned">
+            @if (@context.IsSigned)
+            {
+                <MudText Color="Color.Success">Signed</MudText>
+            }
+            else
+            {
+                <MudText Color="Color.Error">Not Signed</MudText>
+            }
+        </MudTd>
+        <MudTd DataLabel="UploadDate">@context.UploadDate</MudTd>
+        <MudTd DataLabel="SignDate">@context.SignDate</MudTd>
+        <MudTd>
+            <MudButton @onclick="@(() => OpenEditContractDialog(context.Id))"
+                       Variant="Variant.Filled"
+                       Color="Color.Primary">
+                Sign
+            </MudButton>
+        </MudTd>
+    </RowTemplate>
+    <NoRecordsContent>
+        <MudText>No matching records found</MudText>
+    </NoRecordsContent>
+    <LoadingContent>
+        <MudText>Loading...</MudText>
+    </LoadingContent>
+    <PagerContent>
+        <MudTablePager PageSizeOptions="@_pageSizes" />
+    </PagerContent>
+</MudTable>
+
+@inject IPdfContractService _pdfContractService
+@inject IDialogService _dialogService
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider _authStateProvider
+
+@code {
+    private int rowIndex = 1;
+    private List<PdfContractDTO> Contracts = new();
+    private MudTable<PdfContractDTO> _table = null!;
+    private SearchParameters searchParameters = new();
+    private int[] _pageSizes = new int[] { 3, 5, 10, 25, 50 };
+    private string _queryParams = string.Empty;
+    private string _userEmail = string.Empty;
+    private string _userId = string.Empty;
+
+    private int _defaultPageIndex = 0;
+    private int _defaultPageSize = 5;
+    private string _defaultSortColumn = "id";
+    private string _defaultSortOrder = "asc";
+    private bool _firstRenderTrigger = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            StateHasChanged();
+        }
+        base.OnAfterRender(firstRender);
+    }
+
+    private async Task<TableData<PdfContractDTO>> ServerReload(TableState state)
+    {
+        await GetUserClaims();
+        SetTableState(state);
+        var queryStr = GetQueryStr(searchParameters);
+        var data = await _pdfContractService.GetAllReceivedContractsAsync(_userId, queryStr);
+        var table = new TableData<PdfContractDTO> { TotalItems = data.TotalCount, Items = data.Data };
+        _firstRenderTrigger = false;
+        return table;
+    }
+
+    private void OnSearch(string text)
+    {
+        searchParameters.FilterQuery = text;
+        _table.ReloadServerData();
+    }
+
+    private async Task OpenAddContractDialog(MouseEventArgs args)
+    {
+        var parameters = new DialogParameters { ["CreatorEmail"] = _userEmail, ["CreatorId"] = _userId };
+        var options = new DialogOptions() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraLarge, FullWidth = true };
+
+        var dialog = _dialogService.Show<AddPdfContractDialog>("Upload new file", parameters, options);
+        var result = await dialog.Result;
+        if (!result.Canceled)
+        {
+            await _table.ReloadServerData();
+        }
+    }
+
+    private async Task OpenEditContractDialog(string fileId)
+    {
+        var parameters = new DialogParameters { ["PdfFileId"] = fileId, ["CreatorId"] = _userId, ["IsForSign"] = true };
+        var options = new DialogOptions() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraLarge, FullWidth = true };
+
+        var dialog = _dialogService.Show<EditPdfContractDialog>("Edit file", parameters, options);
+        var result = await dialog.Result;
+        if (!result.Canceled)
+        {
+            await _table.ReloadServerData();
+        }
+    }
+
+    private async Task GetUserClaims()
+    {
+        var _userState = await _authStateProvider.GetAuthenticationStateAsync();
+        _userEmail = _userState.User.Identity.Name;
+        _userId = _userState.User.Claims.FirstOrDefault(c => c.Type.Equals(ClaimTypes.NameIdentifier))?.Value;
+    }
+
+    private void SetTableState(TableState tableState)
+    {
+        searchParameters.PageSize = tableState.PageSize;
+        searchParameters.PageIndex = tableState.Page;
+        searchParameters.SortColumn = tableState.SortLabel;
+        searchParameters.SortOrder = tableState.SortDirection == SortDirection.Descending ? "desc" : "asc";
+    }
+
+    private string GetQueryStr(SearchParameters searchParameters)
+    {
+
+        var queryStringParam = new Dictionary<string, string?>
+            {
+                ["pageIndex"] = searchParameters.PageIndex.ToString(),
+                ["pageSize"] = searchParameters.PageSize.ToString(),
+                ["sortColumn"] = searchParameters.SortColumn,
+                ["sortOrder"] = searchParameters.SortOrder,
+                ["filterQuery"] = searchParameters.FilterQuery ?? ""
+            };
+
+        var queryParams = QueryHelpers.AddQueryString("", queryStringParam);
+        return queryParams;
+    }
+}

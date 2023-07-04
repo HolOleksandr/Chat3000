@@ -1,7 +1,4 @@
-﻿using Chat.DAL.Repositories.Interfaces;
-using Chat.DAL.Repositories.Implementation;
-
-namespace Chat.DAL.UoW.Interface
+﻿namespace Chat.DAL.UoW.Interface
 {
     public interface IUnitOfWork : IDisposable
     {
@@ -9,5 +6,4 @@ namespace Chat.DAL.UoW.Interface
 
         Task SaveAsync();
     }
-
 }

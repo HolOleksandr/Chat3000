@@ -1,10 +1,5 @@
 ﻿using Chat.BLL.Models.Requests;
 using FluentValidation;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Chat.BLL.Validators
 {
@@ -19,7 +14,6 @@ namespace Chat.BLL.Validators
             RuleFor(x => x.Description)
                  .NotEmpty().WithMessage("Description is required")
                  .Length(5, 150).WithMessage("Description must be between 5-150 characters.");
-
         }
     }
 }

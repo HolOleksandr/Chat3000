@@ -1,5 +1,5 @@
-﻿using Chat.Blazor.Server.Models;
-using Chat.Blazor.Server.Models.DTO;
+﻿using Chat.Blazor.Server.Models.DTO;
+using Chat.Blazor.Server.Models.Responses;
 
 namespace Chat.Blazor.Server.Services.Interfaces
 {
